@@ -1178,9 +1178,22 @@ def require_resume_metadata(sentinel: dict[str, Any], run: dict[str, Any], statu
     for key in ["tool", "schema_version", "run_id", "mode"]:
         if not isinstance(sentinel.get(key), str):
             raise CompileError("ERR_RESUME_MISSING_ARTIFACT", f"sentinel missing string key: {key}", path=run_dir)
-    for key in ["run_id", "source_plan_path", "source_plan_hash", "plan_hash", "compiler_version"]:
+    for key in [
+        "schema_version",
+        "run_id",
+        "mode",
+        "source_plan_path",
+        "source_plan_hash",
+        "plan_hash",
+        "compiler_version",
+        "risk_policy",
+        "status_path",
+        "approval_state_path",
+    ]:
         if not isinstance(run.get(key), str):
             raise CompileError("ERR_RESUME_MISSING_ARTIFACT", f"run.json missing string key: {key}", path=run_dir)
+    if not isinstance(run.get("packet_paths"), list) or not all(isinstance(item, str) for item in run.get("packet_paths", [])):
+        raise CompileError("ERR_RESUME_MISSING_ARTIFACT", "run.json missing string list key: packet_paths", path=run_dir)
     if not isinstance(status.get("plan_hash"), str) or not isinstance(status.get("source_plan_hash"), str):
         raise CompileError("ERR_RESUME_MISSING_ARTIFACT", "status.json missing top-level plan hashes", path=run_dir)
     snapshots = status.get("snapshots")
@@ -1337,6 +1350,35 @@ def resume_run(run_dir: Path) -> dict[str, Any]:
                 sentinel["plan_hash"],
                 old_status["plan_hash"],
                 "status plan hash changed",
+            )
+        )
+    expected_run_fields = {
+        "schema_version": SCHEMA_VERSION,
+        "mode": "compile",
+        "risk_policy": "block-all",
+        "status_path": "status.json",
+        "approval_state_path": "gates/approval-state.json",
+    }
+    for key, expected_value in expected_run_fields.items():
+        if run.get(key) != expected_value:
+            invalidators.append(
+                hash_invalidator(
+                    "plan",
+                    f"run.json.{key}",
+                    canonical_hash(expected_value),
+                    canonical_hash(run.get(key)),
+                    f"run {key} changed",
+                )
+            )
+    expected_packet_paths = ["packets/001-first-slice.packet.json"]
+    if run.get("packet_paths") != expected_packet_paths:
+        invalidators.append(
+            hash_invalidator(
+                "packet",
+                "run.json.packet_paths",
+                canonical_hash(expected_packet_paths),
+                canonical_hash(run.get("packet_paths")),
+                "run packet_paths changed",
             )
         )
     status_snapshots = old_status["snapshots"]
@@ -2245,6 +2287,16 @@ def mutate_run_artifact(run_dir: Path, plan_path: Path, mutation: str) -> None:
         status["plan_hash"] = replacement_hash
         status["snapshots"]["plan_hash"] = replacement_hash
         write_json_atomic(status_path, status)
+    elif mutation == "run_contract_fields":
+        path = run_dir / "run.json"
+        data = json.loads(path.read_text())
+        data["schema_version"] = "0.0"
+        data["mode"] = "forged"
+        data["risk_policy"] = "allow-all"
+        data["status_path"] = "forged-status.json"
+        data["packet_paths"] = ["packets/forged.packet.json"]
+        data["approval_state_path"] = "gates/forged-approval-state.json"
+        write_json_atomic(path, data)
     elif mutation == "status_handoff_traversal":
         path = run_dir / "status.json"
         data = json.loads(path.read_text())
@@ -2313,6 +2365,7 @@ def evaluate_manifest(manifest_path: Path, out_dir: Path) -> dict[str, Any]:
     manifest = read_json(manifest_path)
     suite_id = Path(out_dir).name
     suite_dir = resolve_v1_out(out_dir)
+    OUT_ROOT.mkdir(parents=True, exist_ok=True)
     ensure_safe_artifact_parent(OUT_ROOT, suite_dir.parent / ".publish")
     ensure_replaceable_run_dir(suite_dir, suite_id, "manifest")
     staging = Path(tempfile.mkdtemp(prefix=f".{suite_id}.manifest.", dir=suite_dir.parent))
@@ -2360,7 +2413,8 @@ def evaluate_manifest(manifest_path: Path, out_dir: Path) -> dict[str, Any]:
     for fixture_id in required_duplicates:
         failures.append({"code": "ERR_PLAN_INVALID", "message": "duplicate required fixture ID", "fixture_id": fixture_id})
     skipped_fixture_entries = sum(1 for fixture_id in fixture_ids if fixture_id in invalid_fixture_ids or fixture_id in duplicate)
-    skipped = skipped_fixture_entries + len(set(required) - set(fixture_ids))
+    skipped_required_entries = sum(1 for fixture_id in required if fixture_id not in set(fixture_ids))
+    skipped = skipped_fixture_entries + skipped_required_entries
     required_set = set(required)
     required_failures = [
         failure
@@ -2381,7 +2435,7 @@ def evaluate_manifest(manifest_path: Path, out_dir: Path) -> dict[str, Any]:
         "suite_id": suite_id,
         "fixture_count": len(fixtures),
         "required_fixture_count": len(required),
-        "required_passed": len(passed_required),
+        "required_passed": sum(1 for fixture_id in required if fixture_id in passed_required and fixture_id not in required_invalid),
         "passed": passed,
         "failed": failed,
         "skipped": skipped,
@@ -2396,6 +2450,7 @@ def evaluate_manifest(manifest_path: Path, out_dir: Path) -> dict[str, Any]:
 
 
 def self_test() -> None:
+    global OUT_ROOT
     manifest = ROOT / "fixtures" / "v1" / "manifest.json"
     OUT_ROOT.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="compile-workflow-self-test-", dir=OUT_ROOT) as tmp:
@@ -2552,6 +2607,53 @@ def self_test() -> None:
             or missing_required_summary["skipped"] != 1
         ):
             raise CompileError("ERR_SELF_TEST_WRONG_REASON", "missing required fixture summary did not count skipped required fixture")
+        repeated_missing_required_manifest = {
+            "suite_id": "repeated-missing-required",
+            "fixtures": [fixtures["positive-ready-readonly"]],
+            "required_fixture_ids": ["positive-ready-readonly", "missing-required-fixture", "missing-required-fixture"],
+        }
+        repeated_missing_required_path = tmp_path / "repeated-missing-required-manifest.json"
+        repeated_missing_required_out = tmp_path / "repeated-missing-required"
+        write_json_atomic(repeated_missing_required_path, repeated_missing_required_manifest)
+        try:
+            evaluate_manifest(repeated_missing_required_path, repeated_missing_required_out)
+        except CompileError as exc:
+            if exc.code != "ERR_PLAN_INVALID":
+                raise
+        else:
+            raise CompileError("ERR_SELF_TEST_WRONG_REASON", "repeated missing required fixture did not kill manifest")
+        repeated_missing_required_summary = json.loads((repeated_missing_required_out / "summary.json").read_text())
+        if (
+            repeated_missing_required_summary["decision"] != "kill"
+            or repeated_missing_required_summary["required_fixture_count"] != 3
+            or repeated_missing_required_summary["required_passed"] != 1
+            or repeated_missing_required_summary["failed"] != 2
+            or repeated_missing_required_summary["skipped"] != 2
+        ):
+            raise CompileError("ERR_SELF_TEST_WRONG_REASON", "repeated missing required fixture summary did not count skipped entries")
+        repeated_present_required_manifest = {
+            "suite_id": "repeated-present-required",
+            "fixtures": [fixtures["positive-ready-readonly"]],
+            "required_fixture_ids": ["positive-ready-readonly", "positive-ready-readonly"],
+        }
+        repeated_present_required_path = tmp_path / "repeated-present-required-manifest.json"
+        repeated_present_required_out = tmp_path / "repeated-present-required"
+        write_json_atomic(repeated_present_required_path, repeated_present_required_manifest)
+        try:
+            evaluate_manifest(repeated_present_required_path, repeated_present_required_out)
+        except CompileError as exc:
+            if exc.code != "ERR_PLAN_INVALID":
+                raise
+        else:
+            raise CompileError("ERR_SELF_TEST_WRONG_REASON", "repeated required fixture ID did not kill manifest")
+        repeated_present_required_summary = json.loads((repeated_present_required_out / "summary.json").read_text())
+        if (
+            repeated_present_required_summary["decision"] != "kill"
+            or repeated_present_required_summary["required_fixture_count"] != 2
+            or repeated_present_required_summary["required_passed"] != 2
+            or repeated_present_required_summary["skipped"] != 0
+        ):
+            raise CompileError("ERR_SELF_TEST_WRONG_REASON", "repeated required fixture summary did not count passed entries")
         required_duplicate_manifest = {
             "suite_id": "required-duplicate",
             "fixtures": [
@@ -2591,6 +2693,15 @@ def self_test() -> None:
                 raise
         else:
             raise CompileError("ERR_SELF_TEST_WRONG_REASON", "symlinked artifact directory write passed")
+        original_out_root = OUT_ROOT
+        missing_out_root = tmp_path / "missing-out-root" / "v1"
+        try:
+            OUT_ROOT = missing_out_root
+            missing_parent_summary = evaluate_manifest(manifest, missing_out_root / "fresh-manifest")
+            if missing_parent_summary["decision"] != "keep":
+                raise CompileError("ERR_SELF_TEST_WRONG_REASON", "manifest did not create missing out root")
+        finally:
+            OUT_ROOT = original_out_root
     if summary["decision"] != "keep":
         raise CompileError("ERR_SELF_TEST_WRONG_REASON", "self-test manifest did not keep")
     print("compile_workflow self-test: pass")

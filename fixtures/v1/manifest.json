@@ -1035,6 +1035,58 @@
       "type": "resume"
     },
     {
+      "expected_invalidator_records": [
+        {
+          "code": "ERR_RESUME_STALE_PLAN",
+          "id": "run.json.schema_version",
+          "kind": "plan",
+          "message": "run schema_version changed"
+        },
+        {
+          "code": "ERR_RESUME_STALE_PLAN",
+          "id": "run.json.mode",
+          "kind": "plan",
+          "message": "run mode changed"
+        },
+        {
+          "code": "ERR_RESUME_STALE_PLAN",
+          "id": "run.json.risk_policy",
+          "kind": "plan",
+          "message": "run risk_policy changed"
+        },
+        {
+          "code": "ERR_RESUME_STALE_PLAN",
+          "id": "run.json.status_path",
+          "kind": "plan",
+          "message": "run status_path changed"
+        },
+        {
+          "code": "ERR_RESUME_STALE_PLAN",
+          "id": "run.json.approval_state_path",
+          "kind": "plan",
+          "message": "run approval_state_path changed"
+        },
+        {
+          "code": "ERR_RESUME_STALE_PACKET",
+          "id": "run.json.packet_paths",
+          "kind": "packet",
+          "message": "run packet_paths changed"
+        }
+      ],
+      "expected_invalidators": [
+        "ERR_RESUME_STALE_PLAN",
+        "ERR_RESUME_STALE_PLAN",
+        "ERR_RESUME_STALE_PLAN",
+        "ERR_RESUME_STALE_PLAN",
+        "ERR_RESUME_STALE_PLAN",
+        "ERR_RESUME_STALE_PACKET"
+      ],
+      "id": "resume-run-contract-fields",
+      "mutate_artifact": "run_contract_fields",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
       "expected_invalidator": "ERR_RESUME_STALE_GATE",
       "expected_invalidator_records": [
         {
@@ -1402,6 +1454,7 @@
     "resume-status-snapshot-compiler",
     "resume-source-plan-path-absolute",
     "resume-source-plan-path-repo-relative",
+    "resume-run-contract-fields",
     "resume-gate-empty-object",
     "resume-stale-compiler",
     "resume-symlink-gate",
