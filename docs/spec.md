@@ -1,6 +1,6 @@
 # Dynamic Workflow Designer Skill Spec
 
-Status: Draft, Last updated: 2026-06-14
+Status: V0.5 implemented, Last updated: 2026-06-14
 
 ## Purpose
 
@@ -232,6 +232,22 @@ V0 is releasable when:
 - whitespace check passes.
 - secret scan finds no committed secrets.
 
+V0.5 is releasable when:
+
+- `references/workflow-plan-schema.md` documents `workflow.plan.json`.
+- `scripts/evaluate_plan.py --self-test` passes.
+- `fixtures/v0.5/manifest.json` includes four positive, four negative, three
+  borderline, and one meta/runtime fixture.
+- tracked candidate samples under `samples/v0.5/candidates/` validate as
+  schema-valid plans or valid downgrade artifacts.
+- both confirmed local baselines, `workflow-router-skill` and Claude
+  `agent-workflow-designer`, are scored through normalized artifacts or explicit
+  normalization-failure records.
+- `python scripts/evaluate_plan.py --manifest fixtures/v0.5/manifest.json --out
+  out/v0.5` regenerates scorecards, parsed plans, raw outputs, skill hashes,
+  rendered blueprints, and the consumer report.
+- `docs/v0.5-decision.md` records the keep/kill outcome.
+
 ### Reproducible Check
 
 Run from the repository root:
@@ -255,6 +271,11 @@ rg -n "T[O]DO|T[B]D|PLACE[H]OLDER|FIX[M]E" --glob '*.md' .; test $? -eq 1
 ```bash
 python scripts/check_contract.py
 python scripts/check_contract.py --self-test
+```
+
+```bash
+python scripts/evaluate_plan.py --self-test
+python scripts/evaluate_plan.py --manifest fixtures/v0.5/manifest.json --out out/v0.5
 ```
 
 ## Open Questions

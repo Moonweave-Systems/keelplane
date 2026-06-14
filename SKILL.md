@@ -68,7 +68,18 @@ completed artifacts, and ask the user before continuing.
 ## Output Format
 
 For short requests, provide a compact workflow blueprint in the conversation.
-For substantial work, write or update a spec file with:
+For substantial work, emit both:
+
+- `workflow.plan.json`: the machine-readable source of truth following
+  `references/workflow-plan-schema.md`.
+- rendered blueprint: a human-readable view derived from the same JSON.
+
+The JSON and blueprint must agree on activation, first slice, handoffs,
+verification, risk gates, budgets, and resume points. If the router-first rule
+does not justify activation, emit a downgrade artifact that names the target:
+direct Codex, `workflow-router`, or a simple plan.
+
+When writing a spec file, include:
 
 1. Research and prior art.
 2. Product position and non-goals.

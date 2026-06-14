@@ -284,6 +284,9 @@ def main() -> None:
         [
             "`assumptions`",
             "`execution path`",
+            "`workflow.plan.json`",
+            "references/workflow-plan-schema.md",
+            "downgrade artifact",
             "dependency",
             "database",
             "production",
@@ -309,9 +312,30 @@ def main() -> None:
             "docs/v0.5-plan-schema-evaluator-spec.md",
             "docs/fixture-smoke/",
             "python scripts/check_contract.py --self-test",
+            "python scripts/evaluate_plan.py --manifest fixtures/v0.5/manifest.json --out out/v0.5",
         ],
     )
     require_terms("docs/v0.5-plan-schema-evaluator-spec.md", V05_REQUIRED_TERMS)
+    require_terms(
+        "docs/spec.md",
+        [
+            "references/workflow-plan-schema.md",
+            "scripts/evaluate_plan.py --self-test",
+            "fixtures/v0.5/manifest.json",
+            "samples/v0.5/candidates/",
+            "docs/v0.5-decision.md",
+        ],
+    )
+    require_terms(
+        "docs/v0.5-decision.md",
+        [
+            "decision: keep",
+            "12 fixtures",
+            "workflow-router-skill",
+            "claude-agent-workflow-designer",
+            "out/v0.5/summary.json",
+        ],
+    )
     require_fixture_smoke()
     print("contract smoke: pass")
 
