@@ -326,7 +326,7 @@ def sentinel_matches(path: Path, run_id: str, mode: str) -> bool:
         return False
     try:
         data = json.loads(sentinel.read_text())
-    except json.JSONDecodeError:
+    except (UnicodeDecodeError, json.JSONDecodeError):
         return False
     return (
         data.get("tool") == TOOL
@@ -1021,12 +1021,14 @@ def ensure_replaceable_run_dir(path: Path, run_id: str, mode: str) -> None:
 def publish_owned_tree(staging: Path, out_dir: Path, run_id: str, mode: str) -> None:
     ensure_replaceable_run_dir(out_dir, run_id, mode)
     backup: Path | None = None
+    published = False
     try:
         if out_dir.exists():
             backup = out_dir.parent / f".{out_dir.name}.old-{os.getpid()}-{sha8(str(staging))}"
             os.replace(out_dir, backup)
         try:
             os.replace(staging, out_dir)
+            published = True
         except BaseException:
             if backup is not None and backup.exists() and not out_dir.exists():
                 os.replace(backup, out_dir)
@@ -1034,7 +1036,7 @@ def publish_owned_tree(staging: Path, out_dir: Path, run_id: str, mode: str) -> 
         if backup is not None:
             shutil.rmtree(backup, ignore_errors=True)
     finally:
-        if backup is not None and backup.exists():
+        if published and backup is not None and backup.exists():
             shutil.rmtree(backup, ignore_errors=True)
 
 
@@ -1191,6 +1193,15 @@ def require_resume_metadata(sentinel: dict[str, Any], run: dict[str, Any], statu
             raise CompileError("ERR_RESUME_MISSING_ARTIFACT", f"sentinel missing list key: {key}", path=run_dir)
         if not all(isinstance(item, dict) for item in sentinel[key]):
             raise CompileError("ERR_RESUME_MISSING_ARTIFACT", f"sentinel list contains non-object entries: {key}", path=run_dir)
+    sentinel_status_keys = {
+        "packet_statuses": {"packet_id", "status", "reason", "packet_hash", "prompt_hash", "input_snapshot_hash", "gate_snapshot_hash"},
+        "handoff_statuses": {"handoff_id", "schema_hash", "source_index"},
+        "gate_statuses": {"gate_id", "trigger", "status", "approval_hash", "source", "source_index", "risk_category"},
+    }
+    for section, required_keys in sentinel_status_keys.items():
+        for item in sentinel[section]:
+            if not required_keys <= set(item):
+                raise CompileError("ERR_RESUME_MISSING_ARTIFACT", f"sentinel status entry is malformed: {section}", path=run_dir)
 
 
 def read_resume_json(path: Path, kind: str, artifact_id: str, invalidators: list[dict[str, Any]], *, root: Path | None = None) -> dict[str, Any] | None:
@@ -1464,21 +1475,12 @@ def resume_run(run_dir: Path) -> dict[str, Any]:
             gates.append(gate)
         approval_state = {**approval_state, "gates": gates}
     clean_sections = anchored_status_sections(sentinel, invalidated=False)
-    invalidated_sections = anchored_status_sections(sentinel, invalidated=True)
-    prior_tool_invalidated = (
-        old_status.get("resume_state") == "invalidated"
-        and old_status.get("last_resume_result") == "invalidated"
-        and isinstance(old_status.get("invalidators"), list)
-        and bool(old_status.get("invalidators"))
-    )
     actual_sections = {
         "packet_statuses": old_status.get("packet_statuses"),
         "handoff_statuses": old_status.get("handoff_statuses"),
         "gate_statuses": old_status.get("gate_statuses"),
     }
     allowed_status_shapes = [clean_sections]
-    if prior_tool_invalidated:
-        allowed_status_shapes.append(invalidated_sections)
     if actual_sections not in allowed_status_shapes:
         for section, kind in [
             ("packet_statuses", "packet"),
@@ -1815,7 +1817,7 @@ def run_fixture(fixture: dict[str, Any], suite_dir: Path, temp_root: Path, *, su
                 declared_codes = fixture["expected_invalidators"]
             else:
                 declared_codes = [fixture["expected_invalidator"]]
-            if sorted(set(actual_codes)) != sorted(set(declared_codes)):
+            if actual_codes != declared_codes:
                 raise CompileError(
                     "ERR_SELF_TEST_WRONG_REASON",
                     f"manifest expected resume invalidators {declared_codes}, got {actual_codes}",
@@ -1999,6 +2001,26 @@ def mutate_run_artifact(run_dir: Path, plan_path: Path, mutation: str) -> None:
         data["packet_statuses"][0]["status"] = "invalidated"
         data["packet_statuses"][0]["reason"] = "resume invalidated"
         write_json_atomic(path, data)
+    elif mutation == "status_full_previous_invalidated":
+        path = run_dir / "status.json"
+        data = json.loads(path.read_text())
+        sentinel = json.loads((run_dir / SENTINEL).read_text())
+        sections = anchored_status_sections(sentinel, invalidated=True)
+        data["resume_state"] = "invalidated"
+        data["last_resume_result"] = "invalidated"
+        data["invalidators"] = [
+            hash_invalidator(
+                "prompt",
+                "packets/001-first-slice.prompt.md",
+                "0" * 64,
+                "1" * 64,
+                "forged prior invalidator",
+            )
+        ]
+        data["packet_statuses"] = sections["packet_statuses"]
+        data["handoff_statuses"] = sections["handoff_statuses"]
+        data["gate_statuses"] = sections["gate_statuses"]
+        write_json_atomic(path, data)
     elif mutation == "gate_status_rehash":
         approval_path = run_dir / "gates" / "approval-state.json"
         approval_state = json.loads(approval_path.read_text())
@@ -2063,6 +2085,11 @@ def mutate_run_artifact(run_dir: Path, plan_path: Path, mutation: str) -> None:
         path = run_dir / SENTINEL
         data = json.loads(path.read_text())
         data["packet_statuses"] = [1]
+        write_json_atomic(path, data)
+    elif mutation == "sentinel_empty_status_object":
+        path = run_dir / SENTINEL
+        data = json.loads(path.read_text())
+        data["packet_statuses"] = [{}]
         write_json_atomic(path, data)
     elif mutation == "sentinel_invalid_utf8":
         (run_dir / SENTINEL).write_bytes(b"\xff")

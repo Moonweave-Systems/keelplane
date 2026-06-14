@@ -776,12 +776,12 @@ Minimum fixture set:
   invalidates against compile-time anchors
 - resume: forged `status.json` metadata or snapshot fields invalidate run
 - resume: forged previous-invalidated status sections invalidate run, including
-  impossible hybrid clean/invalidated status section shapes
+  full invalidated and impossible hybrid clean/invalidated status section shapes
 - resume: missing, malformed, or invalid UTF-8 sentinel status-section anchors
   produce structured `ERR_RESUME_MISSING_ARTIFACT`
 - resume: repo-relative `source_plan_path` retargeting invalidates run
-- resume: after a transient invalidation, restoring the original artifact can
-  return the run to `resumable`
+- resume: a previously invalidated `status.json` remains invalidated even after
+  artifact repair; rerun compile to restore trusted clean status sections
 - resume: missing handoff schema invalidates run
 
 Each fixture must validate:
@@ -827,7 +827,7 @@ IDs must be unique. A skipped fixture is a failure. The manifest run writes
 - status metadata or snapshot drift resume failure
 - forged previous-invalidated status sections do not bypass resume invalidation
 - repo-relative source-plan retargeting resume failure
-- repaired artifact can return a previously invalidated run to `resumable`
+- repaired artifact does not trust a previously invalidated `status.json`
 - missing handoff schema resume failure
 
 The self-test must fail for the exact reason under test. It must not count a
@@ -858,7 +858,7 @@ V1 is releasable when:
 
 - `scripts/compile_workflow.py --self-test` passes.
 - `python scripts/compile_workflow.py --manifest fixtures/v1/manifest.json --out
-  out/v1/<suite_id>` passes and writes `summary.json`.
+  out/v1/final` passes and writes `summary.json`.
 - Existing V0/V0.5 checks still pass.
 - Required V1 fixtures pass through the compiler.
 - Generated packet prompts structurally agree with packet JSON.
@@ -867,8 +867,9 @@ V1 is releasable when:
   state.
 - Resume checks compare live artifacts against compile-time anchors from the
   ownership sentinel, not mutable `status.json` snapshots.
-- A previous invalidated `status.json` must not prevent a repaired run from
-  returning to `resumable`.
+- A previous invalidated `status.json` is not proof of compiler-authored
+  invalidation. A repaired run with invalidated status sections remains
+  `invalidated`; rerun compile to restore trusted clean status sections.
 - README documents compile and resume-check commands.
 - `docs/v1-decision.md` records keep/kill from `summary.json`.
 

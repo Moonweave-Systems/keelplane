@@ -391,6 +391,7 @@
     {
       "expected_invalidators": [
         "ERR_RESUME_STALE_PACKET",
+        "ERR_RESUME_STALE_PACKET",
         "ERR_RESUME_STALE_PROMPT"
       ],
       "id": "resume-prompt-packet-disagree",
@@ -400,6 +401,7 @@
     },
     {
       "expected_invalidators": [
+        "ERR_RESUME_STALE_PACKET",
         "ERR_RESUME_STALE_PACKET",
         "ERR_RESUME_STALE_PROMPT"
       ],
@@ -411,6 +413,7 @@
     {
       "expected_invalidators": [
         "ERR_RESUME_STALE_PACKET",
+        "ERR_RESUME_STALE_PACKET",
         "ERR_RESUME_STALE_PROMPT"
       ],
       "id": "resume-packet-prompt-path",
@@ -421,7 +424,10 @@
     {
       "expected_invalidators": [
         "ERR_RESUME_STALE_PACKET",
-        "ERR_RESUME_STALE_PROMPT"
+        "ERR_RESUME_STALE_PROMPT",
+        "ERR_RESUME_STALE_PACKET",
+        "ERR_RESUME_STALE_PROMPT",
+        "ERR_RESUME_STALE_PACKET"
       ],
       "id": "resume-coherent-packet-status-forgery",
       "mutate_artifact": "coherent_packet_prompt_status",
@@ -444,8 +450,8 @@
     },
     {
       "expected_invalidators": [
-        "ERR_RESUME_STALE_INPUT",
-        "ERR_RESUME_STALE_PACKET"
+        "ERR_RESUME_STALE_PACKET",
+        "ERR_RESUME_STALE_INPUT"
       ],
       "id": "resume-malformed-packet-inputs",
       "mutate_artifact": "packet_malformed_inputs",
@@ -453,14 +459,17 @@
       "type": "resume"
     },
     {
-      "expected_invalidator": "ERR_RESUME_STALE_PROMPT",
+      "expected_invalidators": [
+        "ERR_RESUME_STALE_PROMPT",
+        "ERR_RESUME_STALE_PROMPT"
+      ],
       "id": "resume-stale-prompt",
       "mutate_artifact": "prompt",
       "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
       "type": "resume"
     },
     {
-      "expected_resume_state": "resumable",
+      "expected_resume_state": "invalidated",
       "id": "resume-repair-after-invalidated",
       "mutate_artifact": "prompt",
       "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
@@ -468,8 +477,8 @@
     },
     {
       "expected_invalidators": [
-        "ERR_RESUME_STALE_INPUT",
-        "ERR_RESUME_STALE_PACKET"
+        "ERR_RESUME_STALE_PACKET",
+        "ERR_RESUME_STALE_INPUT"
       ],
       "id": "resume-stale-input",
       "mutate_artifact": "input",
@@ -485,9 +494,9 @@
     },
     {
       "expected_invalidators": [
-        "ERR_RESUME_STALE_INPUT",
+        "ERR_RESUME_STALE_PLAN",
         "ERR_RESUME_STALE_PACKET",
-        "ERR_RESUME_STALE_PLAN"
+        "ERR_RESUME_STALE_INPUT"
       ],
       "id": "resume-stale-live-input",
       "input_files": [
@@ -510,14 +519,23 @@
       "type": "resume"
     },
     {
-      "expected_invalidator": "ERR_RESUME_STALE_GATE",
+      "expected_invalidators": [
+        "ERR_RESUME_STALE_GATE",
+        "ERR_RESUME_STALE_GATE"
+      ],
       "id": "resume-stale-gate",
       "mutate_artifact": "gate",
       "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
       "type": "resume"
     },
     {
-      "expected_invalidator": "ERR_RESUME_STALE_GATE",
+      "expected_invalidators": [
+        "ERR_RESUME_STALE_GATE",
+        "ERR_RESUME_STALE_GATE",
+        "ERR_RESUME_STALE_GATE",
+        "ERR_RESUME_STALE_GATE",
+        "ERR_RESUME_STALE_GATE"
+      ],
       "id": "resume-gate-status-rehash",
       "mutate_artifact": "gate_status_rehash",
       "mutation": {
@@ -529,7 +547,10 @@
       "type": "resume"
     },
     {
-      "expected_invalidator": "ERR_RESUME_STALE_PLAN",
+      "expected_invalidators": [
+        "ERR_RESUME_STALE_PLAN",
+        "ERR_RESUME_STALE_PLAN"
+      ],
       "id": "resume-stale-status-hash",
       "mutate_artifact": "status_plan_hash",
       "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
@@ -561,6 +582,16 @@
       "type": "resume"
     },
     {
+      "expected_invalidators": [
+        "ERR_RESUME_STALE_PACKET",
+        "ERR_RESUME_STALE_GATE"
+      ],
+      "id": "resume-status-full-previous-invalidated",
+      "mutate_artifact": "status_full_previous_invalidated",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
       "expected_invalidator": "ERR_RESUME_STALE_GATE",
       "id": "resume-status-gate-status",
       "mutate_artifact": "status_gate_status",
@@ -582,14 +613,26 @@
       "type": "resume"
     },
     {
-      "expected_invalidator": "ERR_RESUME_STALE_PLAN",
+      "expected_invalidators": [
+        "ERR_RESUME_STALE_PLAN",
+        "ERR_RESUME_STALE_PLAN",
+        "ERR_RESUME_STALE_PLAN"
+      ],
       "id": "resume-source-plan-path-absolute",
       "mutate_artifact": "run_source_path_absolute",
       "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
       "type": "resume"
     },
     {
-      "expected_invalidator": "ERR_RESUME_STALE_PLAN",
+      "expected_invalidators": [
+        "ERR_RESUME_STALE_PLAN",
+        "ERR_RESUME_STALE_PLAN",
+        "ERR_RESUME_STALE_PLAN",
+        "ERR_RESUME_STALE_PLAN",
+        "ERR_RESUME_STALE_PLAN",
+        "ERR_RESUME_STALE_PLAN",
+        "ERR_RESUME_STALE_PLAN"
+      ],
       "id": "resume-source-plan-path-repo-relative",
       "mutate_artifact": "run_source_path_repo_relative_rehash",
       "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
@@ -617,7 +660,10 @@
       "type": "resume"
     },
     {
-      "expected_invalidator": "ERR_RESUME_MISSING_ARTIFACT",
+      "expected_invalidators": [
+        "ERR_RESUME_MISSING_ARTIFACT",
+        "ERR_RESUME_MISSING_ARTIFACT"
+      ],
       "id": "resume-packets-dir-symlink",
       "mutate_artifact": "packets_dir_symlink",
       "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
@@ -660,6 +706,13 @@
     },
     {
       "expected_error": "ERR_RESUME_MISSING_ARTIFACT",
+      "id": "resume-sentinel-empty-status-object",
+      "mutate_artifact": "sentinel_empty_status_object",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
+      "expected_error": "ERR_RESUME_MISSING_ARTIFACT",
       "id": "resume-sentinel-invalid-utf8",
       "mutate_artifact": "sentinel_invalid_utf8",
       "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
@@ -674,8 +727,8 @@
     },
     {
       "expected_invalidators": [
-        "ERR_RESUME_MISSING_ARTIFACT",
-        "ERR_RESUME_STALE_HANDOFF"
+        "ERR_RESUME_STALE_HANDOFF",
+        "ERR_RESUME_MISSING_ARTIFACT"
       ],
       "id": "resume-handoff-traversal",
       "mutate_artifact": "status_handoff_traversal",
@@ -733,6 +786,7 @@
     "resume-status-packet-status",
     "resume-status-forged-previous-invalidated",
     "resume-status-hybrid-previous-invalidated",
+    "resume-status-full-previous-invalidated",
     "resume-status-gate-status",
     "resume-status-run-id",
     "resume-status-snapshot-compiler",
@@ -747,6 +801,7 @@
     "resume-malformed-sentinel",
     "resume-sentinel-missing-status-sections",
     "resume-sentinel-malformed-status-sections",
+    "resume-sentinel-empty-status-object",
     "resume-sentinel-invalid-utf8",
     "resume-missing-handoff",
     "resume-handoff-traversal"

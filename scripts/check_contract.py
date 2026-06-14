@@ -3,8 +3,11 @@
 
 from pathlib import Path
 import argparse
+import json
 import re
 import shutil
+import subprocess
+import sys
 
 import compile_workflow
 import evaluate_plan
@@ -116,11 +119,24 @@ def require_v1_decision_summary_text(summary: dict[str, object], decision_text: 
 
 
 def require_v1_decision_summary_consistency() -> None:
-    out_root = ROOT / "out" / "v1" / "final"
     try:
-        summary = compile_workflow.evaluate_manifest(ROOT / "fixtures" / "v1" / "manifest.json", out_root)
+        completed = subprocess.run(
+            [
+                sys.executable,
+                "scripts/compile_workflow.py",
+                "--manifest",
+                "fixtures/v1/manifest.json",
+                "--out",
+                "out/v1/final",
+            ],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        summary = json.loads(completed.stdout)
         require_v1_decision_summary_text(summary, (ROOT / "docs" / "v1-decision.md").read_text())
-    except compile_workflow.CompileError as exc:
+    except (json.JSONDecodeError, subprocess.CalledProcessError) as exc:
         raise SystemExit(f"V1 decision consistency failed: {exc}") from exc
 
 
@@ -369,10 +385,10 @@ Overclaims execution: no
 
     v1_summary = {
         "suite_id": "final",
-        "fixture_count": 66,
-        "required_fixture_count": 66,
-        "required_passed": 66,
-        "passed": 66,
+        "fixture_count": 68,
+        "required_fixture_count": 68,
+        "required_passed": 68,
+        "passed": 68,
         "failed": 0,
         "skipped": 0,
         "decision": "keep",
@@ -381,10 +397,10 @@ Overclaims execution: no
         "Decision: keep\n"
         "python scripts/compile_workflow.py --manifest fixtures/v1/manifest.json --out out/v1/final\n"
         "- `suite_id`: `final`\n"
-        "- `fixture_count`: 66\n"
-        "- `required_fixture_count`: 66\n"
-        "- `required_passed`: 66\n"
-        "- `passed`: 66\n"
+        "- `fixture_count`: 68\n"
+        "- `required_fixture_count`: 68\n"
+        "- `required_passed`: 68\n"
+        "- `passed`: 68\n"
         "- `failed`: 0\n"
         "- `skipped`: 0\n"
         "- `decision`: `keep`\n"
@@ -392,7 +408,7 @@ Overclaims execution: no
     )
     require_v1_decision_summary_text(v1_summary, good_v1_decision)
     try:
-        require_v1_decision_summary_text(v1_summary, good_v1_decision.replace("66", "65", 1))
+        require_v1_decision_summary_text(v1_summary, good_v1_decision.replace("68", "67", 1))
     except SystemExit:
         pass
     else:
@@ -455,8 +471,10 @@ def main() -> None:
         "docs/v1-first-slice-compiler-spec.md",
         [
             "forged previous-invalidated status sections",
+            "full invalidated",
             "hybrid clean/invalidated status section shapes",
             "invalid utf-8 sentinel status-section anchors",
+            "rerun compile to restore trusted clean status sections",
             "err_resume_missing_artifact",
         ],
     )
@@ -475,7 +493,7 @@ def main() -> None:
             "python scripts/compile_workflow.py --plan workflow.plan.json --out out/v1/<run_id>",
             "python scripts/compile_workflow.py --resume out/v1/<run_id>",
             "python scripts/compile_workflow.py --self-test",
-            "python scripts/compile_workflow.py --manifest fixtures/v1/manifest.json --out out/v1/<suite_id>",
+            "python scripts/compile_workflow.py --manifest fixtures/v1/manifest.json --out out/v1/final",
             "`source_plan_path` must be repository-relative in v1",
         ],
     )

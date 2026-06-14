@@ -267,7 +267,7 @@ V1 is releasable when:
   `workflow.plan.json` inputs are rejected at compile time.
 - `scripts/compile_workflow.py --self-test` passes.
 - `python scripts/compile_workflow.py --manifest fixtures/v1/manifest.json --out
-  out/v1/<suite_id>` passes and writes `summary.json`.
+  out/v1/final` passes and writes `summary.json`.
 - Existing V0/V0.5 release checks still pass.
 - required V1 compiler fixtures pass, covering activated plans, downgrade
   refusal, output path safety, symlink escape rejection, risk gate blocking,
@@ -312,7 +312,7 @@ V1 compiler checks:
 python scripts/compile_workflow.py --plan workflow.plan.json --out out/v1/<run_id>
 python scripts/compile_workflow.py --resume out/v1/<run_id>
 python scripts/compile_workflow.py --self-test
-python scripts/compile_workflow.py --manifest fixtures/v1/manifest.json --out out/v1/<suite_id>
+python scripts/compile_workflow.py --manifest fixtures/v1/manifest.json --out out/v1/final
 ```
 
 The V0.5 manifest depends only on tracked baseline source snapshots named in
