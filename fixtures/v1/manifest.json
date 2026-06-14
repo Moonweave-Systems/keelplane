@@ -53,6 +53,43 @@
       "type": "error"
     },
     {
+      "expected_error": "ERR_OUT_PATH_UNSAFE",
+      "id": "negative-fixture-input-outside",
+      "input_files": [
+        {
+          "content": "outside\n",
+          "path": "../escaped-input.txt"
+        }
+      ],
+      "mutation": {
+        "inputs": [
+          "path:../escaped-input.txt"
+        ],
+        "plan_id": "negative-fixture-input-outside"
+      },
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "error"
+    },
+    {
+      "expected_error": "ERR_OUT_PATH_SYMLINK",
+      "id": "negative-fixture-input-symlink-parent",
+      "input_files": [
+        {
+          "content": "symlink\n",
+          "path": "input-link/file.txt"
+        }
+      ],
+      "input_symlink_parent": "input-link",
+      "mutation": {
+        "inputs": [
+          "path:input-link/file.txt"
+        ],
+        "plan_id": "negative-fixture-input-symlink-parent"
+      },
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "error"
+    },
+    {
       "expected_blocked_categories": [
         "write"
       ],
@@ -356,6 +393,13 @@
       "type": "resume"
     },
     {
+      "expected_invalidator": "ERR_RESUME_STALE_INPUT",
+      "id": "resume-malformed-packet-inputs",
+      "mutate_artifact": "packet_malformed_inputs",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
       "expected_invalidator": "ERR_RESUME_STALE_PROMPT",
       "id": "resume-stale-prompt",
       "mutate_artifact": "prompt",
@@ -467,6 +511,13 @@
       "mutate_artifact": "missing_handoff",
       "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
       "type": "resume"
+    },
+    {
+      "expected_invalidator": "ERR_RESUME_MISSING_ARTIFACT",
+      "id": "resume-handoff-traversal",
+      "mutate_artifact": "status_handoff_traversal",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
     }
   ],
   "required_fixture_ids": [
@@ -476,6 +527,8 @@
     "negative-downgrade",
     "negative-outside-out",
     "negative-symlink-run-path",
+    "negative-fixture-input-outside",
+    "negative-fixture-input-symlink-parent",
     "risk-write",
     "risk-shell-process",
     "risk-network",
@@ -500,6 +553,7 @@
     "resume-stale-packet",
     "resume-malformed-packet",
     "resume-packet-array",
+    "resume-malformed-packet-inputs",
     "resume-stale-prompt",
     "resume-stale-input",
     "resume-snapshot-null",
@@ -513,7 +567,8 @@
     "resume-malformed-run",
     "resume-malformed-status",
     "resume-malformed-sentinel",
-    "resume-missing-handoff"
+    "resume-missing-handoff",
+    "resume-handoff-traversal"
   ],
   "suite_id": "v1-first-slice"
 }

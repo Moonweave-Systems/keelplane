@@ -101,6 +101,8 @@ def require_v1_decision_summary_text(summary: dict[str, object], decision_text: 
         f"decision: {summary['decision']}",
         f"`suite_id`: `{summary['suite_id']}`",
         f"`fixture_count`: {summary['fixture_count']}",
+        f"`required_fixture_count`: {summary['required_fixture_count']}",
+        f"`required_passed`: {summary['required_passed']}",
         f"`passed`: {summary['passed']}",
         f"`failed`: {summary['failed']}",
         f"`skipped`: {summary['skipped']}",
@@ -373,8 +375,10 @@ Overclaims execution: no
 
     v1_summary = {
         "suite_id": "final",
-        "fixture_count": 44,
-        "passed": 44,
+        "fixture_count": 48,
+        "required_fixture_count": 48,
+        "required_passed": 48,
+        "passed": 48,
         "failed": 0,
         "skipped": 0,
         "decision": "keep",
@@ -383,8 +387,10 @@ Overclaims execution: no
         "Decision: keep\n"
         "python scripts/compile_workflow.py --manifest fixtures/v1/manifest.json --out out/v1/final\n"
         "- `suite_id`: `final`\n"
-        "- `fixture_count`: 44\n"
-        "- `passed`: 44\n"
+        "- `fixture_count`: 48\n"
+        "- `required_fixture_count`: 48\n"
+        "- `required_passed`: 48\n"
+        "- `passed`: 48\n"
         "- `failed`: 0\n"
         "- `skipped`: 0\n"
         "- `decision`: `keep`\n"
@@ -392,7 +398,7 @@ Overclaims execution: no
     )
     require_v1_decision_summary_text(v1_summary, good_v1_decision)
     try:
-        require_v1_decision_summary_text(v1_summary, good_v1_decision.replace("44", "43", 1))
+        require_v1_decision_summary_text(v1_summary, good_v1_decision.replace("48", "47", 1))
     except SystemExit:
         pass
     else:

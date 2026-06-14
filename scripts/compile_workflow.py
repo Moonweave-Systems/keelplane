@@ -232,13 +232,30 @@ def check_path_components_not_symlink(path: Path) -> None:
             raise CompileError("ERR_OUT_PATH_UNSAFE", f"cannot inspect output path: {exc}", path=current) from exc
 
 
+def reject_traversal_parts(path: Path, *, message: str = "artifact path escapes owned run directory") -> None:
+    if any(part == ".." for part in path.parts):
+        raise CompileError("ERR_OUT_PATH_UNSAFE", message, path=path)
+
+
 def ensure_contained_path(root: Path, path: Path) -> None:
     root = root.resolve(strict=False)
+    reject_traversal_parts(path)
     target = path if path.is_absolute() else root / path
+    resolved_target = target.resolve(strict=False)
     try:
-        target.relative_to(root)
+        resolved_target.relative_to(root)
     except ValueError as exc:
         raise CompileError("ERR_OUT_PATH_UNSAFE", "artifact path escapes owned run directory", path=target) from exc
+
+
+def safe_descendant_path(root: Path, relative_path: str | Path, *, message: str = "path escapes owned directory") -> Path:
+    relative = Path(relative_path)
+    if relative.is_absolute():
+        raise CompileError("ERR_OUT_PATH_UNSAFE", message, path=relative)
+    reject_traversal_parts(relative, message=message)
+    target = root / relative
+    ensure_contained_path(root, target)
+    return target
 
 
 def ensure_safe_artifact_parent(root: Path, path: Path) -> None:
@@ -621,6 +638,25 @@ def snapshot_input(label: str, index: int, plan: dict[str, Any], plan_path: Path
 
 def input_snapshot_hash(input_snapshots: list[dict[str, Any]]) -> str:
     return canonical_hash(sorted(input_snapshots, key=lambda item: item["input_id"]))
+
+
+def valid_input_snapshot(item: Any) -> bool:
+    if not isinstance(item, dict):
+        return False
+    required = {
+        "input_id": str,
+        "source_index": int,
+        "input_label": str,
+        "input_kind": str,
+        "normalized_value": str,
+        "exists_at_compile_time": bool,
+        "snapshot_entries": list,
+        "hash": str,
+    }
+    for key, expected_type in required.items():
+        if key not in item or not isinstance(item[key], expected_type):
+            return False
+    return all(isinstance(entry, dict) for entry in item["snapshot_entries"])
 
 
 def build_packet(
@@ -1145,7 +1181,7 @@ def resume_run(run_dir: Path) -> dict[str, Any]:
         if actual != expected:
             invalidators.append(hash_invalidator("packet", PACKET_ID, expected, actual, "packet hash changed"))
         stored_inputs = packet.get("input_snapshots", [])
-        if isinstance(stored_inputs, list) and all(isinstance(item, dict) and "input_id" in item for item in stored_inputs):
+        if isinstance(stored_inputs, list) and all(valid_input_snapshot(item) for item in stored_inputs):
             input_actual = input_snapshot_hash(stored_inputs)
             input_expected = snapshots["input_snapshot_hashes"].get(PACKET_ID)
             if input_actual != input_expected:
@@ -1154,6 +1190,7 @@ def resume_run(run_dir: Path) -> dict[str, Any]:
             input_expected = snapshots["input_snapshot_hashes"].get(PACKET_ID)
             stored_inputs = []
             invalidators.append(hash_invalidator("input", PACKET_ID, input_expected, None, "packet input snapshots are malformed"))
+            packet = None
         if isinstance(plan, dict):
             recomputed_inputs = [
                 snapshot_input(label, index, plan, source_plan.resolve(strict=False))
@@ -1284,10 +1321,16 @@ def write_fixture_plan(temp_root: Path, fixture: dict[str, Any]) -> Path:
     if fixture.get("mutation"):
         plan = mutate_plan(plan, fixture["mutation"])
         mutated_path = temp_root / f"{fixture['id']}.workflow.plan.json"
-        write_json_atomic(mutated_path, plan)
+        write_json_atomic(mutated_path, plan, root=temp_root)
+        if fixture.get("input_symlink_parent"):
+            symlink_target = temp_root / f"{fixture['id']}-input-target"
+            symlink_target.mkdir(exist_ok=True)
+            symlink_path = temp_root / fixture["input_symlink_parent"]
+            if not symlink_path.exists():
+                symlink_path.symlink_to(symlink_target, target_is_directory=True)
         for entry in fixture.get("input_files", []):
-            input_path = mutated_path.parent / entry["path"]
-            write_text_atomic(input_path, entry["content"])
+            input_path = safe_descendant_path(temp_root, entry["path"], message="fixture input path escapes fixture plan directory")
+            write_text_atomic(input_path, entry["content"], root=temp_root)
         return mutated_path
     return plan_path
 
@@ -1410,16 +1453,16 @@ def run_fixture(fixture: dict[str, Any], suite_dir: Path, temp_root: Path) -> di
             result = compile_plan(plan_path, fixture_run_dir(suite_dir, fixture_id), run_id=f"{suite_dir.name}/{fixture_id}", mode="fixture")
             check_fixture_result(fixture, result)
         elif fixture_type == "error":
-            plan_path = write_fixture_plan(temp_root, fixture)
-            out = Path(fixture.get("out_override", fixture_run_dir(suite_dir, fixture_id)))
-            if fixture.get("make_symlink"):
-                target = suite_dir / f"{fixture_id}-target"
-                target.mkdir(parents=True, exist_ok=True)
-                link = suite_dir / f"{fixture_id}-link"
-                if not link.exists():
-                    link.symlink_to(target, target_is_directory=True)
-                out = link / "run"
             try:
+                plan_path = write_fixture_plan(temp_root, fixture)
+                out = Path(fixture.get("out_override", fixture_run_dir(suite_dir, fixture_id)))
+                if fixture.get("make_symlink"):
+                    target = suite_dir / f"{fixture_id}-target"
+                    target.mkdir(parents=True, exist_ok=True)
+                    link = suite_dir / f"{fixture_id}-link"
+                    if not link.exists():
+                        link.symlink_to(target, target_is_directory=True)
+                    out = link / "run"
                 compile_plan(plan_path, out, run_id=f"{suite_dir.name}/{fixture_id}", mode="fixture")
             except CompileError as exc:
                 if exc.code != fixture["expected_error"]:
@@ -1486,6 +1529,11 @@ def mutate_run_artifact(run_dir: Path, plan_path: Path, mutation: str) -> None:
     elif mutation == "packet_array":
         path = run_dir / "packets" / "001-first-slice.packet.json"
         write_text_atomic(path, "[]\n")
+    elif mutation == "packet_malformed_inputs":
+        path = run_dir / "packets" / "001-first-slice.packet.json"
+        data = json.loads(path.read_text())
+        data["input_snapshots"] = [{"input_id": "input-0000-malformed"}]
+        write_json_atomic(path, data)
     elif mutation == "plan_snapshot_null":
         path = run_dir / "plan.snapshot.json"
         write_text_atomic(path, "null\n")
@@ -1510,6 +1558,11 @@ def mutate_run_artifact(run_dir: Path, plan_path: Path, mutation: str) -> None:
         data = json.loads(path.read_text())
         data["plan_hash"] = "0" * 64
         data["source_plan_hash"] = "1" * 64
+        write_json_atomic(path, data)
+    elif mutation == "status_handoff_traversal":
+        path = run_dir / "status.json"
+        data = json.loads(path.read_text())
+        data["snapshots"]["handoff_schema_hashes"]["../../outside"] = "0" * 64
         write_json_atomic(path, data)
     elif mutation == "run_array":
         write_text_atomic(run_dir / "run.json", "[]\n")
@@ -1601,14 +1654,16 @@ def evaluate_manifest(manifest_path: Path, out_dir: Path) -> dict[str, Any]:
         skipped == 0
         and not invalid_fixture_ids
         and not required_duplicates
-        and not (set(duplicate) & required_set)
+        and not duplicate
         and not required_invalid
         and required_set <= passed_required
         and not required_failures
     )
     summary = {
         "suite_id": suite_id,
-        "fixture_count": len(required),
+        "fixture_count": len(fixtures),
+        "required_fixture_count": len(required),
+        "required_passed": len(passed_required),
         "passed": passed,
         "failed": failed,
         "skipped": skipped,
@@ -1641,8 +1696,37 @@ def self_test() -> None:
         optional_manifest_path = tmp_path / "optional-failure-manifest.json"
         write_json_atomic(optional_manifest_path, optional_failure_manifest)
         optional_summary = evaluate_manifest(optional_manifest_path, tmp_path / "optional-failure")
-        if optional_summary["decision"] != "keep" or optional_summary["failed"] != 1:
+        if (
+            optional_summary["decision"] != "keep"
+            or optional_summary["fixture_count"] != 2
+            or optional_summary["required_fixture_count"] != 1
+            or optional_summary["required_passed"] != 1
+            or optional_summary["passed"] != 1
+            or optional_summary["failed"] != 1
+        ):
             raise CompileError("ERR_SELF_TEST_WRONG_REASON", "optional fixture failure changed required keep decision")
+        duplicate_optional_manifest = {
+            "suite_id": "duplicate-optional",
+            "fixtures": [
+                fixtures["positive-ready-readonly"],
+                {**fixtures["positive-repo-migration"], "id": "duplicate-optional-fixture"},
+                {**fixtures["positive-repo-migration"], "id": "duplicate-optional-fixture"},
+            ],
+            "required_fixture_ids": ["positive-ready-readonly"],
+        }
+        duplicate_optional_path = tmp_path / "duplicate-optional-manifest.json"
+        duplicate_optional_out = tmp_path / "duplicate-optional"
+        write_json_atomic(duplicate_optional_path, duplicate_optional_manifest)
+        try:
+            evaluate_manifest(duplicate_optional_path, duplicate_optional_out)
+        except CompileError as exc:
+            if exc.code != "ERR_PLAN_INVALID":
+                raise
+        else:
+            raise CompileError("ERR_SELF_TEST_WRONG_REASON", "duplicate optional fixture ID did not kill manifest")
+        duplicate_summary = json.loads((duplicate_optional_out / "summary.json").read_text())
+        if duplicate_summary["decision"] != "kill" or duplicate_summary["fixture_count"] != 3:
+            raise CompileError("ERR_SELF_TEST_WRONG_REASON", "duplicate optional fixture summary was not fatal and complete")
         invalid_id_manifest = {
             "suite_id": "invalid-id",
             "fixtures": [fixtures["positive-ready-readonly"], {**fixtures["positive-repo-migration"], "id": "../escape"}],
@@ -1663,7 +1747,7 @@ def self_test() -> None:
             raise CompileError("ERR_SELF_TEST_WRONG_REASON", "invalid fixture ID summary did not record kill")
         symlink_root = tmp_path / "symlink-write"
         prepare_owned_dir(symlink_root, "symlink-write", "fixture", clear=True)
-        symlink_target = tmp_path / "symlink-target"
+        symlink_target = symlink_root / "packets-target"
         symlink_target.mkdir()
         (symlink_root / "packets").symlink_to(symlink_target, target_is_directory=True)
         try:
