@@ -1,5 +1,10 @@
 {
   "fixture_id": "pos-cross-source-research",
+  "packet_sha256": {
+    "blueprint.md": "d55f579008415741a3ea8720af127eeb7171b710cf99a05a3c643ff94e3cb6c1",
+    "original prompt": "96f4924745a39764d8a4cfa287ffd3c99ebe15be94d968bef4fb28d5ceca5d39",
+    "workflow.plan.json": "11587b5c64424b0801f2ae1dc651be7556e71f8aaef89ff43299c3c5d155be66"
+  },
   "producer": "dynamic-workflow-designer",
   "raw_kind": "workflow-output",
   "rendered_blueprint": "# pos-cross-source-research\n\nObjective: Coordinate cross-source research and filter claims through independent source verification.\nActivation: activate (The prompt needs a reusable artifact with downstream handoffs, verification, and gated execution.)\nPatterns: Parallel Fan-Out / Fan-In, Adversarial Verify, Judge Panel, Resume And Cache\n\n## First Slice\n\nDefine the source classes, claim schema, and freshness constraints before collecting evidence.\n\nCompletion check: inventory validates and every gap is either resolved or recorded\n\n## Risk Gates\n\n- write action: stop before writing and ask for approval\n- shell action: stop before shell use and ask for approval\n- network action: stop before network use and ask for approval\n- external message action: stop before sending external messages and ask for approval\n- paid external API use: stop before paid external API use and ask for approval\n",

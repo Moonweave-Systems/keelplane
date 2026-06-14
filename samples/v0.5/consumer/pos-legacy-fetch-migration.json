@@ -32,6 +32,12 @@
       "risk_gates": "risk_gates: write action; shell action; network action; external message action; public API change",
       "safe_defaults": "safe_defaults: write action -> stop before writing and ask for approval; shell action -> stop before shell use and ask for approval; network action -> stop before network use and ask for approval; external message action -> stop before sending external messages and ask for approval; public API change -> stop before public API changes and ask for approval"
     },
+    "packet_sha256": {
+      "blueprint.md": "77d25dffd6c8e0f8b4fe481729ca11e3ddb18d4265aeb7f5838935f49ef680b8",
+      "original prompt": "7256d38592d3150dfa2736b24196bc3465d6ebff6b4ff41cb05ddb4c51485063",
+      "repository path": "332188c0631c92c0256f6852523b981b4d543a29132fd475e00d61aecabe6788",
+      "workflow.plan.json": "131b84b7b4cbf9ddb5e086bd98a867f73948619df700d6ee715549b6cf3568a8"
+    },
     "reviewer_note": "Blinded sample reviewer identified the first slice, required inputs, forbidden actions, gates, and safe defaults from the supplied packet only.",
     "run_kind": "blinded-sample-review",
     "supplied_inputs": [

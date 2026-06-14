@@ -1,5 +1,10 @@
 {
   "fixture_id": "border-small-migration",
+  "packet_sha256": {
+    "blueprint.md": "4f7f494a8d2c1387b8eb5287e82021146f76a9cc02b6e47bd41a2a93b3ab0d9e",
+    "original prompt": "81f143c5966be05f7034dd156236fd0d7fb90c9b362395bb5df00fce1b038899",
+    "workflow.plan.json": "df9a1e4e593f9047d84b762811c738b1c6987f50d7f4848ef1b45ab96966eff5"
+  },
   "producer": "dynamic-workflow-designer",
   "raw_kind": "workflow-output",
   "rendered_blueprint": "# border-small-migration\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (Twelve call sites in one package need bounded implementation routing, not dynamic workflow design.)\nPatterns: none\n\n## First Slice\n\nUse workflow-router instead of dynamic-workflow-designer for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- migration source edit: stop before migration source edits and ask for approval\n",

@@ -52,6 +52,34 @@ def parse_simple_frontmatter(text: str) -> dict[str, Any]:
     return result
 
 
+def parse_simple_agent_yaml(text: str) -> dict[str, dict[str, str]]:
+    result: dict[str, dict[str, str]] = {}
+    current_section = ""
+    for line in text.splitlines():
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        if not line.startswith(" "):
+            if not line.endswith(":"):
+                raise ValidationError(f"Unsupported agents/openai.yaml line: {line}")
+            current_section = line[:-1].strip()
+            if current_section in result:
+                raise ValidationError(f"Duplicate agents/openai.yaml section: {current_section}")
+            result[current_section] = {}
+            continue
+        if not current_section:
+            raise ValidationError("agents/openai.yaml key appears before a section")
+        stripped = line.strip()
+        if ":" not in stripped:
+            raise ValidationError(f"Unsupported agents/openai.yaml line: {line}")
+        key, value = stripped.split(":", 1)
+        result[current_section][key.strip()] = value.strip().strip("\"'")
+    return result
+
+
+def title_from_skill_name(name: str) -> str:
+    return " ".join(part.capitalize() for part in name.split("-"))
+
+
 def validate_skill(root: Path) -> None:
     for rel_path in REQUIRED_FILES:
         path = root / rel_path
@@ -80,6 +108,21 @@ def validate_skill(root: Path) -> None:
     if len(description.split()) < 10:
         raise ValidationError("Skill description is too short to route reliably")
 
+    agent_config = parse_simple_agent_yaml((root / "agents" / "openai.yaml").read_text())
+    interface = agent_config.get("interface")
+    if not interface:
+        raise ValidationError("agents/openai.yaml missing interface section")
+    display_name = interface.get("display_name", "")
+    if display_name != title_from_skill_name(name):
+        raise ValidationError("agents/openai.yaml display_name does not match skill name")
+    default_prompt = interface.get("default_prompt", "")
+    if f"${name}" not in default_prompt:
+        raise ValidationError("agents/openai.yaml default_prompt must reference the skill")
+    short_description = interface.get("short_description", "")
+    for term in ["workflow", "design"]:
+        if term not in short_description.lower():
+            raise ValidationError("agents/openai.yaml short_description does not match skill purpose")
+
 
 def self_test() -> None:
     good = "---\nname: sample-skill\ndescription: This sample skill has enough words to route a realistic request.\n---\n"
@@ -92,6 +135,9 @@ def self_test() -> None:
         pass
     else:
         raise ValidationError("self-test failed: missing boundary passed")
+    agent_config = parse_simple_agent_yaml('interface:\n  display_name: "Sample Skill"\n')
+    if agent_config["interface"]["display_name"] != "Sample Skill":
+        raise ValidationError("self-test failed: agent yaml parse mismatch")
     print("quick skill validator self-test: pass")
 
 

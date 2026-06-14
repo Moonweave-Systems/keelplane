@@ -24,7 +24,7 @@
       "supports_observation": true
     },
     "resume_guidance": {
-      "interpretation": "Preserves evidence, but does not define restartable phase outputs.",
+      "interpretation": "Does not support restartable phase outputs, despite preserving evidence.",
       "observation": "resume_guidance",
       "source_excerpt": "Preserve the strongest evidence gathered before reporting a blocker.",
       "supports_observation": false

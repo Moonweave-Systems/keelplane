@@ -1,5 +1,10 @@
 {
   "fixture_id": "neg-review-small-diff",
+  "packet_sha256": {
+    "blueprint.md": "8d67f1e018e9fa760b3cd345399b07fd6c63a76d374e995d52d5886884cd6d62",
+    "original prompt": "d1189e985fe1ce7caa2c8f129563dc60e63173d064922860f812eb9a424a1e66",
+    "workflow.plan.json": "2f94620c6214a52cf65edeb287eabeee08c0f8d35b0f0a3ce47eb416643b7686"
+  },
   "producer": "dynamic-workflow-designer",
   "raw_kind": "workflow-output",
   "rendered_blueprint": "# neg-review-small-diff\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (A small review needs findings-first direct review, not workflow design.)\nPatterns: none\n\n## First Slice\n\nUse direct-codex instead of dynamic-workflow-designer for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- external review publication: stop before external review publication and ask for approval\n",

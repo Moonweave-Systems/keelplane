@@ -35,7 +35,7 @@ V05_REQUIRED_TERMS = [
     "tool_permissions",
     "artifact_schema",
     "first_slice",
-    "baseline must be normalized",
+    "source-hashed normalization-failure",
     "downstream consumer protocol",
     "borderline downgrade fixtures",
     "valid downgrade artifact",

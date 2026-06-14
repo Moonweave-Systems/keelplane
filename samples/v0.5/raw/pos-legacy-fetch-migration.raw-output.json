@@ -1,5 +1,11 @@
 {
   "fixture_id": "pos-legacy-fetch-migration",
+  "packet_sha256": {
+    "blueprint.md": "77d25dffd6c8e0f8b4fe481729ca11e3ddb18d4265aeb7f5838935f49ef680b8",
+    "original prompt": "7256d38592d3150dfa2736b24196bc3465d6ebff6b4ff41cb05ddb4c51485063",
+    "repository path": "332188c0631c92c0256f6852523b981b4d543a29132fd475e00d61aecabe6788",
+    "workflow.plan.json": "131b84b7b4cbf9ddb5e086bd98a867f73948619df700d6ee715549b6cf3568a8"
+  },
   "producer": "dynamic-workflow-designer",
   "raw_kind": "workflow-output",
   "rendered_blueprint": "# pos-legacy-fetch-migration\n\nObjective: Create a resumable migration workflow for replacing legacyFetch call sites while preserving rollback and regression evidence.\nActivation: activate (The prompt needs a reusable artifact with downstream handoffs, verification, and gated execution.)\nPatterns: Pipeline, Parallel Fan-Out / Fan-In, Adversarial Verify, Human Gate, Resume And Cache\n\n## First Slice\n\nBuild the call-site inventory and classify migration batches before proposing edits.\n\nCompletion check: inventory validates and every gap is either resolved or recorded\n\n## Risk Gates\n\n- write action: stop before writing and ask for approval\n- shell action: stop before shell use and ask for approval\n- network action: stop before network use and ask for approval\n- external message action: stop before sending external messages and ask for approval\n- public API change: stop before public API changes and ask for approval\n",

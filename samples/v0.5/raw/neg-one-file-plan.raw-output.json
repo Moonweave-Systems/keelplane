@@ -1,5 +1,10 @@
 {
   "fixture_id": "neg-one-file-plan",
+  "packet_sha256": {
+    "blueprint.md": "9e91b17476695750431ba39eea40d8facc89fb7c29d0c3ea9a8391ab11219cdb",
+    "original prompt": "d4316427d9b4696746e18d71d0cf75a4dd2541d40e2b2e9677646756a197ff88",
+    "workflow.plan.json": "420c81cafcc426a1587f103289d0d228fa4f82d83ec4a64c2addba5d67b65f86"
+  },
   "producer": "dynamic-workflow-designer",
   "raw_kind": "workflow-output",
   "rendered_blueprint": "# neg-one-file-plan\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (One-file planning does not need handoffs, fan-out, or resume boundaries.)\nPatterns: none\n\n## First Slice\n\nUse simple-plan instead of dynamic-workflow-designer for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- multi-agent execution: stop before multi-agent execution and ask for approval\n",

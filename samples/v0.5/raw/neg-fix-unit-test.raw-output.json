@@ -1,5 +1,10 @@
 {
   "fixture_id": "neg-fix-unit-test",
+  "packet_sha256": {
+    "blueprint.md": "e4f7f6c5b432796461ef64c84a08f2cdd6a29a7cde9f1392e688ef81cf5e6147",
+    "original prompt": "f8e61ddc5660e707003459711cdbd66f3cd203b102be88886d13841cbd4c3065",
+    "workflow.plan.json": "814b2a324c207c153593c305fedacca51fc342c2d3268cc5f70c0320ec083d29"
+  },
   "producer": "dynamic-workflow-designer",
   "raw_kind": "workflow-output",
   "rendered_blueprint": "# neg-fix-unit-test\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (A single failing test should be reproduced and fixed directly; no resumable multi-agent artifact is needed.)\nPatterns: none\n\n## First Slice\n\nUse direct-codex instead of dynamic-workflow-designer for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- source edit action: stop before source edits and ask for approval\n",

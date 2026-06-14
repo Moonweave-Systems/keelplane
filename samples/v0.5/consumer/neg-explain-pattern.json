@@ -29,6 +29,11 @@
       "risk_gates": "risk_gates: workflow execution",
       "safe_defaults": "safe_defaults: workflow execution -> stop before workflow execution and ask for approval"
     },
+    "packet_sha256": {
+      "blueprint.md": "fbb0a8106d5aec3cdf33889d29a382279424f15f1966a88200d373b3a905bf9c",
+      "original prompt": "32e3bb3b1b69921aa338956920b52675196c93e1bad41ce9b900bd62079ef8d8",
+      "workflow.plan.json": "9018bc60f6f5584e280e1fd61151e1f599aef3f22a6f308c9fb04d821de24945"
+    },
     "reviewer_note": "Blinded sample reviewer identified the first slice, required inputs, forbidden actions, gates, and safe defaults from the supplied packet only.",
     "run_kind": "blinded-sample-review",
     "supplied_inputs": [

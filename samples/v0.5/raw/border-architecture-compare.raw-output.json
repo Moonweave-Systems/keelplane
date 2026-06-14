@@ -1,5 +1,10 @@
 {
   "fixture_id": "border-architecture-compare",
+  "packet_sha256": {
+    "blueprint.md": "6e4f3cf6d9f1b5d9cf9fd275f4cd680c0e434ce1c9847df55ba341be4229cb69",
+    "original prompt": "bea821b09bee16bea384f1f72b1a208ee0bad17c9ae5091a354accef4ab54723",
+    "workflow.plan.json": "78a194bf7fad357d5f2a65aec142df4a7b254f2e7c0ff45456659da1285e9713"
+  },
   "producer": "dynamic-workflow-designer",
   "raw_kind": "workflow-output",
   "rendered_blueprint": "# border-architecture-compare\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (No downstream consumer or resumable execution is expected; use the router or a compact comparison.)\nPatterns: none\n\n## First Slice\n\nUse workflow-router instead of dynamic-workflow-designer for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- implementation decision: stop before implementation decisions and ask for approval\n",

@@ -104,7 +104,8 @@
         ],
         "required_thresholds": [
           "multi-surface-fanout"
-        ]
+        ],
+        "requires_repository_path": true
       },
       "id": "pos-api-auth-audit",
       "prompt_path": "fixtures/v0.5/prompts/pos-api-auth-audit.txt",
@@ -128,7 +129,8 @@
         ],
         "required_thresholds": [
           "resumable-handoffs"
-        ]
+        ],
+        "requires_repository_path": true
       },
       "id": "pos-legacy-fetch-migration",
       "prompt_path": "fixtures/v0.5/prompts/pos-legacy-fetch-migration.txt",
@@ -150,7 +152,8 @@
         ],
         "required_thresholds": [
           "downstream-consumer"
-        ]
+        ],
+        "requires_repository_path": true
       },
       "id": "pos-unsupported-claim-audit",
       "prompt_path": "fixtures/v0.5/prompts/pos-unsupported-claim-audit.txt",
@@ -173,7 +176,8 @@
         ],
         "required_thresholds": [
           "multi-surface-fanout"
-        ]
+        ],
+        "requires_repository_path": false
       },
       "id": "pos-cross-source-research",
       "prompt_path": "fixtures/v0.5/prompts/pos-cross-source-research.txt",
@@ -191,7 +195,8 @@
         "required_risk_gates": [
           "source edit"
         ],
-        "required_thresholds": []
+        "required_thresholds": [],
+        "requires_repository_path": false
       },
       "id": "neg-fix-unit-test",
       "prompt_path": "fixtures/v0.5/prompts/neg-fix-unit-test.txt",
@@ -209,7 +214,8 @@
         "required_risk_gates": [
           "external review"
         ],
-        "required_thresholds": []
+        "required_thresholds": [],
+        "requires_repository_path": false
       },
       "id": "neg-review-small-diff",
       "prompt_path": "fixtures/v0.5/prompts/neg-review-small-diff.txt",
@@ -227,7 +233,8 @@
         "required_risk_gates": [
           "multi-agent"
         ],
-        "required_thresholds": []
+        "required_thresholds": [],
+        "requires_repository_path": false
       },
       "id": "neg-one-file-plan",
       "prompt_path": "fixtures/v0.5/prompts/neg-one-file-plan.txt",
@@ -245,7 +252,8 @@
         "required_risk_gates": [
           "workflow execution"
         ],
-        "required_thresholds": []
+        "required_thresholds": [],
+        "requires_repository_path": false
       },
       "id": "neg-explain-pattern",
       "prompt_path": "fixtures/v0.5/prompts/neg-explain-pattern.txt",
@@ -263,7 +271,8 @@
         "required_risk_gates": [
           "multi-agent"
         ],
-        "required_thresholds": []
+        "required_thresholds": [],
+        "requires_repository_path": false
       },
       "id": "border-one-service-auth-audit",
       "prompt_path": "fixtures/v0.5/prompts/border-one-service-auth-audit.txt",
@@ -281,7 +290,8 @@
         "required_risk_gates": [
           "migration source edit"
         ],
-        "required_thresholds": []
+        "required_thresholds": [],
+        "requires_repository_path": false
       },
       "id": "border-small-migration",
       "prompt_path": "fixtures/v0.5/prompts/border-small-migration.txt",
@@ -299,7 +309,8 @@
         "required_risk_gates": [
           "implementation decision"
         ],
-        "required_thresholds": []
+        "required_thresholds": [],
+        "requires_repository_path": false
       },
       "id": "border-architecture-compare",
       "prompt_path": "fixtures/v0.5/prompts/border-architecture-compare.txt",
@@ -323,7 +334,8 @@
         ],
         "required_thresholds": [
           "downstream-consumer"
-        ]
+        ],
+        "requires_repository_path": true
       },
       "id": "meta-runtime-design",
       "prompt_path": "fixtures/v0.5/prompts/meta-runtime-design.txt",

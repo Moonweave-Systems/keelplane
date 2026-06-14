@@ -29,6 +29,11 @@
       "risk_gates": "risk_gates: external review publication",
       "safe_defaults": "safe_defaults: external review publication -> stop before external review publication and ask for approval"
     },
+    "packet_sha256": {
+      "blueprint.md": "8d67f1e018e9fa760b3cd345399b07fd6c63a76d374e995d52d5886884cd6d62",
+      "original prompt": "d1189e985fe1ce7caa2c8f129563dc60e63173d064922860f812eb9a424a1e66",
+      "workflow.plan.json": "2f94620c6214a52cf65edeb287eabeee08c0f8d35b0f0a3ce47eb416643b7686"
+    },
     "reviewer_note": "Blinded sample reviewer identified the first slice, required inputs, forbidden actions, gates, and safe defaults from the supplied packet only.",
     "run_kind": "blinded-sample-review",
     "supplied_inputs": [

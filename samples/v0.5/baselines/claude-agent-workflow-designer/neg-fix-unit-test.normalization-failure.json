@@ -30,7 +30,7 @@
       "supports_observation": true
     },
     "safety_gates": {
-      "interpretation": "Mentions safety gates, but lacks V0.5 safe-default approval gates.",
+      "interpretation": "Does not support V0.5 safe-default approval gates, despite mentioning safety gates.",
       "observation": "safety_gates",
       "source_excerpt": "You need validation loops for quality or safety gates",
       "supports_observation": false
