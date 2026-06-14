@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SKIP_DIRS = {".git", ".pytest_cache", ".ruff_cache", "__pycache__", "out"}
 SECRET_PATTERN = re.compile(
-    r"(?i)['\"]?(api[_-]?key|secret|token|password)['\"]?\s*[:=]\s*['\"][^'\"]{8,}|"
+    r"(?i)['\"]?(api[_-]?key|secret|token|password)['\"]?\s*[:=]\s*['\"]?[^'\"\s]{8,}|"
     r"-----BEGIN (RSA|OPENSSH) PRIVATE KEY-----"
 )
 PLACEHOLDER_PATTERN = re.compile(r"T[O]DO|T[B]D|PLACE[H]OLDER|FIX[M]E")
@@ -84,6 +84,16 @@ def self_test() -> None:
             raise TextCheckError("self-test failed: .env secret file passed")
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
+        env_secret = "API_" + "KEY=1234567890abcdef"
+        (root / ".env").write_text(env_secret + "\n")
+        try:
+            check_files(root)
+        except TextCheckError:
+            pass
+        else:
+            raise TextCheckError("self-test failed: unquoted .env secret file passed")
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
         shell_secret = "api_" + 'key="1234567890abcdef"'
         (root / "deploy.sh").write_text(shell_secret + "\n")
         try:
@@ -92,6 +102,16 @@ def self_test() -> None:
             pass
         else:
             raise TextCheckError("self-test failed: shell secret file passed")
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        shell_secret = "export API_" + "KEY=1234567890abcdef"
+        (root / "deploy.sh").write_text(shell_secret + "\n")
+        try:
+            check_files(root)
+        except TextCheckError:
+            pass
+        else:
+            raise TextCheckError("self-test failed: exported shell secret file passed")
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
         json_secret = '{"pass' + 'word": "1234567890abcdef"}\n'
