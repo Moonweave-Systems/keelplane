@@ -276,7 +276,9 @@ def activation_interpretation_is_meaningful(interpretation: str) -> bool:
     if any(term in normalized for term in VACUOUS_INTERPRETATION_TERMS):
         return False
     routes_or_describes = "routes" in normalized or "describes" in normalized
-    schema_boundary = "schema" in normalized and ("does not" in normalized or "not " in normalized)
+    schema_boundary = "schema" in normalized and any(
+        term in normalized for term in ["does not", "not ", "fails to", "cannot", "lacks"]
+    )
     decision_boundary = any(term in normalized for term in ["decide", "emit", "artifact"])
     return routes_or_describes and schema_boundary and decision_boundary
 
@@ -428,6 +430,8 @@ def validate_patterns(plan: dict[str, Any], expected: dict[str, Any] | None) -> 
     valid_patterns = canonical_patterns()
     patterns = plan["patterns"]
     require(isinstance(patterns, list), "patterns must be a list")
+    activated = plan["activation"]["decision"] == "activate"
+    require(patterns or not activated, "activated plans need patterns")
     for pattern in patterns:
         require(pattern in valid_patterns, f"unknown pattern: {pattern}")
     if expected:
@@ -734,6 +738,7 @@ def validate_budget_resume_execution(plan: dict[str, Any], activated: bool, expe
     for key in ["cacheable_outputs", "invalidators", "restart_points"]:
         require(isinstance(resume[key], list), f"resume.{key} must be a list")
     require(resume["cacheable_outputs"] or not activated, "activated plans need cacheable outputs")
+    require(resume["invalidators"] or not activated, "activated plans need invalidators")
     require(resume["restart_points"] or not activated, "activated plans need restart points")
 
     execution = plan["execution_path"]
@@ -1255,6 +1260,8 @@ def validate_decision_doc(summary: dict[str, Any], decision_path: Path | None = 
     decision_path = ROOT / "docs" / "v0.5-decision.md" if decision_path is None else decision_path
     raw_text = decision_path.read_text()
     text = " ".join(raw_text.lower().split())
+    sentences = [" ".join(sentence.split()) for sentence in re.split(r"(?<=[.!?])\s+", raw_text.lower())]
+    negation_terms = ["does not", "do not", "did not", "not ", "never", "without"]
     forbidden_boundary_claims = [
         r"\bfresh baseline re-execution\b",
         r"\bfreshly rechecked\b.{0,120}\bsibling baseline\b",
@@ -1277,11 +1284,14 @@ def validate_decision_doc(summary: dict[str, Any], decision_path: Path | None = 
         r"\bclaims runtime execution\b",
         r"\bclaims live model generation\b",
     ]
-    for pattern in forbidden_boundary_claims:
-        require(
-            not re.search(pattern, text),
-            "docs/v0.5-decision.md contains contradictory boundary claim",
-        )
+    for sentence in sentences:
+        if any(term in sentence for term in negation_terms):
+            continue
+        for pattern in forbidden_boundary_claims:
+            require(
+                not re.search(pattern, sentence),
+                "docs/v0.5-decision.md contains contradictory boundary claim",
+            )
 
     decisions = re.findall(r"(?i)\bdecision:\s*([a-z0-9-]+)\b", raw_text)
     require(decisions == [summary["decision"]], "docs/v0.5-decision.md has contradictory decision values")
@@ -1743,6 +1753,14 @@ def self_test() -> None:
         pass
     else:
         raise EvaluationError("self-test failed: unknown pattern passed")
+    bad = json.loads(json.dumps(active))
+    bad["patterns"] = []
+    try:
+        validate_plan(bad, {"activation": "activate"})
+    except EvaluationError:
+        pass
+    else:
+        raise EvaluationError("self-test failed: empty activated patterns passed")
 
     bad_worker = json.loads(json.dumps(active))
     bad_worker["workers"][0]["tool_permissions"]["shell"] = "false"
@@ -2172,6 +2190,14 @@ def self_test() -> None:
         pass
     else:
         raise EvaluationError("self-test failed: unknown cacheable output passed")
+    bad_resume = json.loads(json.dumps(active))
+    bad_resume["resume"]["invalidators"] = []
+    try:
+        validate_plan(bad_resume, {"activation": "activate"})
+    except EvaluationError:
+        pass
+    else:
+        raise EvaluationError("self-test failed: empty resume invalidators passed")
     bad_first_slice = json.loads(json.dumps(active))
     bad_first_slice["execution_path"]["first_slice"]["inputs"].append("repository path")
     try:
@@ -2379,6 +2405,11 @@ def self_test() -> None:
         },
     }
     score_baseline_failure(baseline_failure, {"activation": "activate"}, source_text)
+    equivalent_baseline_failure = json.loads(json.dumps(baseline_failure))
+    equivalent_baseline_failure["observation_evidence"]["activation_decision"]["interpretation"] = (
+        "Routes requests, but fails to emit a fixture-specific schema activation artifact."
+    )
+    score_baseline_failure(equivalent_baseline_failure, {"activation": "activate"}, source_text)
     bad_baseline_failure = json.loads(json.dumps(baseline_failure))
     bad_baseline_failure["observation_evidence"]["activation_decision"]["interpretation"] = "Activation route schema banana."
     try:
@@ -2630,6 +2661,29 @@ def self_test() -> None:
         "The consumer evidence format is not a live blinded-review runner.\n"
         "V0.5 does not claim runtime execution or live model generation from `SKILL.md`. "
         "It also does not claim fresh baseline execution.\n"
+    )
+    validate_decision_doc(exact_margin_summary, tmp_decision)
+    tmp_decision.write_text(
+        "# Decision\n\n"
+        "Decision: keep\n\n"
+        "- 12 fixtures evaluated.\n"
+        "- Candidate keep/kill average: 1.8.\n"
+        "- `workflow-router-skill` baseline average: 1.5.\n"
+        "- `claude-agent-workflow-designer` baseline average: 1.0.\n"
+        "The candidate aggregate keep/kill average beats each baseline aggregate by at least "
+        "20 percent across the evaluator's keep/kill metric set. "
+        "V0.5 does not claim a per-metric margin.\n"
+        "- Four positive fixtures activate.\n"
+        "- Four negative fixtures downgrade.\n"
+        "- Three borderline fixtures downgrade to `workflow-router`.\n"
+        "- The meta/runtime fixture activates to a backlog-oriented execution path.\n"
+        "- Every fixture has a schema-valid artifact or valid downgrade artifact.\n"
+        "- `workflow-router-skill`: source-hashed normalization failure.\n"
+        "- `claude-agent-workflow-designer`: source-hashed normalization failure.\n"
+        "The consumer evidence format is not a live blinded-review runner.\n"
+        "V0.5 does not claim runtime execution or live model generation from `SKILL.md`. "
+        "It also does not claim fresh baseline execution. "
+        "It does not use runtime-backed evidence from sibling baselines.\n"
     )
     validate_decision_doc(exact_margin_summary, tmp_decision)
     tmp_decision.write_text(
