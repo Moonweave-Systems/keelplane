@@ -688,20 +688,35 @@ def validate_risk_gates(plan: dict[str, Any], expected: dict[str, Any] | None) -
                 any(contains_phrase(trigger, required) for trigger in triggers),
                 f"missing required risk gate: {required}",
             )
+    required_gate_terms: set[str] = set()
+    for worker in plan["workers"]:
+        permissions = worker["tool_permissions"]
+        if permissions["write"]:
+            required_gate_terms.add("write")
+        if permissions["shell"]:
+            required_gate_terms.add("shell")
+        if permissions["network"]:
+            required_gate_terms.add("network")
+        if permissions["mcp_connectors"]:
+            required_gate_terms.add("external message")
+        for escalation in permissions["requires_escalation_for"]:
+            required_gate_terms.add(str(escalation).replace("-", " "))
+    for surface in plan["surfaces"]:
+        if surface["access_mode"] != "read-only":
+            required_gate_terms.add("write")
     if expected:
-        required_gate_terms: set[str] = set()
         for required in expected.get("required_risk_gates", []):
             required_gate_terms.add(str(required).replace("-", " "))
-        for term in sorted(required_gate_terms):
-            matches = [gate for gate in gates if gate_matches_term(gate, term)]
-            require(matches, f"missing risk gate for {term}")
-            require(
-                any(
-                    sum(gate_matches_term(gate, other) for other in required_gate_terms) == 1
-                    for gate in matches
-                ),
-                f"risk gate for {term} must be separate from other required permission gates",
-            )
+    for term in sorted(required_gate_terms):
+        matches = [gate for gate in gates if gate_matches_term(gate, term)]
+        require(matches, f"missing risk gate for {term}")
+        require(
+            any(
+                sum(gate_matches_term(gate, other) for other in required_gate_terms) == 1
+                for gate in matches
+            ),
+            f"risk gate for {term} must be separate from other required permission gates",
+        )
 
 
 def validate_budget_resume_execution(plan: dict[str, Any], activated: bool, expected: dict[str, Any] | None) -> None:

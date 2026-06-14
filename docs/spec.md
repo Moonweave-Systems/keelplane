@@ -304,9 +304,11 @@ python scripts/evaluate_plan.py --self-test
 python scripts/evaluate_plan.py --manifest fixtures/v0.5/manifest.json --out out/v0.5
 ```
 
-When V1 implementation starts, add:
+V1 compiler checks:
 
 ```bash
+python scripts/compile_workflow.py --plan workflow.plan.json --out out/v1/<run_id>
+python scripts/compile_workflow.py --resume out/v1/<run_id>
 python scripts/compile_workflow.py --self-test
 python scripts/compile_workflow.py --manifest fixtures/v1/manifest.json --out out/v1/<suite_id>
 ```

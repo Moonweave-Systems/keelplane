@@ -349,6 +349,13 @@
       "type": "resume"
     },
     {
+      "expected_invalidator": "ERR_RESUME_STALE_PACKET",
+      "id": "resume-packet-array",
+      "mutate_artifact": "packet_array",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
       "expected_invalidator": "ERR_RESUME_STALE_PROMPT",
       "id": "resume-stale-prompt",
       "mutate_artifact": "prompt",
@@ -359,6 +366,13 @@
       "expected_invalidator": "ERR_RESUME_STALE_INPUT",
       "id": "resume-stale-input",
       "mutate_artifact": "input",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
+      "expected_invalidator": "ERR_RESUME_STALE_PLAN",
+      "id": "resume-snapshot-null",
+      "mutate_artifact": "plan_snapshot_null",
       "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
       "type": "resume"
     },
@@ -392,6 +406,20 @@
       "type": "resume"
     },
     {
+      "expected_invalidator": "ERR_RESUME_STALE_PLAN",
+      "id": "resume-stale-status-hash",
+      "mutate_artifact": "status_plan_hash",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
+      "expected_invalidator": "ERR_RESUME_STALE_GATE",
+      "id": "resume-gate-empty-object",
+      "mutate_artifact": "gate_empty_object",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
       "expected_invalidator": "ERR_RESUME_STALE_COMPILER",
       "id": "resume-stale-compiler",
       "mutate_artifact": "compiler",
@@ -402,6 +430,34 @@
       "expected_invalidator": "ERR_RESUME_MISSING_ARTIFACT",
       "id": "resume-symlink-gate",
       "mutate_artifact": "approval_symlink",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
+      "expected_invalidator": "ERR_RESUME_MISSING_ARTIFACT",
+      "id": "resume-packets-dir-symlink",
+      "mutate_artifact": "packets_dir_symlink",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
+      "expected_error": "ERR_RESUME_MISSING_ARTIFACT",
+      "id": "resume-malformed-run",
+      "mutate_artifact": "run_array",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
+      "expected_error": "ERR_RESUME_MISSING_ARTIFACT",
+      "id": "resume-malformed-status",
+      "mutate_artifact": "status_array",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
+      "expected_error": "ERR_RESUME_MISSING_ARTIFACT",
+      "id": "resume-malformed-sentinel",
+      "mutate_artifact": "sentinel_array",
       "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
       "type": "resume"
     },
@@ -443,12 +499,20 @@
     "resume-stale-plan-snapshot",
     "resume-stale-packet",
     "resume-malformed-packet",
+    "resume-packet-array",
     "resume-stale-prompt",
     "resume-stale-input",
+    "resume-snapshot-null",
     "resume-stale-live-input",
     "resume-stale-gate",
+    "resume-stale-status-hash",
+    "resume-gate-empty-object",
     "resume-stale-compiler",
     "resume-symlink-gate",
+    "resume-packets-dir-symlink",
+    "resume-malformed-run",
+    "resume-malformed-status",
+    "resume-malformed-sentinel",
     "resume-missing-handoff"
   ],
   "suite_id": "v1-first-slice"

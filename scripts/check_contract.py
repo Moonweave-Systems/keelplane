@@ -373,8 +373,8 @@ Overclaims execution: no
 
     v1_summary = {
         "suite_id": "final",
-        "fixture_count": 36,
-        "passed": 36,
+        "fixture_count": 44,
+        "passed": 44,
         "failed": 0,
         "skipped": 0,
         "decision": "keep",
@@ -383,8 +383,8 @@ Overclaims execution: no
         "Decision: keep\n"
         "python scripts/compile_workflow.py --manifest fixtures/v1/manifest.json --out out/v1/final\n"
         "- `suite_id`: `final`\n"
-        "- `fixture_count`: 36\n"
-        "- `passed`: 36\n"
+        "- `fixture_count`: 44\n"
+        "- `passed`: 44\n"
         "- `failed`: 0\n"
         "- `skipped`: 0\n"
         "- `decision`: `keep`\n"
@@ -392,7 +392,7 @@ Overclaims execution: no
     )
     require_v1_decision_summary_text(v1_summary, good_v1_decision)
     try:
-        require_v1_decision_summary_text(v1_summary, good_v1_decision.replace("36", "35", 1))
+        require_v1_decision_summary_text(v1_summary, good_v1_decision.replace("44", "43", 1))
     except SystemExit:
         pass
     else:
@@ -462,6 +462,10 @@ def main() -> None:
             "source-hashed normalization-failure records",
             "exits nonzero",
             "docs/v0.5-decision.md",
+            "python scripts/compile_workflow.py --plan workflow.plan.json --out out/v1/<run_id>",
+            "python scripts/compile_workflow.py --resume out/v1/<run_id>",
+            "python scripts/compile_workflow.py --self-test",
+            "python scripts/compile_workflow.py --manifest fixtures/v1/manifest.json --out out/v1/<suite_id>",
         ],
     )
     require_terms(
