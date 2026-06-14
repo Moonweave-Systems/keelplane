@@ -1,0 +1,16 @@
+{
+  "baseline": "workflow-router-skill",
+  "fixture_id": "pos-api-auth-audit",
+  "normalized": false,
+  "prompt": "Design a workflow to audit every API route for missing auth across a multi-package service.",
+  "reason": "The local workflow-router output for this prompt is a routing decision, not a per-fixture workflow.plan.json artifact with worker handoffs.",
+  "scores": {
+    "activation_discipline": 1,
+    "downstream_consumer_success": 1,
+    "executable_artifact": 0,
+    "handoff_clarity": 1,
+    "resume_value": 0,
+    "safety_gating": 1,
+    "verification_strength": 1
+  }
+}

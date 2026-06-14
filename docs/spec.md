@@ -240,9 +240,12 @@ V0.5 is releasable when:
   borderline, and one meta/runtime fixture.
 - tracked candidate samples under `samples/v0.5/candidates/` validate as
   schema-valid plans or valid downgrade artifacts.
+- tracked raw outputs under `samples/v0.5/raw/` are distinct from parsed plans
+  and contain the parsed `workflow_plan` plus rendered blueprint.
+- each fixture has a blinded consumer report under `samples/v0.5/consumer/`.
 - both confirmed local baselines, `workflow-router-skill` and Claude
-  `agent-workflow-designer`, are scored through normalized artifacts or explicit
-  normalization-failure records.
+  `agent-workflow-designer`, are scored per fixture through normalized
+  artifacts or explicit normalization-failure records.
 - `python scripts/evaluate_plan.py --manifest fixtures/v0.5/manifest.json --out
   out/v0.5` regenerates scorecards, parsed plans, raw outputs, skill hashes,
   rendered blueprints, and the consumer report.

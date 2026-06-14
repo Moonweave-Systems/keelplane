@@ -1,0 +1,82 @@
+{
+  "fixture_id": "border-one-service-auth-audit",
+  "raw_kind": "workflow-output",
+  "rendered_blueprint": "# border-one-service-auth-audit\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (The work is broad but bounded to one service and one agent; route through the smaller workflow.)\nPatterns: none\n\n## First Slice\n\nUse workflow-router instead of dynamic-workflow-designer for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n",
+  "source_prompt": "Plan an auth audit for one service where one agent can inspect all routes.",
+  "workflow_plan": {
+    "activation": {
+      "decision": "downgrade",
+      "downgrade_target": "workflow-router",
+      "matched_thresholds": [],
+      "reason": "The work is broad but bounded to one service and one agent; route through the smaller workflow."
+    },
+    "assumptions": [
+      {
+        "claim": "The request lacks an exclusive V0.5 activation threshold.",
+        "verification": "Check for downstream consumer, resumable handoffs, or multi-surface fan-out before activating."
+      }
+    ],
+    "budget": {
+      "file_touch_limit": "none from this downgrade artifact",
+      "max_agents": 1,
+      "max_retries": 0,
+      "max_rounds": 1,
+      "time_box": "one direct response or routed workflow"
+    },
+    "created_by": "dynamic-workflow-designer",
+    "execution_path": {
+      "consumer": "human",
+      "first_slice": {
+        "completion_check": "no dynamic workflow artifact is needed",
+        "expected_output": "bounded response or routed workflow decision",
+        "forbidden_actions": [
+          "spawning agents",
+          "editing files",
+          "external messages"
+        ],
+        "inputs": [
+          "user prompt"
+        ],
+        "instruction": "Use workflow-router instead of dynamic-workflow-designer for this request."
+      },
+      "mode": "direct-codex"
+    },
+    "handoffs": [],
+    "objective": "Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.",
+    "parallelism": {
+      "barriers": [],
+      "concurrency_cap": 1,
+      "fan_in_rule": "No fan-in; route directly.",
+      "shape": "none"
+    },
+    "patterns": [],
+    "phases": [],
+    "plan_id": "border-one-service-auth-audit",
+    "resume": {
+      "cacheable_outputs": [],
+      "invalidators": [
+        "prompt scope changes"
+      ],
+      "restart_points": []
+    },
+    "risk_gates": [
+      {
+        "requires_user_approval": true,
+        "safe_default": "stop and re-evaluate activation before acting",
+        "trigger": "scope expands into destructive, external, or multi-agent execution"
+      }
+    ],
+    "schema_version": "0.5",
+    "source_prompt": "Plan an auth audit for one service where one agent can inspect all routes.",
+    "surfaces": [
+      {
+        "access_mode": "read-only",
+        "id": "request",
+        "kind": "document",
+        "locator": "user prompt"
+      }
+    ],
+    "verification": [],
+    "workers": []
+  }
+}

@@ -1,14 +1,88 @@
 {
   "baselines": [
     {
+      "fixture_records": {
+        "border-architecture-compare": {
+          "normalization_failure": "samples/v0.5/baselines/workflow-router-skill/border-architecture-compare.normalization-failure.json"
+        },
+        "border-one-service-auth-audit": {
+          "normalization_failure": "samples/v0.5/baselines/workflow-router-skill/border-one-service-auth-audit.normalization-failure.json"
+        },
+        "border-small-migration": {
+          "normalization_failure": "samples/v0.5/baselines/workflow-router-skill/border-small-migration.normalization-failure.json"
+        },
+        "meta-runtime-design": {
+          "normalization_failure": "samples/v0.5/baselines/workflow-router-skill/meta-runtime-design.normalization-failure.json"
+        },
+        "neg-explain-pattern": {
+          "normalization_failure": "samples/v0.5/baselines/workflow-router-skill/neg-explain-pattern.normalization-failure.json"
+        },
+        "neg-fix-unit-test": {
+          "normalization_failure": "samples/v0.5/baselines/workflow-router-skill/neg-fix-unit-test.normalization-failure.json"
+        },
+        "neg-one-file-plan": {
+          "normalization_failure": "samples/v0.5/baselines/workflow-router-skill/neg-one-file-plan.normalization-failure.json"
+        },
+        "neg-review-small-diff": {
+          "normalization_failure": "samples/v0.5/baselines/workflow-router-skill/neg-review-small-diff.normalization-failure.json"
+        },
+        "pos-api-auth-audit": {
+          "normalization_failure": "samples/v0.5/baselines/workflow-router-skill/pos-api-auth-audit.normalization-failure.json"
+        },
+        "pos-cross-source-research": {
+          "normalization_failure": "samples/v0.5/baselines/workflow-router-skill/pos-cross-source-research.normalization-failure.json"
+        },
+        "pos-legacy-fetch-migration": {
+          "normalization_failure": "samples/v0.5/baselines/workflow-router-skill/pos-legacy-fetch-migration.normalization-failure.json"
+        },
+        "pos-unsupported-claim-audit": {
+          "normalization_failure": "samples/v0.5/baselines/workflow-router-skill/pos-unsupported-claim-audit.normalization-failure.json"
+        }
+      },
       "name": "workflow-router-skill",
-      "normalization_failure": "samples/v0.5/baselines/workflow-router-skill-normalization-failure.json",
       "source_path": "../workflow-router-skill/SKILL.md"
     },
     {
+      "fixture_records": {
+        "border-architecture-compare": {
+          "normalization_failure": "samples/v0.5/baselines/claude-agent-workflow-designer/border-architecture-compare.normalization-failure.json"
+        },
+        "border-one-service-auth-audit": {
+          "normalization_failure": "samples/v0.5/baselines/claude-agent-workflow-designer/border-one-service-auth-audit.normalization-failure.json"
+        },
+        "border-small-migration": {
+          "normalization_failure": "samples/v0.5/baselines/claude-agent-workflow-designer/border-small-migration.normalization-failure.json"
+        },
+        "meta-runtime-design": {
+          "normalization_failure": "samples/v0.5/baselines/claude-agent-workflow-designer/meta-runtime-design.normalization-failure.json"
+        },
+        "neg-explain-pattern": {
+          "normalization_failure": "samples/v0.5/baselines/claude-agent-workflow-designer/neg-explain-pattern.normalization-failure.json"
+        },
+        "neg-fix-unit-test": {
+          "normalization_failure": "samples/v0.5/baselines/claude-agent-workflow-designer/neg-fix-unit-test.normalization-failure.json"
+        },
+        "neg-one-file-plan": {
+          "normalization_failure": "samples/v0.5/baselines/claude-agent-workflow-designer/neg-one-file-plan.normalization-failure.json"
+        },
+        "neg-review-small-diff": {
+          "normalization_failure": "samples/v0.5/baselines/claude-agent-workflow-designer/neg-review-small-diff.normalization-failure.json"
+        },
+        "pos-api-auth-audit": {
+          "normalization_failure": "samples/v0.5/baselines/claude-agent-workflow-designer/pos-api-auth-audit.normalization-failure.json"
+        },
+        "pos-cross-source-research": {
+          "normalization_failure": "samples/v0.5/baselines/claude-agent-workflow-designer/pos-cross-source-research.normalization-failure.json"
+        },
+        "pos-legacy-fetch-migration": {
+          "normalization_failure": "samples/v0.5/baselines/claude-agent-workflow-designer/pos-legacy-fetch-migration.normalization-failure.json"
+        },
+        "pos-unsupported-claim-audit": {
+          "normalization_failure": "samples/v0.5/baselines/claude-agent-workflow-designer/pos-unsupported-claim-audit.normalization-failure.json"
+        }
+      },
       "name": "claude-agent-workflow-designer",
-      "normalization_failure": "samples/v0.5/baselines/claude-agent-workflow-designer-normalization-failure.json",
-      "source_path": "../claude-skills/engineering/agent-workflow-designer/SKILL.md"
+      "source_path": "../../claude-skills/engineering/agent-workflow-designer/SKILL.md"
     }
   ],
   "fixtures": [
@@ -18,7 +92,6 @@
       "consumer_report": "samples/v0.5/consumer/pos-api-auth-audit.json",
       "expected": {
         "activation": "activate",
-        "consumer_score": 2,
         "required_patterns": [
           "Pipeline",
           "Adversarial Verify"
@@ -32,14 +105,15 @@
         ]
       },
       "id": "pos-api-auth-audit",
-      "prompt_path": "fixtures/v0.5/prompts/pos-api-auth-audit.txt"
+      "prompt_path": "fixtures/v0.5/prompts/pos-api-auth-audit.txt",
+      "raw_output": "samples/v0.5/raw/pos-api-auth-audit.raw-output.json"
     },
     {
       "candidate_plan": "samples/v0.5/candidates/pos-legacy-fetch-migration.workflow.plan.json",
       "category": "positive",
+      "consumer_report": "samples/v0.5/consumer/pos-legacy-fetch-migration.json",
       "expected": {
         "activation": "activate",
-        "consumer_score": 2,
         "required_patterns": [
           "Pipeline",
           "Resume And Cache"
@@ -53,14 +127,15 @@
         ]
       },
       "id": "pos-legacy-fetch-migration",
-      "prompt_path": "fixtures/v0.5/prompts/pos-legacy-fetch-migration.txt"
+      "prompt_path": "fixtures/v0.5/prompts/pos-legacy-fetch-migration.txt",
+      "raw_output": "samples/v0.5/raw/pos-legacy-fetch-migration.raw-output.json"
     },
     {
       "candidate_plan": "samples/v0.5/candidates/pos-unsupported-claim-audit.workflow.plan.json",
       "category": "positive",
+      "consumer_report": "samples/v0.5/consumer/pos-unsupported-claim-audit.json",
       "expected": {
         "activation": "activate",
-        "consumer_score": 2,
         "required_patterns": [
           "Adversarial Verify"
         ],
@@ -72,14 +147,15 @@
         ]
       },
       "id": "pos-unsupported-claim-audit",
-      "prompt_path": "fixtures/v0.5/prompts/pos-unsupported-claim-audit.txt"
+      "prompt_path": "fixtures/v0.5/prompts/pos-unsupported-claim-audit.txt",
+      "raw_output": "samples/v0.5/raw/pos-unsupported-claim-audit.raw-output.json"
     },
     {
       "candidate_plan": "samples/v0.5/candidates/pos-cross-source-research.workflow.plan.json",
       "category": "positive",
+      "consumer_report": "samples/v0.5/consumer/pos-cross-source-research.json",
       "expected": {
         "activation": "activate",
-        "consumer_score": 2,
         "required_patterns": [
           "Parallel Fan-Out / Fan-In",
           "Adversarial Verify"
@@ -92,91 +168,99 @@
         ]
       },
       "id": "pos-cross-source-research",
-      "prompt_path": "fixtures/v0.5/prompts/pos-cross-source-research.txt"
+      "prompt_path": "fixtures/v0.5/prompts/pos-cross-source-research.txt",
+      "raw_output": "samples/v0.5/raw/pos-cross-source-research.raw-output.json"
     },
     {
       "candidate_plan": "samples/v0.5/candidates/neg-fix-unit-test.workflow.plan.json",
       "category": "negative",
+      "consumer_report": "samples/v0.5/consumer/neg-fix-unit-test.json",
       "expected": {
         "activation": "downgrade",
-        "consumer_score": 2,
         "downgrade_target": "direct-codex"
       },
       "id": "neg-fix-unit-test",
-      "prompt_path": "fixtures/v0.5/prompts/neg-fix-unit-test.txt"
+      "prompt_path": "fixtures/v0.5/prompts/neg-fix-unit-test.txt",
+      "raw_output": "samples/v0.5/raw/neg-fix-unit-test.raw-output.json"
     },
     {
       "candidate_plan": "samples/v0.5/candidates/neg-review-small-diff.workflow.plan.json",
       "category": "negative",
+      "consumer_report": "samples/v0.5/consumer/neg-review-small-diff.json",
       "expected": {
         "activation": "downgrade",
-        "consumer_score": 2,
         "downgrade_target": "direct-codex"
       },
       "id": "neg-review-small-diff",
-      "prompt_path": "fixtures/v0.5/prompts/neg-review-small-diff.txt"
+      "prompt_path": "fixtures/v0.5/prompts/neg-review-small-diff.txt",
+      "raw_output": "samples/v0.5/raw/neg-review-small-diff.raw-output.json"
     },
     {
       "candidate_plan": "samples/v0.5/candidates/neg-one-file-plan.workflow.plan.json",
       "category": "negative",
+      "consumer_report": "samples/v0.5/consumer/neg-one-file-plan.json",
       "expected": {
         "activation": "downgrade",
-        "consumer_score": 2,
         "downgrade_target": "simple-plan"
       },
       "id": "neg-one-file-plan",
-      "prompt_path": "fixtures/v0.5/prompts/neg-one-file-plan.txt"
+      "prompt_path": "fixtures/v0.5/prompts/neg-one-file-plan.txt",
+      "raw_output": "samples/v0.5/raw/neg-one-file-plan.raw-output.json"
     },
     {
       "candidate_plan": "samples/v0.5/candidates/neg-explain-pattern.workflow.plan.json",
       "category": "negative",
+      "consumer_report": "samples/v0.5/consumer/neg-explain-pattern.json",
       "expected": {
         "activation": "downgrade",
-        "consumer_score": 2,
         "downgrade_target": "direct-codex"
       },
       "id": "neg-explain-pattern",
-      "prompt_path": "fixtures/v0.5/prompts/neg-explain-pattern.txt"
+      "prompt_path": "fixtures/v0.5/prompts/neg-explain-pattern.txt",
+      "raw_output": "samples/v0.5/raw/neg-explain-pattern.raw-output.json"
     },
     {
       "candidate_plan": "samples/v0.5/candidates/border-one-service-auth-audit.workflow.plan.json",
       "category": "borderline",
+      "consumer_report": "samples/v0.5/consumer/border-one-service-auth-audit.json",
       "expected": {
         "activation": "downgrade",
-        "consumer_score": 2,
         "downgrade_target": "workflow-router"
       },
       "id": "border-one-service-auth-audit",
-      "prompt_path": "fixtures/v0.5/prompts/border-one-service-auth-audit.txt"
+      "prompt_path": "fixtures/v0.5/prompts/border-one-service-auth-audit.txt",
+      "raw_output": "samples/v0.5/raw/border-one-service-auth-audit.raw-output.json"
     },
     {
       "candidate_plan": "samples/v0.5/candidates/border-small-migration.workflow.plan.json",
       "category": "borderline",
+      "consumer_report": "samples/v0.5/consumer/border-small-migration.json",
       "expected": {
         "activation": "downgrade",
-        "consumer_score": 2,
         "downgrade_target": "workflow-router"
       },
       "id": "border-small-migration",
-      "prompt_path": "fixtures/v0.5/prompts/border-small-migration.txt"
+      "prompt_path": "fixtures/v0.5/prompts/border-small-migration.txt",
+      "raw_output": "samples/v0.5/raw/border-small-migration.raw-output.json"
     },
     {
       "candidate_plan": "samples/v0.5/candidates/border-architecture-compare.workflow.plan.json",
       "category": "borderline",
+      "consumer_report": "samples/v0.5/consumer/border-architecture-compare.json",
       "expected": {
         "activation": "downgrade",
-        "consumer_score": 2,
         "downgrade_target": "workflow-router"
       },
       "id": "border-architecture-compare",
-      "prompt_path": "fixtures/v0.5/prompts/border-architecture-compare.txt"
+      "prompt_path": "fixtures/v0.5/prompts/border-architecture-compare.txt",
+      "raw_output": "samples/v0.5/raw/border-architecture-compare.raw-output.json"
     },
     {
       "candidate_plan": "samples/v0.5/candidates/meta-runtime-design.workflow.plan.json",
       "category": "meta",
+      "consumer_report": "samples/v0.5/consumer/meta-runtime-design.json",
       "expected": {
         "activation": "activate",
-        "consumer_score": 2,
         "required_patterns": [
           "Judge Panel",
           "Human Gate"
@@ -190,7 +274,8 @@
         ]
       },
       "id": "meta-runtime-design",
-      "prompt_path": "fixtures/v0.5/prompts/meta-runtime-design.txt"
+      "prompt_path": "fixtures/v0.5/prompts/meta-runtime-design.txt",
+      "raw_output": "samples/v0.5/raw/meta-runtime-design.raw-output.json"
     }
   ],
   "schema_version": "0.5"

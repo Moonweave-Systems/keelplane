@@ -429,7 +429,12 @@ def validate_budget_resume_execution(plan: dict[str, Any], activated: bool) -> N
     require(isinstance(first_slice["forbidden_actions"], list), "first_slice.forbidden_actions must be a list")
 
 
-def validate_plan(plan: dict[str, Any], expected: dict[str, Any] | None = None) -> None:
+def validate_plan(
+    plan: dict[str, Any],
+    expected: dict[str, Any] | None = None,
+    *,
+    require_dynamic_created_by: bool = True,
+) -> None:
     require_keys(
         plan,
         [
@@ -461,7 +466,7 @@ def validate_plan(plan: dict[str, Any], expected: dict[str, Any] | None = None) 
     require(non_empty_string(plan["objective"]), "objective is empty")
     validate_activation(plan, expected)
     activated = plan["activation"]["decision"] == "activate"
-    if plan["created_by"] == CREATED_BY:
+    if require_dynamic_created_by:
         require(plan["created_by"] == CREATED_BY, "candidate created_by mismatch")
     validate_surfaces(plan)
     validate_assumptions(plan, activated)
@@ -501,7 +506,11 @@ def render_blueprint(plan: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def candidate_scores(plan: dict[str, Any], expected: dict[str, Any]) -> dict[str, int]:
+def candidate_scores(
+    plan: dict[str, Any],
+    expected: dict[str, Any],
+    downstream_consumer_success: int,
+) -> dict[str, int]:
     decision_ok = plan["activation"]["decision"] == expected["activation"]
     gates_ok = all(
         required.lower() in " ".join(g["trigger"].lower() for g in plan["risk_gates"])
@@ -515,7 +524,7 @@ def candidate_scores(plan: dict[str, Any], expected: dict[str, Any]) -> dict[str
         "verification_strength": 2 if plan["verification"] else (1 if not is_activate else 0),
         "safety_gating": 2 if gates_ok else 1,
         "resume_value": 2 if plan["resume"]["restart_points"] else (1 if not is_activate else 0),
-        "downstream_consumer_success": int(expected.get("consumer_score", 2)),
+        "downstream_consumer_success": downstream_consumer_success,
     }
 
 
@@ -529,24 +538,37 @@ def validate_scores(scores: dict[str, Any], where: str) -> dict[str, int]:
     return clean
 
 
-def load_baseline(entry: dict[str, Any], expected: dict[str, Any]) -> dict[str, Any]:
+def load_baseline(
+    entry: dict[str, Any],
+    fixture_id: str,
+    prompt_text: str,
+    expected: dict[str, Any],
+) -> dict[str, Any]:
     name = entry["name"]
-    if entry.get("normalized_plan"):
-        plan_path = ROOT / entry["normalized_plan"]
+    source_path = ROOT / entry["source_path"]
+    require(source_path.exists(), f"baseline source not found: {entry['source_path']}")
+    fixture_records = entry.get("fixture_records")
+    require(isinstance(fixture_records, dict), f"baseline {name} must use fixture_records")
+    require(fixture_id in fixture_records, f"baseline {name} missing fixture record for {fixture_id}")
+    record = fixture_records[fixture_id]
+    if record.get("normalized_plan"):
+        plan_path = ROOT / record["normalized_plan"]
         plan = read_json(plan_path)
-        validate_plan(plan, expected)
-        scores = candidate_scores(plan, expected)
+        validate_plan(plan, expected, require_dynamic_created_by=False)
+        scores = candidate_scores(plan, expected, downstream_consumer_success=1)
         return {
             "name": name,
             "normalized": True,
-            "artifact_path": entry["normalized_plan"],
+            "artifact_path": record["normalized_plan"],
             "normalization_failure": None,
             "scores": scores,
         }
-    if entry.get("normalization_failure"):
-        failure_path = ROOT / entry["normalization_failure"]
+    if record.get("normalization_failure"):
+        failure_path = ROOT / record["normalization_failure"]
         failure = read_json(failure_path)
         require(failure.get("baseline") == name, f"{failure_path} baseline mismatch")
+        require(failure.get("fixture_id") == fixture_id, f"{failure_path} fixture mismatch")
+        require(failure.get("prompt") == prompt_text, f"{failure_path} prompt mismatch")
         scores = validate_scores(failure["scores"], f"{name}.scores")
         return {
             "name": name,
@@ -556,7 +578,44 @@ def load_baseline(entry: dict[str, Any], expected: dict[str, Any]) -> dict[str, 
             "reason": failure.get("reason", ""),
             "scores": scores,
         }
-    raise EvaluationError(f"baseline {name} lacks normalized_plan or normalization_failure")
+    raise EvaluationError(f"baseline {name} lacks normalized_plan or normalization_failure for {fixture_id}")
+
+
+def validate_raw_output(raw_path: Path, plan_path: Path, plan: dict[str, Any], fixture_id: str) -> str:
+    raw_text = raw_path.read_text()
+    plan_text = plan_path.read_text()
+    require(raw_text != plan_text, f"{fixture_id} raw output duplicates parsed plan")
+    raw = read_json(raw_path)
+    require(raw.get("fixture_id") == fixture_id, f"{fixture_id} raw output fixture mismatch")
+    require(raw.get("raw_kind") == "workflow-output", f"{fixture_id} raw output has wrong kind")
+    require(raw.get("workflow_plan") == plan, f"{fixture_id} raw output does not contain parsed plan")
+    require(non_empty_string(raw.get("rendered_blueprint")), f"{fixture_id} raw output missing rendered blueprint")
+    return raw_text
+
+
+def validate_consumer_report(
+    report_path: Path,
+    plan: dict[str, Any],
+    expected: dict[str, Any],
+) -> int:
+    report = read_json(report_path)
+    require(report.get("fixture_id") == plan["plan_id"], f"{report_path} fixture mismatch")
+    require(report.get("consumer_verdict") == "pass", f"{report_path} consumer did not pass")
+    require(report.get("received_spec_or_expected_answer") is False, f"{report_path} is not blinded")
+    first_slice = plan["execution_path"]["first_slice"]
+    require(report.get("first_slice") == first_slice["instruction"], f"{report_path} first slice mismatch")
+    require(non_empty_list(report.get("inputs_needed")), f"{report_path} missing inputs")
+    require(report.get("expected_output") == first_slice["expected_output"], f"{report_path} expected output mismatch")
+    require(report.get("completion_check") == first_slice["completion_check"], f"{report_path} completion check mismatch")
+    require(non_empty_list(report.get("forbidden_actions_identified")), f"{report_path} missing forbidden actions")
+    if plan["activation"]["decision"] == "downgrade":
+        require(
+            report.get("agreed_downgrade_target") == expected.get("downgrade_target"),
+            f"{report_path} downgrade target disagreement",
+        )
+    else:
+        require(non_empty_list(report.get("risk_gates_identified")), f"{report_path} missing risk gates")
+    return 2
 
 
 def average(scores: dict[str, int], metrics: list[str]) -> float:
@@ -573,17 +632,21 @@ def evaluate_fixture(
     expected = fixture["expected"]
     plan_path = ROOT / fixture["candidate_plan"]
     prompt_path = ROOT / fixture["prompt_path"]
+    raw_path = ROOT / fixture["raw_output"]
+    consumer_path = ROOT / fixture["consumer_report"]
     plan = read_json(plan_path)
     validate_plan(plan, expected)
+    raw_text = validate_raw_output(raw_path, plan_path, plan, fixture_id)
     require(
         plan["source_prompt"].strip() == prompt_path.read_text().strip(),
         f"{fixture_id} plan source_prompt does not match prompt file",
     )
+    consumer_score = validate_consumer_report(consumer_path, plan, expected)
 
     fixture_out = out_root / fixture_id
     fixture_out.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(plan_path, fixture_out / "workflow.plan.json")
-    (fixture_out / "raw-output.json").write_text(plan_path.read_text())
+    (fixture_out / "raw-output.json").write_text(raw_text)
     (fixture_out / "blueprint.md").write_text(render_blueprint(plan))
     (fixture_out / "skill.sha256").write_text(skill_hash + "\n")
 
@@ -591,9 +654,13 @@ def evaluate_fixture(
         "name": CREATED_BY,
         "normalized": True,
         "artifact_path": rel(plan_path),
-        "scores": candidate_scores(plan, expected),
+        "raw_output_path": rel(raw_path),
+        "scores": candidate_scores(plan, expected, consumer_score),
     }
-    baseline_records = [load_baseline(baseline, expected) for baseline in baselines]
+    baseline_records = [
+        load_baseline(baseline, fixture_id, prompt_path.read_text().strip(), expected)
+        for baseline in baselines
+    ]
     scorecard = {
         "fixture_id": fixture_id,
         "category": fixture["category"],
@@ -602,12 +669,10 @@ def evaluate_fixture(
         "candidate": candidate,
         "baselines": baseline_records,
     }
-    if fixture.get("consumer_report"):
-        source = ROOT / fixture["consumer_report"]
-        consumer_out = out_root / "consumer" / f"{fixture_id}.json"
-        consumer_out.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(source, consumer_out)
-        scorecard["consumer_report"] = rel(consumer_out)
+    consumer_out = out_root / "consumer" / f"{fixture_id}.json"
+    consumer_out.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(consumer_path, consumer_out)
+    scorecard["consumer_report"] = rel(consumer_out)
     write_json(fixture_out / "scorecard.json", scorecard)
     return scorecard
 
@@ -615,6 +680,14 @@ def evaluate_fixture(
 def evaluate_manifest(manifest_path: Path, out_root: Path) -> dict[str, Any]:
     manifest = read_json(manifest_path)
     require_keys(manifest, ["fixtures", "baselines"], "manifest")
+    fixture_ids = [fixture["id"] for fixture in manifest["fixtures"]]
+    require(len(fixture_ids) == len(set(fixture_ids)), "manifest fixture ids must be unique")
+    for baseline in manifest["baselines"]:
+        require("source_path" in baseline, f"baseline {baseline.get('name')} missing source_path")
+        fixture_records = baseline.get("fixture_records")
+        require(isinstance(fixture_records, dict), f"baseline {baseline.get('name')} must use fixture_records")
+        missing = [fixture_id for fixture_id in fixture_ids if fixture_id not in fixture_records]
+        require(not missing, f"baseline {baseline.get('name')} missing fixture records: {missing}")
     out_root.mkdir(parents=True, exist_ok=True)
     skill_hash = hash_file(ROOT / "SKILL.md")
     scorecards = [
@@ -764,6 +837,15 @@ def self_test() -> None:
     downgrade = valid_plan_fixture("downgrade")
     validate_plan(downgrade, {"activation": "downgrade", "downgrade_target": "direct-codex"})
 
+    wrong_creator = json.loads(json.dumps(active))
+    wrong_creator["created_by"] = "other-workflow-tool"
+    try:
+        validate_plan(wrong_creator, {"activation": "activate"})
+    except EvaluationError:
+        pass
+    else:
+        raise EvaluationError("self-test failed: wrong created_by passed")
+
     bad = dict(active)
     bad["patterns"] = ["Imaginary Pattern"]
     try:
@@ -790,6 +872,54 @@ def self_test() -> None:
         pass
     else:
         raise EvaluationError("self-test failed: empty safe default passed")
+
+    valid_report = {
+        "fixture_id": active["plan_id"],
+        "consumer_verdict": "pass",
+        "received_spec_or_expected_answer": False,
+        "first_slice": active["execution_path"]["first_slice"]["instruction"],
+        "inputs_needed": ["prompt"],
+        "expected_output": active["execution_path"]["first_slice"]["expected_output"],
+        "completion_check": active["execution_path"]["first_slice"]["completion_check"],
+        "forbidden_actions_identified": ["write files"],
+        "risk_gates_identified": ["write action"],
+    }
+    tmp_report = ROOT / "out" / "v0.5-self-test-consumer.json"
+    write_json(tmp_report, valid_report)
+    validate_consumer_report(tmp_report, active, {"activation": "activate"})
+    bad_report = dict(valid_report)
+    bad_report["consumer_verdict"] = "fail"
+    write_json(tmp_report, bad_report)
+    try:
+        validate_consumer_report(tmp_report, active, {"activation": "activate"})
+    except EvaluationError:
+        pass
+    else:
+        raise EvaluationError("self-test failed: failing consumer report passed")
+    tmp_report.unlink(missing_ok=True)
+
+    tmp_plan = ROOT / "out" / "v0.5-self-test-plan.json"
+    tmp_raw = ROOT / "out" / "v0.5-self-test-raw.json"
+    write_json(tmp_plan, active)
+    write_json(tmp_raw, active)
+    try:
+        validate_raw_output(tmp_raw, tmp_plan, active, active["plan_id"])
+    except EvaluationError:
+        pass
+    else:
+        raise EvaluationError("self-test failed: duplicated raw output passed")
+    write_json(
+        tmp_raw,
+        {
+            "raw_kind": "workflow-output",
+            "fixture_id": active["plan_id"],
+            "rendered_blueprint": "blueprint",
+            "workflow_plan": active,
+        },
+    )
+    validate_raw_output(tmp_raw, tmp_plan, active, active["plan_id"])
+    tmp_plan.unlink(missing_ok=True)
+    tmp_raw.unlink(missing_ok=True)
 
     print("plan evaluator self-test: pass")
 

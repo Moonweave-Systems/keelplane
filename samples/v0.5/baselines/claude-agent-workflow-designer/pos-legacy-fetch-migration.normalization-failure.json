@@ -1,0 +1,16 @@
+{
+  "baseline": "claude-agent-workflow-designer",
+  "fixture_id": "pos-legacy-fetch-migration",
+  "normalized": false,
+  "prompt": "Plan a 500-file migration from legacyFetch to the new client with rollback boundaries and regression tests.",
+  "reason": "The Claude agent-workflow-designer source can guide this prompt but does not provide a schema-valid workflow.plan.json artifact for this fixture.",
+  "scores": {
+    "activation_discipline": 1,
+    "downstream_consumer_success": 1,
+    "executable_artifact": 0,
+    "handoff_clarity": 1,
+    "resume_value": 1,
+    "safety_gating": 1,
+    "verification_strength": 1
+  }
+}

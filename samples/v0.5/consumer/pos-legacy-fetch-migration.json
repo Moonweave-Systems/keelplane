@@ -1,0 +1,29 @@
+{
+  "blinded_inputs": [
+    "workflow.plan.json",
+    "blueprint.md",
+    "original prompt"
+  ],
+  "completion_check": "inventory validates and every gap is either resolved or recorded",
+  "consumer_verdict": "pass",
+  "expected_output": "validated inventory.json plus gaps list",
+  "first_slice": "Build the call-site inventory and classify migration batches before proposing edits.",
+  "fixture_id": "pos-legacy-fetch-migration",
+  "forbidden_actions_identified": [
+    "source edits",
+    "dependency installs",
+    "secret access",
+    "external messages"
+  ],
+  "inputs_needed": [
+    "original prompt",
+    "workflow-plan-schema.md",
+    "surface locators"
+  ],
+  "received_spec_or_expected_answer": false,
+  "risk_gates_identified": [
+    "write or destructive action",
+    "dependency, paid external API, or network expansion",
+    "public API, production, database, secret, external message, runtime, or history rewrite action"
+  ]
+}

@@ -323,6 +323,8 @@ def main() -> None:
             "scripts/evaluate_plan.py --self-test",
             "fixtures/v0.5/manifest.json",
             "samples/v0.5/candidates/",
+            "samples/v0.5/raw/",
+            "samples/v0.5/consumer/",
             "docs/v0.5-decision.md",
         ],
     )
@@ -333,6 +335,8 @@ def main() -> None:
             "12 fixtures",
             "workflow-router-skill",
             "claude-agent-workflow-designer",
+            "samples/v0.5/raw/",
+            "samples/v0.5/consumer/",
             "out/v0.5/summary.json",
         ],
     )

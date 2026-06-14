@@ -1,0 +1,22 @@
+{
+  "agreed_downgrade_target": "direct-codex",
+  "blinded_inputs": [
+    "workflow.plan.json",
+    "blueprint.md",
+    "original prompt"
+  ],
+  "completion_check": "no dynamic workflow artifact is needed",
+  "consumer_verdict": "pass",
+  "expected_output": "bounded response or routed workflow decision",
+  "first_slice": "Use direct-codex instead of dynamic-workflow-designer for this request.",
+  "fixture_id": "neg-fix-unit-test",
+  "forbidden_actions_identified": [
+    "spawning agents",
+    "editing files",
+    "external messages"
+  ],
+  "inputs_needed": [
+    "user prompt"
+  ],
+  "received_spec_or_expected_answer": false
+}

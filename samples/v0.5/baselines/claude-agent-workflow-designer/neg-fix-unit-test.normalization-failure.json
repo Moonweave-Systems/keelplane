@@ -1,7 +1,9 @@
 {
   "baseline": "claude-agent-workflow-designer",
+  "fixture_id": "neg-fix-unit-test",
   "normalized": false,
-  "reason": "The Claude agent-workflow-designer source provides prose workflow guidance and scaffolding helpers but no per-fixture schema-valid workflow.plan.json output for this benchmark.",
+  "prompt": "Fix this failing unit test.",
+  "reason": "The Claude agent-workflow-designer source can guide this prompt but does not provide a schema-valid workflow.plan.json artifact for this fixture.",
   "scores": {
     "activation_discipline": 1,
     "downstream_consumer_success": 1,
@@ -10,6 +12,5 @@
     "resume_value": 1,
     "safety_gating": 1,
     "verification_strength": 1
-  },
-  "source_path": "../claude-skills/engineering/agent-workflow-designer/SKILL.md"
+  }
 }
