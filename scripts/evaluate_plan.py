@@ -1265,7 +1265,17 @@ def validate_decision_doc(summary: dict[str, Any], decision_path: Path | None = 
         for sentence in re.split(r"(?<=[.!?])\s+", raw_text.lower())
         for clause in re.split(r"\b(?:but|however|though|although|yet)\b|[,;:]", sentence)
     ]
-    negation_terms = ["does not", "do not", "did not", "not ", "never", "without"]
+    allowed_negated_boundary_claims = [
+        r"\bdoes not claim runtime execution(?: or live model generation)?(?: from `?skill\.md`?)?",
+        r"\bdoes not claim live model generation(?: from `?skill\.md`?)?",
+        r"\bdoes not claim fresh baseline execution\b",
+        r"\bdoes not use runtime-backed evidence(?: from sibling baselines)?\b",
+        r"\bwithout runtime-backed evidence\b",
+        r"\bnever reran the baseline\b",
+        r"\bdid not rerun the baseline\b",
+        r"\bdoes not rerun the baseline\b",
+        r"\bdo not rerun the baseline\b",
+    ]
     forbidden_boundary_claims = [
         r"\bfresh baseline re-execution\b",
         r"\bfreshly rechecked\b.{0,120}\bsibling baseline\b",
@@ -1289,12 +1299,12 @@ def validate_decision_doc(summary: dict[str, Any], decision_path: Path | None = 
         r"\bclaims live model generation\b",
     ]
     for clause in clauses:
-        clause_for_negation = clause.replace("not only", "")
-        if any(term in clause_for_negation for term in negation_terms):
-            continue
+        scan_clause = clause.replace("not only", "")
+        for allowed_pattern in allowed_negated_boundary_claims:
+            scan_clause = re.sub(allowed_pattern, "", scan_clause)
         for pattern in forbidden_boundary_claims:
             require(
-                not re.search(pattern, clause),
+                not re.search(pattern, scan_clause),
                 "docs/v0.5-decision.md contains contradictory boundary claim",
             )
 
@@ -2646,7 +2656,7 @@ def self_test() -> None:
             "claude-agent-workflow-designer": 1.0,
         },
     }
-    tmp_decision.write_text(
+    exact_margin_decision_text = (
         "# Decision\n\n"
         "Decision: keep\n\n"
         "- 12 fixtures evaluated.\n"
@@ -2667,98 +2677,41 @@ def self_test() -> None:
         "V0.5 does not claim runtime execution or live model generation from `SKILL.md`. "
         "It also does not claim fresh baseline execution.\n"
     )
+    tmp_decision.write_text(exact_margin_decision_text)
     validate_decision_doc(exact_margin_summary, tmp_decision)
     tmp_decision.write_text(
-        "# Decision\n\n"
-        "Decision: keep\n\n"
-        "- 12 fixtures evaluated.\n"
-        "- Candidate keep/kill average: 1.8.\n"
-        "- `workflow-router-skill` baseline average: 1.5.\n"
-        "- `claude-agent-workflow-designer` baseline average: 1.0.\n"
-        "The candidate aggregate keep/kill average beats each baseline aggregate by at least "
-        "20 percent across the evaluator's keep/kill metric set. "
-        "V0.5 does not claim a per-metric margin.\n"
-        "- Four positive fixtures activate.\n"
-        "- Four negative fixtures downgrade.\n"
-        "- Three borderline fixtures downgrade to `workflow-router`.\n"
-        "- The meta/runtime fixture activates to a backlog-oriented execution path.\n"
-        "- Every fixture has a schema-valid artifact or valid downgrade artifact.\n"
-        "- `workflow-router-skill`: source-hashed normalization failure.\n"
-        "- `claude-agent-workflow-designer`: source-hashed normalization failure.\n"
-        "The consumer evidence format is not a live blinded-review runner.\n"
-        "V0.5 does not claim runtime execution or live model generation from `SKILL.md`. "
-        "It also does not claim fresh baseline execution. "
-        "It does not use runtime-backed evidence from sibling baselines.\n"
+        exact_margin_decision_text + "It does not use runtime-backed evidence from sibling baselines.\n"
     )
     validate_decision_doc(exact_margin_summary, tmp_decision)
-    tmp_decision.write_text(
-        "# Decision\n\n"
-        "Decision: keep\n\n"
-        "- 12 fixtures evaluated.\n"
-        "- Candidate keep/kill average: 1.8.\n"
-        "- `workflow-router-skill` baseline average: 1.5.\n"
-        "- `claude-agent-workflow-designer` baseline average: 1.0.\n"
-        "The candidate aggregate keep/kill average beats each baseline aggregate by at least "
-        "20 percent across the evaluator's keep/kill metric set. "
-        "V0.5 claims fresh baseline execution and live sibling-baseline comparison.\n"
+
+    def assert_decision_boundary_rejected(claim: str, label: str) -> None:
+        tmp_decision.write_text(exact_margin_decision_text + claim + "\n")
+        try:
+            validate_decision_doc(exact_margin_summary, tmp_decision)
+        except EvaluationError as exc:
+            require(
+                str(exc) == "docs/v0.5-decision.md contains contradictory boundary claim",
+                f"self-test failed: {label} failed for wrong reason: {exc}",
+            )
+        else:
+            raise EvaluationError(f"self-test failed: {label} passed")
+
+    assert_decision_boundary_rejected(
+        "V0.5 claims fresh baseline execution and live sibling-baseline comparison.",
+        "contradictory boundary claim",
     )
-    try:
-        validate_decision_doc(exact_margin_summary, tmp_decision)
-    except EvaluationError:
-        pass
-    else:
-        raise EvaluationError("self-test failed: contradictory boundary claim passed")
-    tmp_decision.write_text(
-        "# Decision\n\n"
-        "Decision: keep\n\n"
-        "- 12 fixtures evaluated.\n"
-        "- Candidate keep/kill average: 1.8.\n"
-        "- `workflow-router-skill` baseline average: 1.5.\n"
-        "- `claude-agent-workflow-designer` baseline average: 1.0.\n"
-        "The candidate aggregate keep/kill average beats each baseline aggregate by at least "
-        "20 percent across the evaluator's keep/kill metric set. "
-        "Both baseline skills were rerun live for this gate before comparison.\n"
+    assert_decision_boundary_rejected(
+        "Both baseline skills were rerun live for this gate before comparison.",
+        "live baseline rerun claim",
     )
-    try:
-        validate_decision_doc(exact_margin_summary, tmp_decision)
-    except EvaluationError:
-        pass
-    else:
-        raise EvaluationError("self-test failed: live baseline rerun claim passed")
-    tmp_decision.write_text(
-        "# Decision\n\n"
-        "Decision: keep\n\n"
-        "- 12 fixtures evaluated.\n"
-        "- Candidate keep/kill average: 1.8.\n"
-        "- `workflow-router-skill` baseline average: 1.5.\n"
-        "- `claude-agent-workflow-designer` baseline average: 1.0.\n"
-        "The candidate aggregate keep/kill average beats each baseline aggregate by at least "
-        "20 percent across the evaluator's keep/kill metric set. "
-        "This gate relies on fresh baseline re-execution against sibling sources.\n"
+    assert_decision_boundary_rejected(
+        "This gate relies on fresh baseline re-execution against sibling sources.",
+        "fresh baseline re-execution claim",
     )
-    try:
-        validate_decision_doc(exact_margin_summary, tmp_decision)
-    except EvaluationError:
-        pass
-    else:
-        raise EvaluationError("self-test failed: fresh baseline re-execution claim passed")
-    tmp_decision.write_text(
-        "# Decision\n\n"
-        "Decision: keep\n\n"
-        "- 12 fixtures evaluated.\n"
-        "- Candidate keep/kill average: 1.8.\n"
-        "- `workflow-router-skill` baseline average: 1.5.\n"
-        "- `claude-agent-workflow-designer` baseline average: 1.0.\n"
-        "The candidate aggregate keep/kill average beats each baseline aggregate by at least "
-        "20 percent across the evaluator's keep/kill metric set. "
-        "We reran the baseline against the live source and used that runtime evidence.\n"
+    assert_decision_boundary_rejected(
+        "We reran the baseline against the live source and used that runtime evidence.",
+        "runtime evidence claim",
     )
-    try:
-        validate_decision_doc(exact_margin_summary, tmp_decision)
-    except EvaluationError:
-        pass
-    else:
-        raise EvaluationError("self-test failed: runtime evidence claim passed")
     for claim in [
         "It freshly rechecked sibling baseline sources for this gate.",
         "This gate compares sibling baselines live during evaluation.",
@@ -2768,24 +2721,14 @@ def self_test() -> None:
         "It does not use runtime-backed evidence, but it claims runtime execution from SKILL.md.",
         "It does not claim fresh baseline execution, but compares sibling baselines live during evaluation.",
         "The evaluator not only summarizes the data, it reran live sibling baselines for this gate.",
+        "It does not use runtime-backed evidence and claims runtime execution from SKILL.md.",
+        "It does not claim fresh baseline execution and compares sibling baselines live during evaluation.",
+        "It does not claim fresh baseline execution or compares sibling baselines live during evaluation.",
+        "The evaluator never reran the baseline and reran live sibling baselines for this gate.",
+        "Without runtime-backed evidence it claims runtime execution from SKILL.md.",
+        "V0.5 does not claim runtime execution or live model generation from SKILL.md and claims runtime execution from SKILL.md.",
     ]:
-        tmp_decision.write_text(
-            "# Decision\n\n"
-            "Decision: keep\n\n"
-            "- 12 fixtures evaluated.\n"
-            "- Candidate keep/kill average: 1.8.\n"
-            "- `workflow-router-skill` baseline average: 1.5.\n"
-            "- `claude-agent-workflow-designer` baseline average: 1.0.\n"
-            "The candidate aggregate keep/kill average beats each baseline aggregate by at least "
-            "20 percent across the evaluator's keep/kill metric set. "
-            f"{claim}\n"
-        )
-        try:
-            validate_decision_doc(exact_margin_summary, tmp_decision)
-        except EvaluationError:
-            pass
-        else:
-            raise EvaluationError("self-test failed: baseline rerun paraphrase claim passed")
+        assert_decision_boundary_rejected(claim, "baseline rerun paraphrase claim")
     tmp_decision.unlink(missing_ok=True)
     try:
         resolve_out_root("/tmp/v0.5-outside-repo")
