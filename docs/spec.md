@@ -81,10 +81,10 @@ Package the skill with reusable helper assets:
 
 The plugin must remain useful even without a durable runtime.
 
-The first V1 target is the plugin runner adapter specified in
-`docs/v1-plugin-runner-spec.md`: compile a `workflow.plan.json` into execution
-packets, prompts, handoff schemas, risk gates, and resume/status files without
-claiming full automatic orchestration.
+The first V1 target is the first-slice compiler specified in
+`docs/v1-first-slice-compiler-spec.md`: compile an activated
+`workflow.plan.json` into one inspectable first-slice packet, prompt, gate
+state, and resume/status files without claiming full automatic orchestration.
 
 ### V2: Runtime Prototype
 
@@ -266,13 +266,14 @@ V0.5 is releasable when:
 
 V1 is releasable when:
 
-- `docs/v1-plugin-runner-spec.md` defines the compile, first-slice, and resume
+- `docs/v1-first-slice-compiler-spec.md` defines the compile and resume-check
   behavior.
 - `scripts/compile_workflow.py --self-test` passes.
 - Existing V0/V0.5 release checks still pass.
-- at least six V1 compiler fixtures pass, covering activated plans, downgrade
-  refusal, output path safety, risk gate blocking, and resume invalidation.
-- generated packet prompts agree with packet JSON.
+- required V1 compiler fixtures pass, covering activated plans, downgrade
+  refusal, output path safety, symlink escape rejection, risk gate blocking,
+  prompt/packet drift, and resume invalidation.
+- generated first-slice packet prompts structurally agree with packet JSON.
 - `docs/v1-decision.md` records the keep/kill outcome.
 
 ### Reproducible Check
@@ -312,8 +313,8 @@ and verifies that `docs/v0.5-decision.md` matches the freshly generated summary.
 
 ## Open Questions
 
-- Whether v1 should remain a Codex-first plugin runner or also target Claude
-  plugin packaging.
+- Whether v1 should remain a Codex-first first-slice compiler or also target
+  Claude plugin packaging.
 - Whether a future runtime should wrap existing projects such as
   `claude-dynamic-workflows-codex` after the smaller local adapter proves useful.
 - Whether the V0.5 JSON schema should later compile to JavaScript workflow
