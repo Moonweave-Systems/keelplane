@@ -552,6 +552,15 @@
       "type": "resume"
     },
     {
+      "expected_invalidators": [
+        "ERR_RESUME_STALE_PACKET"
+      ],
+      "id": "resume-status-hybrid-previous-invalidated",
+      "mutate_artifact": "status_hybrid_previous_invalidated",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
       "expected_invalidator": "ERR_RESUME_STALE_GATE",
       "id": "resume-status-gate-status",
       "mutate_artifact": "status_gate_status",
@@ -636,6 +645,13 @@
       "type": "resume"
     },
     {
+      "expected_error": "ERR_RESUME_MISSING_ARTIFACT",
+      "id": "resume-sentinel-missing-status-sections",
+      "mutate_artifact": "sentinel_missing_status_sections",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
       "expected_invalidator": "ERR_RESUME_MISSING_ARTIFACT",
       "id": "resume-missing-handoff",
       "mutate_artifact": "missing_handoff",
@@ -702,6 +718,7 @@
     "resume-stale-status-hash",
     "resume-status-packet-status",
     "resume-status-forged-previous-invalidated",
+    "resume-status-hybrid-previous-invalidated",
     "resume-status-gate-status",
     "resume-status-run-id",
     "resume-status-snapshot-compiler",
@@ -714,6 +731,7 @@
     "resume-malformed-run",
     "resume-malformed-status",
     "resume-malformed-sentinel",
+    "resume-sentinel-missing-status-sections",
     "resume-missing-handoff",
     "resume-handoff-traversal"
   ],

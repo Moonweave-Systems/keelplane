@@ -375,10 +375,10 @@ Overclaims execution: no
 
     v1_summary = {
         "suite_id": "final",
-        "fixture_count": 62,
-        "required_fixture_count": 62,
-        "required_passed": 62,
-        "passed": 62,
+        "fixture_count": 64,
+        "required_fixture_count": 64,
+        "required_passed": 64,
+        "passed": 64,
         "failed": 0,
         "skipped": 0,
         "decision": "keep",
@@ -387,10 +387,10 @@ Overclaims execution: no
         "Decision: keep\n"
         "python scripts/compile_workflow.py --manifest fixtures/v1/manifest.json --out out/v1/final\n"
         "- `suite_id`: `final`\n"
-        "- `fixture_count`: 62\n"
-        "- `required_fixture_count`: 62\n"
-        "- `required_passed`: 62\n"
-        "- `passed`: 62\n"
+        "- `fixture_count`: 64\n"
+        "- `required_fixture_count`: 64\n"
+        "- `required_passed`: 64\n"
+        "- `passed`: 64\n"
         "- `failed`: 0\n"
         "- `skipped`: 0\n"
         "- `decision`: `keep`\n"
@@ -398,7 +398,7 @@ Overclaims execution: no
     )
     require_v1_decision_summary_text(v1_summary, good_v1_decision)
     try:
-        require_v1_decision_summary_text(v1_summary, good_v1_decision.replace("62", "61", 1))
+        require_v1_decision_summary_text(v1_summary, good_v1_decision.replace("64", "63", 1))
     except SystemExit:
         pass
     else:
@@ -457,6 +457,15 @@ def main() -> None:
         ],
     )
     require_terms("docs/v0.5-plan-schema-evaluator-spec.md", V05_REQUIRED_TERMS)
+    require_terms(
+        "docs/v1-first-slice-compiler-spec.md",
+        [
+            "forged previous-invalidated status sections",
+            "hybrid clean/invalidated status section shapes",
+            "malformed sentinel status-section anchors",
+            "err_resume_missing_artifact",
+        ],
+    )
     require_terms(
         "docs/spec.md",
         [

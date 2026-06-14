@@ -1018,6 +1018,26 @@ def ensure_replaceable_run_dir(path: Path, run_id: str, mode: str) -> None:
         raise CompileError("ERR_OUT_PATH_NOT_OWNED", "existing run directory is not compiler-owned", path=path)
 
 
+def publish_owned_tree(staging: Path, out_dir: Path, run_id: str, mode: str) -> None:
+    ensure_replaceable_run_dir(out_dir, run_id, mode)
+    backup: Path | None = None
+    try:
+        if out_dir.exists():
+            backup = out_dir.parent / f".{out_dir.name}.old-{os.getpid()}-{sha8(str(staging))}"
+            os.replace(out_dir, backup)
+        try:
+            os.replace(staging, out_dir)
+        except BaseException:
+            if backup is not None and backup.exists() and not out_dir.exists():
+                os.replace(backup, out_dir)
+            raise
+        if backup is not None:
+            shutil.rmtree(backup, ignore_errors=True)
+    finally:
+        if backup is not None and backup.exists():
+            shutil.rmtree(backup, ignore_errors=True)
+
+
 def write_compile_tree(out_dir: Path, run: dict[str, Any], artifacts: dict[str, Any], mode: str) -> None:
     status = artifacts["status"]
     packet = artifacts["packet"]
@@ -1050,17 +1070,10 @@ def publish_compile_tree(out_dir: Path, run_id: str, mode: str, run: dict[str, A
     ensure_safe_artifact_parent(OUT_ROOT, out_dir.parent / ".publish")
     ensure_replaceable_run_dir(out_dir, run_id, mode)
     staging = Path(tempfile.mkdtemp(prefix=f".{out_dir.name}.", dir=out_dir.parent))
-    backup: Path | None = None
     try:
         write_json_atomic(staging / SENTINEL, sentinel_payload(run_id, mode), root=staging)
         write_compile_tree(staging, run, artifacts, mode)
-        ensure_replaceable_run_dir(out_dir, run_id, mode)
-        if out_dir.exists():
-            backup = out_dir.parent / f".{out_dir.name}.old-{os.getpid()}-{sha8(str(staging))}"
-            os.replace(out_dir, backup)
-        os.replace(staging, out_dir)
-        if backup is not None:
-            shutil.rmtree(backup, ignore_errors=True)
+        publish_owned_tree(staging, out_dir, run_id, mode)
     finally:
         shutil.rmtree(staging, ignore_errors=True)
 
@@ -1173,6 +1186,9 @@ def require_resume_metadata(sentinel: dict[str, Any], run: dict[str, Any], statu
     for key in ["packet_hashes", "prompt_hashes", "input_snapshot_hashes", "handoff_schema_hashes", "gate_approval_hashes"]:
         if not isinstance(sentinel_snapshots.get(key), dict):
             raise CompileError("ERR_RESUME_MISSING_ARTIFACT", f"sentinel snapshots missing object key: {key}", path=run_dir)
+    for key in ["packet_statuses", "handoff_statuses", "gate_statuses"]:
+        if not isinstance(sentinel.get(key), list):
+            raise CompileError("ERR_RESUME_MISSING_ARTIFACT", f"sentinel missing list key: {key}", path=run_dir)
 
 
 def read_resume_json(path: Path, kind: str, artifact_id: str, invalidators: list[dict[str, Any]], *, root: Path | None = None) -> dict[str, Any] | None:
@@ -1453,21 +1469,29 @@ def resume_run(run_dir: Path) -> dict[str, Any]:
         and isinstance(old_status.get("invalidators"), list)
         and bool(old_status.get("invalidators"))
     )
-    for section, kind in [
-        ("packet_statuses", "packet"),
-        ("gate_statuses", "gate"),
-        ("handoff_statuses", "handoff"),
-    ]:
-        actual_section = old_status.get(section)
-        allowed_sections = [clean_sections[section]]
-        if prior_tool_invalidated:
-            allowed_sections.append(invalidated_sections[section])
-        if actual_section not in allowed_sections:
+    actual_sections = {
+        "packet_statuses": old_status.get("packet_statuses"),
+        "handoff_statuses": old_status.get("handoff_statuses"),
+        "gate_statuses": old_status.get("gate_statuses"),
+    }
+    allowed_status_shapes = [clean_sections]
+    if prior_tool_invalidated:
+        allowed_status_shapes.append(invalidated_sections)
+    if actual_sections not in allowed_status_shapes:
+        for section, kind in [
+            ("packet_statuses", "packet"),
+            ("gate_statuses", "gate"),
+            ("handoff_statuses", "handoff"),
+        ]:
+            actual_section = old_status.get(section)
+            expected_section = clean_sections[section]
+            if actual_section == expected_section:
+                continue
             invalidators.append(
                 hash_invalidator(
                     kind,
                     f"status.json.{section}",
-                    canonical_hash(clean_sections[section]),
+                    canonical_hash(expected_section),
                     canonical_hash(actual_section),
                     f"status {section} changed",
                 )
@@ -1659,6 +1683,192 @@ def validate_generated_artifacts(result: dict[str, Any]) -> None:
             raise CompileError("ERR_SELF_TEST_WRONG_REASON", f"context artifact hash mismatch: {rel_path}")
 
 
+def invalidator_signature(record: dict[str, Any]) -> dict[str, Any]:
+    signature: dict[str, Any] = {}
+    for key in ["code", "kind", "id", "message"]:
+        value = record.get(key)
+        if not isinstance(value, str):
+            raise CompileError("ERR_SELF_TEST_WRONG_REASON", f"invalidator missing string key: {key}")
+        signature[key] = value
+    for key in ["expected_hash", "actual_hash"]:
+        value = record.get(key)
+        if value is None:
+            signature[key] = None
+        elif isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value):
+            signature[key] = "sha256"
+        elif isinstance(value, str):
+            signature[key] = "value"
+        else:
+            raise CompileError("ERR_SELF_TEST_WRONG_REASON", f"invalidator {key} is not a string or null")
+    return signature
+
+
+def resume_sig(
+    code: str,
+    kind: str,
+    artifact_id: str,
+    message: str,
+    *,
+    expected_hash: str | None = "sha256",
+    actual_hash: str | None = "sha256",
+) -> dict[str, Any]:
+    return {
+        "code": code,
+        "kind": kind,
+        "id": artifact_id,
+        "message": message,
+        "expected_hash": expected_hash,
+        "actual_hash": actual_hash,
+    }
+
+
+def expected_resume_signatures(fixture: dict[str, Any], plan_path: Path, run_dir: Path) -> list[dict[str, Any]]:
+    sentinel = json.loads((run_dir / SENTINEL).read_text())
+    packet = json.loads((run_dir / "packets" / "001-first-slice.packet.json").read_text())
+    mutation = fixture["mutate_artifact"]
+    gate_ids = [item["gate_id"] for item in sentinel.get("gate_statuses", [])]
+    handoff_ids = list(sentinel["snapshots"]["handoff_schema_hashes"])
+    live_input_id = ""
+    if mutation == "live_input":
+        live_input_id = next(
+            item["input_id"]
+            for item in packet.get("input_snapshots", [])
+            if item.get("input_label") == "path:live-input.txt"
+        )
+    ready_plan_abs = str((ROOT / "fixtures" / "v1" / "plans" / "ready-readonly.workflow.plan.json").resolve())
+    unsafe_source_plan = str(ROOT / "__unsafe_resume_source_plan__")
+    signatures = {
+        "source_plan": [
+            resume_sig("ERR_RESUME_STALE_PLAN", "plan", rel_or_abs(plan_path), "source plan hash changed"),
+        ],
+        "plan_snapshot": [
+            resume_sig("ERR_RESUME_STALE_PLAN", "plan", "plan.snapshot.json", "plan snapshot hash changed"),
+        ],
+        "packet": [
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", PACKET_ID, "packet hash changed"),
+            resume_sig("ERR_RESUME_STALE_PROMPT", "prompt", "packets/001-first-slice.prompt.md", "prompt and packet contract disagree"),
+        ],
+        "packet_status_rehash": [
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", "status.json.snapshots.packet_hashes", "status snapshot packet_hashes changed"),
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", PACKET_ID, "packet hash changed"),
+            resume_sig("ERR_RESUME_STALE_PROMPT", "prompt", "packets/001-first-slice.prompt.md", "prompt and packet contract disagree"),
+        ],
+        "packet_prompt_hash_rehash": [
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", "status.json.snapshots.packet_hashes", "status snapshot packet_hashes changed"),
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", PACKET_ID, "packet hash changed"),
+            resume_sig("ERR_RESUME_STALE_PROMPT", "prompt", "packets/001-first-slice.prompt.md", "packet prompt hash changed"),
+        ],
+        "packet_prompt_path_rehash": [
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", "status.json.snapshots.packet_hashes", "status snapshot packet_hashes changed"),
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", PACKET_ID, "packet hash changed"),
+            resume_sig("ERR_RESUME_STALE_PROMPT", "prompt", "packets/001-first-slice.prompt.md", "packet prompt path changed", expected_hash="value", actual_hash="value"),
+        ],
+        "coherent_packet_prompt_status": [
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", "status.json.snapshots.packet_hashes", "status snapshot packet_hashes changed"),
+            resume_sig("ERR_RESUME_STALE_PROMPT", "prompt", "status.json.snapshots.prompt_hashes", "status snapshot prompt_hashes changed"),
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", PACKET_ID, "packet hash changed"),
+            resume_sig("ERR_RESUME_STALE_PROMPT", "prompt", "packets/001-first-slice.prompt.md", "prompt hash changed"),
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", "status.json.packet_statuses", "status packet_statuses changed"),
+        ],
+        "malformed_packet": [
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", PACKET_ID, "artifact JSON is malformed", expected_hash=None),
+        ],
+        "packet_array": [
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", PACKET_ID, "artifact JSON root must be an object", expected_hash=None),
+        ],
+        "packet_malformed_inputs": [
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", PACKET_ID, "packet hash changed"),
+            resume_sig("ERR_RESUME_STALE_INPUT", "input", PACKET_ID, "packet input snapshots are malformed", actual_hash=None),
+        ],
+        "prompt": [
+            resume_sig("ERR_RESUME_STALE_PROMPT", "prompt", "packets/001-first-slice.prompt.md", "prompt hash changed"),
+            resume_sig("ERR_RESUME_STALE_PROMPT", "prompt", "packets/001-first-slice.prompt.md", "packet prompt hash changed"),
+        ],
+        "input": [
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", PACKET_ID, "packet hash changed"),
+            resume_sig("ERR_RESUME_STALE_INPUT", "input", PACKET_ID, "input snapshot hash changed"),
+        ],
+        "plan_snapshot_null": [
+            resume_sig("ERR_RESUME_STALE_PLAN", "plan", "plan.snapshot.json", "artifact JSON root must be an object", expected_hash=None),
+        ],
+        "live_input": [
+            resume_sig("ERR_RESUME_STALE_PLAN", "plan", "sentinel.snapshots", "sentinel snapshots do not match source plan"),
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", "sentinel.packet_statuses", "sentinel packet_statuses does not match source plan"),
+            resume_sig("ERR_RESUME_STALE_INPUT", "input", live_input_id, "live input snapshot hash changed"),
+        ],
+        "gate": [
+            resume_sig("ERR_RESUME_STALE_GATE", "gate", "approval-state.json", "approval state hash changed"),
+            resume_sig("ERR_RESUME_STALE_GATE", "gate", gate_ids[0], "gate approval hash changed"),
+        ],
+        "gate_status_rehash": [
+            resume_sig("ERR_RESUME_STALE_GATE", "gate", "status.json.snapshots.approval_state_hash", "status snapshot approval_state_hash changed"),
+            resume_sig("ERR_RESUME_STALE_GATE", "gate", "status.json.snapshots.gate_approval_hashes", "status snapshot gate_approval_hashes changed"),
+            resume_sig("ERR_RESUME_STALE_GATE", "gate", "approval-state.json", "approval state hash changed"),
+            resume_sig("ERR_RESUME_STALE_GATE", "gate", gate_ids[0], "gate approval hash changed"),
+            resume_sig("ERR_RESUME_STALE_GATE", "gate", "status.json.gate_statuses", "status gate_statuses changed"),
+        ],
+        "status_plan_hash": [
+            resume_sig("ERR_RESUME_STALE_PLAN", "plan", "status.json.source_plan_hash", "status source plan hash changed"),
+            resume_sig("ERR_RESUME_STALE_PLAN", "plan", "status.json.plan_hash", "status plan hash changed"),
+        ],
+        "status_packet_status": [
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", "status.json.packet_statuses", "status packet_statuses changed"),
+        ],
+        "status_forged_previous_invalidated": [
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", "status.json.packet_statuses", "status packet_statuses changed"),
+        ],
+        "status_hybrid_previous_invalidated": [
+            resume_sig("ERR_RESUME_STALE_PACKET", "packet", "status.json.packet_statuses", "status packet_statuses changed"),
+        ],
+        "status_gate_status": [
+            resume_sig("ERR_RESUME_STALE_GATE", "gate", "status.json.gate_statuses", "status gate_statuses changed"),
+        ],
+        "status_run_id": [
+            resume_sig("ERR_RESUME_STALE_PLAN", "plan", "status.json.run_id", "status run id changed", expected_hash="value", actual_hash="value"),
+        ],
+        "status_snapshot_compiler": [
+            resume_sig("ERR_RESUME_STALE_COMPILER", "compiler", "status.json.snapshots.compiler_version", "status snapshot compiler_version changed"),
+        ],
+        "run_source_path_absolute": [
+            resume_sig("ERR_RESUME_STALE_PLAN", "plan", "run.json.source_plan_path", "source plan path changed", expected_hash="value", actual_hash="value"),
+            resume_sig("ERR_RESUME_STALE_PLAN", "plan", ready_plan_abs, "source plan path is unsafe", actual_hash=None),
+            resume_sig("ERR_RESUME_STALE_PLAN", "plan", unsafe_source_plan, "source plan is missing", actual_hash=None),
+        ],
+        "run_source_path_repo_relative_rehash": [
+            resume_sig("ERR_RESUME_STALE_PLAN", "plan", "run.json.source_plan_path", "source plan path changed", expected_hash="value", actual_hash="value"),
+            resume_sig("ERR_RESUME_STALE_PLAN", "plan", "run.json.source_plan_hash", "run source plan hash changed"),
+            resume_sig("ERR_RESUME_STALE_PLAN", "plan", "run.json.plan_hash", "run plan hash changed"),
+            resume_sig("ERR_RESUME_STALE_PLAN", "plan", "status.json.source_plan_hash", "status source plan hash changed"),
+            resume_sig("ERR_RESUME_STALE_PLAN", "plan", "status.json.plan_hash", "status plan hash changed"),
+            resume_sig("ERR_RESUME_STALE_PLAN", "plan", "status.json.snapshots.plan_hash", "status snapshot plan_hash changed"),
+            resume_sig("ERR_RESUME_STALE_PLAN", "plan", "samples/v0.5/candidates/pos-cross-source-research.workflow.plan.json", "source plan hash changed"),
+        ],
+        "gate_empty_object": [
+            resume_sig("ERR_RESUME_STALE_GATE", "gate", "approval-state.json", "approval state hash changed"),
+        ],
+        "compiler": [
+            resume_sig("ERR_RESUME_STALE_COMPILER", "compiler", TOOL, "compiler version changed", expected_hash="value", actual_hash="value"),
+        ],
+        "approval_symlink": [
+            resume_sig("ERR_RESUME_MISSING_ARTIFACT", "gate", "approval-state.json", "artifact is missing or symlinked", expected_hash=None, actual_hash=None),
+        ],
+        "packets_dir_symlink": [
+            resume_sig("ERR_RESUME_MISSING_ARTIFACT", "packet", PACKET_ID, "artifact path is missing, unsafe, or symlinked", expected_hash=None, actual_hash=None),
+            resume_sig("ERR_RESUME_MISSING_ARTIFACT", "prompt", "packets/001-first-slice.prompt.md", "artifact path is missing, unsafe, or symlinked", expected_hash=None, actual_hash=None),
+        ],
+        "missing_handoff": [
+            resume_sig("ERR_RESUME_MISSING_ARTIFACT", "handoff", handoff_ids[0], "artifact is missing or symlinked", expected_hash=None, actual_hash=None),
+        ],
+        "status_handoff_traversal": [
+            resume_sig("ERR_RESUME_STALE_HANDOFF", "handoff", "status.json.snapshots.handoff_schema_hashes", "status snapshot handoff_schema_hashes changed"),
+            resume_sig("ERR_RESUME_MISSING_ARTIFACT", "handoff", "../../outside", "handoff snapshot id is unsafe", expected_hash=None, actual_hash=None),
+        ],
+    }
+    if mutation not in signatures:
+        raise CompileError("ERR_SELF_TEST_WRONG_REASON", f"resume fixture lacks exact invalidator signature mapping: {mutation}", fixture_id=fixture["id"])
+    return signatures[mutation]
+
+
 def check_fixture_result(fixture: dict[str, Any], result: dict[str, Any]) -> None:
     validate_generated_artifacts(result)
     status = result["status"]["packet_statuses"][0]["status"]
@@ -1678,13 +1888,14 @@ def check_fixture_result(fixture: dict[str, Any], result: dict[str, Any]) -> Non
             raise CompileError("ERR_SELF_TEST_WRONG_REASON", "duplicate input IDs were not distinct", fixture_id=fixture["id"])
 
 
-def run_fixture(fixture: dict[str, Any], suite_dir: Path, temp_root: Path) -> dict[str, Any]:
+def run_fixture(fixture: dict[str, Any], suite_dir: Path, temp_root: Path, *, suite_id: str | None = None) -> dict[str, Any]:
     fixture_id = fixture["id"]
+    suite_label = suite_id or suite_dir.name
     try:
         fixture_type = fixture["type"]
         if fixture_type == "compile":
             plan_path = write_fixture_plan(temp_root, fixture)
-            result = compile_plan(plan_path, fixture_run_dir(suite_dir, fixture_id), run_id=f"{suite_dir.name}/{fixture_id}", mode="fixture")
+            result = compile_plan(plan_path, fixture_run_dir(suite_dir, fixture_id), run_id=f"{suite_label}/{fixture_id}", mode="fixture")
             check_fixture_result(fixture, result)
         elif fixture_type == "error":
             try:
@@ -1697,7 +1908,7 @@ def run_fixture(fixture: dict[str, Any], suite_dir: Path, temp_root: Path) -> di
                     if not link.exists():
                         link.symlink_to(target, target_is_directory=True)
                     out = link / "run"
-                compile_plan(plan_path, out, run_id=f"{suite_dir.name}/{fixture_id}", mode="fixture")
+                compile_plan(plan_path, out, run_id=f"{suite_label}/{fixture_id}", mode="fixture")
             except CompileError as exc:
                 if exc.code != fixture["expected_error"]:
                     raise CompileError("ERR_SELF_TEST_WRONG_REASON", f"expected {fixture['expected_error']}, got {exc.code}", fixture_id=fixture_id) from exc
@@ -1705,7 +1916,7 @@ def run_fixture(fixture: dict[str, Any], suite_dir: Path, temp_root: Path) -> di
                 raise CompileError(fixture["expected_error"], "expected fixture failure did not occur", fixture_id=fixture_id)
         elif fixture_type == "drift":
             plan_path = write_fixture_plan(temp_root, fixture)
-            result = compile_plan(plan_path, fixture_run_dir(suite_dir, fixture_id), run_id=f"{suite_dir.name}/{fixture_id}", mode="fixture")
+            result = compile_plan(plan_path, fixture_run_dir(suite_dir, fixture_id), run_id=f"{suite_label}/{fixture_id}", mode="fixture")
             prompt = render_prompt(result["packet"], result["gates"]).replace(result["packet"]["objective"], "changed objective", 1)
             try:
                 verify_prompt_packet(prompt, result["packet"], result["gates"])
@@ -1716,8 +1927,13 @@ def run_fixture(fixture: dict[str, Any], suite_dir: Path, temp_root: Path) -> di
                 raise CompileError("ERR_PROMPT_PACKET_DRIFT", "prompt drift was not detected", fixture_id=fixture_id)
         elif fixture_type == "resume":
             plan_path = write_fixture_plan(temp_root, fixture)
-            result = compile_plan(plan_path, fixture_run_dir(suite_dir, fixture_id), run_id=f"{suite_dir.name}/{fixture_id}", mode="fixture")
+            result = compile_plan(plan_path, fixture_run_dir(suite_dir, fixture_id), run_id=f"{suite_label}/{fixture_id}", mode="fixture")
             run_dir = result["out_dir"]
+            expected_signatures = (
+                expected_resume_signatures(fixture, plan_path, run_dir)
+                if "expected_error" not in fixture and "expected_resume_state" not in fixture
+                else []
+            )
             mutate_run_artifact(run_dir, plan_path, fixture["mutate_artifact"])
             try:
                 status = resume_run(run_dir)
@@ -1729,20 +1945,16 @@ def run_fixture(fixture: dict[str, Any], suite_dir: Path, temp_root: Path) -> di
                 if status["resume_state"] != fixture["expected_resume_state"]:
                     raise CompileError("ERR_SELF_TEST_WRONG_REASON", f"expected resume state {fixture['expected_resume_state']}, got {status['resume_state']}", fixture_id=fixture_id)
                 return {"id": fixture_id, "status": "passed"}
-            codes = sorted({item["code"] for item in status["invalidators"]})
-            if "expected_invalidators" in fixture:
-                expected_codes = sorted(set(fixture["expected_invalidators"]))
-            else:
-                expected_codes = [fixture["expected_invalidator"]]
-            if codes != expected_codes:
+            actual_signatures = [invalidator_signature(item) for item in status["invalidators"]]
+            if actual_signatures != expected_signatures:
                 raise CompileError(
                     "ERR_SELF_TEST_WRONG_REASON",
-                    f"expected resume invalidators {expected_codes}, got {codes}",
+                    f"expected resume invalidators {expected_signatures}, got {actual_signatures}",
                     fixture_id=fixture_id,
                 )
         elif fixture_type == "resume-repair":
             plan_path = write_fixture_plan(temp_root, fixture)
-            result = compile_plan(plan_path, fixture_run_dir(suite_dir, fixture_id), run_id=f"{suite_dir.name}/{fixture_id}", mode="fixture")
+            result = compile_plan(plan_path, fixture_run_dir(suite_dir, fixture_id), run_id=f"{suite_label}/{fixture_id}", mode="fixture")
             run_dir = result["out_dir"]
             prompt_path = run_dir / "packets" / "001-first-slice.prompt.md"
             original_prompt = prompt_path.read_text()
@@ -1901,6 +2113,23 @@ def mutate_run_artifact(run_dir: Path, plan_path: Path, mutation: str) -> None:
         ]
         data["packet_statuses"][0]["status"] = "forged"
         write_json_atomic(path, data)
+    elif mutation == "status_hybrid_previous_invalidated":
+        path = run_dir / "status.json"
+        data = json.loads(path.read_text())
+        data["resume_state"] = "invalidated"
+        data["last_resume_result"] = "invalidated"
+        data["invalidators"] = [
+            hash_invalidator(
+                "prompt",
+                "packets/001-first-slice.prompt.md",
+                "0" * 64,
+                "1" * 64,
+                "forged prior invalidator",
+            )
+        ]
+        data["packet_statuses"][0]["status"] = "invalidated"
+        data["packet_statuses"][0]["reason"] = "resume invalidated"
+        write_json_atomic(path, data)
     elif mutation == "gate_status_rehash":
         approval_path = run_dir / "gates" / "approval-state.json"
         approval_state = json.loads(approval_path.read_text())
@@ -1956,6 +2185,11 @@ def mutate_run_artifact(run_dir: Path, plan_path: Path, mutation: str) -> None:
         write_text_atomic(run_dir / "status.json", "[]\n")
     elif mutation == "sentinel_array":
         write_text_atomic(run_dir / SENTINEL, "[]\n")
+    elif mutation == "sentinel_missing_status_sections":
+        path = run_dir / SENTINEL
+        data = json.loads(path.read_text())
+        data.pop("packet_statuses", None)
+        write_json_atomic(path, data)
     elif mutation == "compiler":
         path = run_dir / "run.json"
         data = json.loads(path.read_text())
@@ -1986,7 +2220,10 @@ def evaluate_manifest(manifest_path: Path, out_dir: Path) -> dict[str, Any]:
     manifest = read_json(manifest_path)
     suite_id = Path(out_dir).name
     suite_dir = resolve_v1_out(out_dir)
-    prepare_owned_dir(suite_dir, suite_id, "manifest", clear=True)
+    ensure_safe_artifact_parent(OUT_ROOT, suite_dir.parent / ".publish")
+    ensure_replaceable_run_dir(suite_dir, suite_id, "manifest")
+    staging = Path(tempfile.mkdtemp(prefix=f".{suite_id}.manifest.", dir=suite_dir.parent))
+    write_json_atomic(staging / SENTINEL, sentinel_payload(suite_id, "manifest"), root=staging)
     required = manifest["required_fixture_ids"]
     fixtures = manifest["fixtures"]
     fixture_ids = [fixture["id"] for fixture in fixtures]
@@ -2010,12 +2247,12 @@ def evaluate_manifest(manifest_path: Path, out_dir: Path) -> dict[str, Any]:
         except CompileError as exc:
             failures.append(exc.to_record())
             required_invalid.add(fixture_id)
-    temp_root = suite_dir / "_fixture-plans"
+    temp_root = staging / "_fixture-plans"
     temp_root.mkdir(parents=True, exist_ok=True)
     for fixture in fixtures:
         if fixture["id"] in invalid_fixture_ids or fixture["id"] in duplicate:
             continue
-        result = run_fixture(fixture, suite_dir, temp_root)
+        result = run_fixture(fixture, staging, temp_root, suite_id=suite_id)
         if result["status"] == "passed":
             passed += 1
             if fixture["id"] in required:
@@ -2060,8 +2297,11 @@ def evaluate_manifest(manifest_path: Path, out_dir: Path) -> dict[str, Any]:
         "decision": "keep" if required_kept else "kill",
         "failures": failures,
     }
-    write_json_atomic(suite_dir / "summary.json", summary)
+    write_json_atomic(staging / "summary.json", summary, root=staging)
+    if summary["decision"] == "keep" or not suite_dir.exists():
+        publish_owned_tree(staging, suite_dir, suite_id, "manifest")
     if summary["decision"] != "keep":
+        shutil.rmtree(staging, ignore_errors=True)
         raise CompileError("ERR_PLAN_INVALID", "manifest decision is kill", path=manifest_path)
     return summary
 
@@ -2095,6 +2335,27 @@ def self_test() -> None:
             or optional_summary["failed"] != 1
         ):
             raise CompileError("ERR_SELF_TEST_WRONG_REASON", "optional fixture failure changed required keep decision")
+        preserved_out = tmp_path / "preserve-on-kill"
+        preserved_summary = evaluate_manifest(optional_manifest_path, preserved_out)
+        preserving_kill_manifest = {
+            "suite_id": "preserve-on-kill",
+            "fixtures": [
+                {**fixtures["positive-ready-readonly"], "id": "preserve-duplicate"},
+                {**fixtures["positive-ready-readonly"], "id": "preserve-duplicate"},
+            ],
+            "required_fixture_ids": ["preserve-duplicate"],
+        }
+        preserving_kill_path = tmp_path / "preserving-kill-manifest.json"
+        write_json_atomic(preserving_kill_path, preserving_kill_manifest)
+        try:
+            evaluate_manifest(preserving_kill_path, preserved_out)
+        except CompileError as exc:
+            if exc.code != "ERR_PLAN_INVALID":
+                raise
+        else:
+            raise CompileError("ERR_SELF_TEST_WRONG_REASON", "kill manifest unexpectedly replaced preserved suite")
+        if json.loads((preserved_out / "summary.json").read_text()) != preserved_summary:
+            raise CompileError("ERR_SELF_TEST_WRONG_REASON", "kill manifest replaced previous published summary")
         duplicate_optional_manifest = {
             "suite_id": "duplicate-optional",
             "fixtures": [
