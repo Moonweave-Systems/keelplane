@@ -1,0 +1,89 @@
+{
+  "fixture_id": "neg-one-file-plan",
+  "packet_sha256": {
+    "blueprint.md": "9e91b17476695750431ba39eea40d8facc89fb7c29d0c3ea9a8391ab11219cdb",
+    "original prompt": "d4316427d9b4696746e18d71d0cf75a4dd2541d40e2b2e9677646756a197ff88",
+    "workflow.plan.json": "420c81cafcc426a1587f103289d0d228fa4f82d83ec4a64c2addba5d67b65f86"
+  },
+  "producer": "dynamic-workflow-designer",
+  "raw_kind": "workflow-output",
+  "rendered_blueprint": "# neg-one-file-plan\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (One-file planning does not need handoffs, fan-out, or resume boundaries.)\nPatterns: none\n\n## First Slice\n\nUse simple-plan instead of dynamic-workflow-designer for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- multi-agent execution: stop before multi-agent execution and ask for approval\n",
+  "skill_sha256": "b3a20daf5e7e6c1d826f1167f39f64ab295836a83cce6f82d54ffa120842326a",
+  "source_prompt": "Draft a simple implementation plan for one file.",
+  "workflow_plan": {
+    "activation": {
+      "decision": "downgrade",
+      "downgrade_target": "simple-plan",
+      "matched_thresholds": [],
+      "reason": "One-file planning does not need handoffs, fan-out, or resume boundaries."
+    },
+    "assumptions": [
+      {
+        "claim": "The request lacks an exclusive V0.5 activation threshold.",
+        "verification": "Check for downstream consumer, resumable handoffs, or multi-surface fan-out before activating."
+      }
+    ],
+    "budget": {
+      "file_touch_limit": "none from this downgrade artifact",
+      "max_agents": 1,
+      "max_retries": 0,
+      "max_rounds": 1,
+      "time_box": "one direct response or routed workflow"
+    },
+    "created_by": "dynamic-workflow-designer",
+    "execution_path": {
+      "consumer": "human",
+      "first_slice": {
+        "completion_check": "no dynamic workflow artifact is needed",
+        "expected_output": "bounded response or routed workflow decision",
+        "forbidden_actions": [
+          "spawning agents",
+          "editing files",
+          "external messages"
+        ],
+        "inputs": [
+          "original prompt"
+        ],
+        "instruction": "Use simple-plan instead of dynamic-workflow-designer for this request."
+      },
+      "mode": "direct-codex"
+    },
+    "handoffs": [],
+    "objective": "Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.",
+    "parallelism": {
+      "barriers": [],
+      "concurrency_cap": 1,
+      "fan_in_rule": "No fan-in; route directly.",
+      "shape": "none"
+    },
+    "patterns": [],
+    "phases": [],
+    "plan_id": "neg-one-file-plan",
+    "resume": {
+      "cacheable_outputs": [],
+      "invalidators": [
+        "prompt scope changes"
+      ],
+      "restart_points": []
+    },
+    "risk_gates": [
+      {
+        "requires_user_approval": true,
+        "safe_default": "stop before multi-agent execution and ask for approval",
+        "trigger": "multi-agent execution"
+      }
+    ],
+    "schema_version": "0.5",
+    "source_prompt": "Draft a simple implementation plan for one file.",
+    "surfaces": [
+      {
+        "access_mode": "read-only",
+        "id": "request",
+        "kind": "document",
+        "locator": "user prompt"
+      }
+    ],
+    "verification": [],
+    "workers": []
+  }
+}

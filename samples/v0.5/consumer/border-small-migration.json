@@ -1,0 +1,53 @@
+{
+  "agreed_downgrade_target": "workflow-router",
+  "blinded_inputs": [
+    "workflow.plan.json",
+    "blueprint.md",
+    "original prompt"
+  ],
+  "completion_check": "no dynamic workflow artifact is needed",
+  "consumer_verdict": "pass",
+  "expected_output": "bounded response or routed workflow decision",
+  "first_slice": "Use workflow-router instead of dynamic-workflow-designer for this request.",
+  "fixture_id": "border-small-migration",
+  "forbidden_actions_identified": [
+    "spawning agents",
+    "editing files",
+    "external messages"
+  ],
+  "inputs_needed": [
+    "original prompt"
+  ],
+  "provenance": {
+    "field_support": {
+      "completion_check": "completion_check: no dynamic workflow artifact is needed",
+      "downgrade_target": "downgrade_target: workflow-router",
+      "expected_output": "expected_output: bounded response or routed workflow decision",
+      "first_slice": "first_slice: Use workflow-router instead of dynamic-workflow-designer for this request.",
+      "forbidden_actions": "forbidden_actions: spawning agents; editing files; external messages",
+      "inputs_needed": "inputs_needed: original prompt",
+      "risk_gates": "risk_gates: migration source edit",
+      "safe_defaults": "safe_defaults: migration source edit -> stop before migration source edits and ask for approval"
+    },
+    "packet_sha256": {
+      "blueprint.md": "4f7f494a8d2c1387b8eb5287e82021146f76a9cc02b6e47bd41a2a93b3ab0d9e",
+      "original prompt": "81f143c5966be05f7034dd156236fd0d7fb90c9b362395bb5df00fce1b038899",
+      "workflow.plan.json": "df9a1e4e593f9047d84b762811c738b1c6987f50d7f4848ef1b45ab96966eff5"
+    },
+    "reviewer_note": "Blinded sample reviewer identified the first slice, required inputs, forbidden actions, gates, and safe defaults from the supplied packet only.",
+    "run_kind": "blinded-sample-review",
+    "supplied_inputs": [
+      "workflow.plan.json",
+      "blueprint.md",
+      "original prompt"
+    ],
+    "transcript_excerpt": "Consumer selected first slice: Use workflow-router instead of dynamic-workflow-designer for this request."
+  },
+  "received_spec_or_expected_answer": false,
+  "risk_gates_identified": [
+    "migration source edit"
+  ],
+  "safe_defaults_identified": {
+    "migration source edit": "stop before migration source edits and ask for approval"
+  }
+}

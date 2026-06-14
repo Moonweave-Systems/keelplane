@@ -1,0 +1,1 @@
+Plan a 500-file migration from legacyFetch to the new client with rollback boundaries and regression tests.

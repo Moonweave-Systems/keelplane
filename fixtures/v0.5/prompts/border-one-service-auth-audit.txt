@@ -1,0 +1,1 @@
+Plan an auth audit for one service where one agent can inspect all routes.

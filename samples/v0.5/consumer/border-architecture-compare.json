@@ -1,0 +1,53 @@
+{
+  "agreed_downgrade_target": "workflow-router",
+  "blinded_inputs": [
+    "workflow.plan.json",
+    "blueprint.md",
+    "original prompt"
+  ],
+  "completion_check": "no dynamic workflow artifact is needed",
+  "consumer_verdict": "pass",
+  "expected_output": "bounded response or routed workflow decision",
+  "first_slice": "Use workflow-router instead of dynamic-workflow-designer for this request.",
+  "fixture_id": "border-architecture-compare",
+  "forbidden_actions_identified": [
+    "spawning agents",
+    "editing files",
+    "external messages"
+  ],
+  "inputs_needed": [
+    "original prompt"
+  ],
+  "provenance": {
+    "field_support": {
+      "completion_check": "completion_check: no dynamic workflow artifact is needed",
+      "downgrade_target": "downgrade_target: workflow-router",
+      "expected_output": "expected_output: bounded response or routed workflow decision",
+      "first_slice": "first_slice: Use workflow-router instead of dynamic-workflow-designer for this request.",
+      "forbidden_actions": "forbidden_actions: spawning agents; editing files; external messages",
+      "inputs_needed": "inputs_needed: original prompt",
+      "risk_gates": "risk_gates: implementation decision",
+      "safe_defaults": "safe_defaults: implementation decision -> stop before implementation decisions and ask for approval"
+    },
+    "packet_sha256": {
+      "blueprint.md": "6e4f3cf6d9f1b5d9cf9fd275f4cd680c0e434ce1c9847df55ba341be4229cb69",
+      "original prompt": "bea821b09bee16bea384f1f72b1a208ee0bad17c9ae5091a354accef4ab54723",
+      "workflow.plan.json": "78a194bf7fad357d5f2a65aec142df4a7b254f2e7c0ff45456659da1285e9713"
+    },
+    "reviewer_note": "Blinded sample reviewer identified the first slice, required inputs, forbidden actions, gates, and safe defaults from the supplied packet only.",
+    "run_kind": "blinded-sample-review",
+    "supplied_inputs": [
+      "workflow.plan.json",
+      "blueprint.md",
+      "original prompt"
+    ],
+    "transcript_excerpt": "Consumer selected first slice: Use workflow-router instead of dynamic-workflow-designer for this request."
+  },
+  "received_spec_or_expected_answer": false,
+  "risk_gates_identified": [
+    "implementation decision"
+  ],
+  "safe_defaults_identified": {
+    "implementation decision": "stop before implementation decisions and ask for approval"
+  }
+}

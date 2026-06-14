@@ -1,0 +1,89 @@
+{
+  "fixture_id": "border-small-migration",
+  "packet_sha256": {
+    "blueprint.md": "4f7f494a8d2c1387b8eb5287e82021146f76a9cc02b6e47bd41a2a93b3ab0d9e",
+    "original prompt": "81f143c5966be05f7034dd156236fd0d7fb90c9b362395bb5df00fce1b038899",
+    "workflow.plan.json": "df9a1e4e593f9047d84b762811c738b1c6987f50d7f4848ef1b45ab96966eff5"
+  },
+  "producer": "dynamic-workflow-designer",
+  "raw_kind": "workflow-output",
+  "rendered_blueprint": "# border-small-migration\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (Twelve call sites in one package need bounded implementation routing, not dynamic workflow design.)\nPatterns: none\n\n## First Slice\n\nUse workflow-router instead of dynamic-workflow-designer for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- migration source edit: stop before migration source edits and ask for approval\n",
+  "skill_sha256": "b3a20daf5e7e6c1d826f1167f39f64ab295836a83cce6f82d54ffa120842326a",
+  "source_prompt": "Create a migration plan for 12 call sites in one package.",
+  "workflow_plan": {
+    "activation": {
+      "decision": "downgrade",
+      "downgrade_target": "workflow-router",
+      "matched_thresholds": [],
+      "reason": "Twelve call sites in one package need bounded implementation routing, not dynamic workflow design."
+    },
+    "assumptions": [
+      {
+        "claim": "The request lacks an exclusive V0.5 activation threshold.",
+        "verification": "Check for downstream consumer, resumable handoffs, or multi-surface fan-out before activating."
+      }
+    ],
+    "budget": {
+      "file_touch_limit": "none from this downgrade artifact",
+      "max_agents": 1,
+      "max_retries": 0,
+      "max_rounds": 1,
+      "time_box": "one direct response or routed workflow"
+    },
+    "created_by": "dynamic-workflow-designer",
+    "execution_path": {
+      "consumer": "human",
+      "first_slice": {
+        "completion_check": "no dynamic workflow artifact is needed",
+        "expected_output": "bounded response or routed workflow decision",
+        "forbidden_actions": [
+          "spawning agents",
+          "editing files",
+          "external messages"
+        ],
+        "inputs": [
+          "original prompt"
+        ],
+        "instruction": "Use workflow-router instead of dynamic-workflow-designer for this request."
+      },
+      "mode": "direct-codex"
+    },
+    "handoffs": [],
+    "objective": "Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.",
+    "parallelism": {
+      "barriers": [],
+      "concurrency_cap": 1,
+      "fan_in_rule": "No fan-in; route directly.",
+      "shape": "none"
+    },
+    "patterns": [],
+    "phases": [],
+    "plan_id": "border-small-migration",
+    "resume": {
+      "cacheable_outputs": [],
+      "invalidators": [
+        "prompt scope changes"
+      ],
+      "restart_points": []
+    },
+    "risk_gates": [
+      {
+        "requires_user_approval": true,
+        "safe_default": "stop before migration source edits and ask for approval",
+        "trigger": "migration source edit"
+      }
+    ],
+    "schema_version": "0.5",
+    "source_prompt": "Create a migration plan for 12 call sites in one package.",
+    "surfaces": [
+      {
+        "access_mode": "read-only",
+        "id": "request",
+        "kind": "document",
+        "locator": "user prompt"
+      }
+    ],
+    "verification": [],
+    "workers": []
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "blinded_inputs": [
+    "workflow.plan.json",
+    "blueprint.md",
+    "original prompt",
+    "repository path"
+  ],
+  "completion_check": "inventory validates and every gap is either resolved or recorded",
+  "consumer_verdict": "pass",
+  "expected_output": "validated inventory.json plus gaps list",
+  "first_slice": "Specify the smallest runtime consumer contract and decide what remains backlog.",
+  "fixture_id": "meta-runtime-design",
+  "forbidden_actions_identified": [
+    "source edits",
+    "dependency installs",
+    "secret access",
+    "external messages"
+  ],
+  "inputs_needed": [
+    "workflow.plan.json",
+    "blueprint.md",
+    "original prompt",
+    "repository path"
+  ],
+  "provenance": {
+    "field_support": {
+      "completion_check": "completion_check: inventory validates and every gap is either resolved or recorded",
+      "expected_output": "expected_output: validated inventory.json plus gaps list",
+      "first_slice": "first_slice: Specify the smallest runtime consumer contract and decide what remains backlog.",
+      "forbidden_actions": "forbidden_actions: source edits; dependency installs; secret access; external messages",
+      "inputs_needed": "inputs_needed: workflow.plan.json; blueprint.md; original prompt; repository path",
+      "risk_gates": "risk_gates: write action; shell action; network action; external message action; runtime implementation; dependency change",
+      "safe_defaults": "safe_defaults: write action -> stop before writing and ask for approval; shell action -> stop before shell use and ask for approval; network action -> stop before network use and ask for approval; external message action -> stop before sending external messages and ask for approval; runtime implementation -> stop before runtime implementation and ask for approval; dependency change -> stop before dependency changes and ask for approval"
+    },
+    "packet_sha256": {
+      "blueprint.md": "82a1babc7fc091db630296f8379df2f8cadca272564c82af61fa8c2f8bd9acde",
+      "original prompt": "ea362f62ebddcde7e23f370f1bb91de6e527f91e388f334517e96c7a3a65e168",
+      "repository surfaces": "9c067fd452d50f954cfcd133f5f1991fbe676bf1a5da35ec21b1d1f536b26fee",
+      "workflow.plan.json": "d207bbddf57d30419dd4a47f0a92102e355e77538a945b1cf9191e82a412e4f1"
+    },
+    "reviewer_note": "Blinded sample reviewer identified the first slice, required inputs, forbidden actions, gates, and safe defaults from the supplied packet only.",
+    "run_kind": "blinded-sample-review",
+    "supplied_inputs": [
+      "workflow.plan.json",
+      "blueprint.md",
+      "original prompt",
+      "repository path"
+    ],
+    "transcript_excerpt": "Consumer selected first slice: Specify the smallest runtime consumer contract and decide what remains backlog."
+  },
+  "received_spec_or_expected_answer": false,
+  "risk_gates_identified": [
+    "write action",
+    "shell action",
+    "network action",
+    "external message action",
+    "runtime implementation",
+    "dependency change"
+  ],
+  "safe_defaults_identified": {
+    "dependency change": "stop before dependency changes and ask for approval",
+    "external message action": "stop before sending external messages and ask for approval",
+    "network action": "stop before network use and ask for approval",
+    "runtime implementation": "stop before runtime implementation and ask for approval",
+    "shell action": "stop before shell use and ask for approval",
+    "write action": "stop before writing and ask for approval"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "adapter_version": "0.5-source-contract-v1",
+  "baseline": "workflow-router-skill",
+  "fixture_id": "pos-api-auth-audit",
+  "normalization_failure_kind": "no-schema-valid-artifact",
+  "normalized": false,
+  "observation_evidence": {
+    "activation_decision": {
+      "activation_support": "ambiguous",
+      "interpretation": "Routes requests, but does not emit a fixture-specific schema activation artifact.",
+      "observation": "activation_decision",
+      "source_excerpt": "Classify the task using `references/router-map.md`."
+    },
+    "consumer_can_route": {
+      "interpretation": "Provides routing or workflow guidance a consumer can follow.",
+      "observation": "consumer_can_route",
+      "source_excerpt": "choose the route that provides the earliest verifiable evidence",
+      "supports_observation": true
+    },
+    "handoff_guidance": {
+      "interpretation": "Provides handoff or summary guidance for downstream continuation.",
+      "observation": "handoff_guidance",
+      "source_excerpt": "then summarize changed files and verification.",
+      "supports_observation": true
+    },
+    "resume_guidance": {
+      "interpretation": "Does not support restartable phase outputs, despite preserving evidence.",
+      "observation": "resume_guidance",
+      "source_excerpt": "Preserve the strongest evidence gathered before reporting a blocker.",
+      "supports_observation": false
+    },
+    "safety_gates": {
+      "interpretation": "Mentions safety gates or approval boundaries.",
+      "observation": "safety_gates",
+      "source_excerpt": "Pause for explicit confirmation before destructive or externally visible work:",
+      "supports_observation": true
+    },
+    "verification_guidance": {
+      "interpretation": "Provides concrete verification guidance.",
+      "observation": "verification_guidance",
+      "source_excerpt": "Verify with the smallest meaningful command, UI check, artifact metric, or",
+      "supports_observation": true
+    }
+  },
+  "observations": {
+    "activation_decision": "ambiguous",
+    "consumer_can_route": true,
+    "handoff_guidance": true,
+    "resume_guidance": false,
+    "safety_gates": true,
+    "verification_guidance": true
+  },
+  "prompt": "Design a workflow to audit every API route for missing auth across a multi-package service.",
+  "reason": "The local workflow-router source can route this prompt, but it does not emit a schema-valid workflow.plan.json artifact with durable worker handoffs.",
+  "source_sha256": "0f2c7b361dbf7f5f14a78d50ab55de2ed743b83c670482529650b0ef3906dde3"
+}

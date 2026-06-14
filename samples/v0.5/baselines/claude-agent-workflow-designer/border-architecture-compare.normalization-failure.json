@@ -1,0 +1,56 @@
+{
+  "adapter_version": "0.5-source-contract-v1",
+  "baseline": "claude-agent-workflow-designer",
+  "fixture_id": "border-architecture-compare",
+  "normalization_failure_kind": "no-schema-valid-artifact",
+  "normalized": false,
+  "observation_evidence": {
+    "activation_decision": {
+      "activation_support": "ambiguous",
+      "interpretation": "Describes when workflow design may apply, but does not decide fixture activation in schema form.",
+      "observation": "activation_decision",
+      "source_excerpt": "A single prompt is insufficient for task complexity"
+    },
+    "consumer_can_route": {
+      "interpretation": "Provides routing or workflow guidance a consumer can follow.",
+      "observation": "consumer_can_route",
+      "source_excerpt": "Design production-grade multi-agent workflows with clear pattern choice, handoff contracts, failure handling, and cost/context controls.",
+      "supports_observation": true
+    },
+    "handoff_guidance": {
+      "interpretation": "Provides handoff or summary guidance for downstream continuation.",
+      "observation": "handoff_guidance",
+      "source_excerpt": "Define handoff contract fields for every edge.",
+      "supports_observation": true
+    },
+    "resume_guidance": {
+      "interpretation": "Provides recovery or evidence-preservation guidance.",
+      "observation": "resume_guidance",
+      "source_excerpt": "Error recovery and retry strategy scaffolding",
+      "supports_observation": true
+    },
+    "safety_gates": {
+      "interpretation": "Does not support V0.5 safe-default approval gates, despite mentioning safety gates.",
+      "observation": "safety_gates",
+      "source_excerpt": "You need validation loops for quality or safety gates",
+      "supports_observation": false
+    },
+    "verification_guidance": {
+      "interpretation": "Provides concrete verification guidance.",
+      "observation": "verification_guidance",
+      "source_excerpt": "Validate intermediate outputs before fan-in synthesis.",
+      "supports_observation": true
+    }
+  },
+  "observations": {
+    "activation_decision": "ambiguous",
+    "consumer_can_route": true,
+    "handoff_guidance": true,
+    "resume_guidance": true,
+    "safety_gates": false,
+    "verification_guidance": true
+  },
+  "prompt": "Compare two architecture options without downstream execution.",
+  "reason": "The Claude agent-workflow-designer source provides prose workflow guidance but no deterministic schema-valid workflow.plan.json adapter output for this fixture.",
+  "source_sha256": "29f911341c70b3f493d84a8ac325a59329785a4d71c1f16f578f0765d3b06f3e"
+}

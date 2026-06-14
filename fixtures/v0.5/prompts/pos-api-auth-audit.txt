@@ -1,0 +1,1 @@
+Design a workflow to audit every API route for missing auth across a multi-package service.

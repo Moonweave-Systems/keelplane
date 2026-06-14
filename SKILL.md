@@ -25,8 +25,8 @@ workflow design the user can inspect or that the current environment can execute
 5. Write the workflow as phases with explicit worker prompts, inputs, outputs,
    verification gates, retry limits, and budget caps.
 6. Identify which parts can run in parallel and which barriers are truly needed.
-7. End with an execution path: direct Codex work, subagent plan, generated
-   workflow script, plugin scaffold, or runtime backlog.
+7. End with an execution path: direct Codex work, subagent plan, plugin
+   scaffold, runtime execution, or backlog.
 
 ## Design Contract
 
@@ -34,14 +34,17 @@ Every workflow design must include:
 
 - `objective`: the outcome, not the implementation guess.
 - `surface`: repositories, paths, systems, or sources in scope.
+- `assumptions`: guesses that affect the workflow and how to verify them.
 - `phases`: ordered stages with clear entry and exit criteria.
 - `workers`: roles, tool permissions, context limits, and ownership boundaries.
 - `handoffs`: the exact artifacts passed between phases.
 - `parallelism`: fan-out count, concurrency cap, and fan-in rules.
 - `verification`: independent checks that can falsify the result.
-- `risk gates`: user approval points for destructive, external, or costly work.
+- `risk gates`: approval points for destructive, external, costly, public API,
+  dependency, database, production, secret, or history-rewrite actions.
 - `budget`: time, token, model, retry, and file-touch limits.
 - `resume plan`: what can be cached, replayed, skipped, or restarted.
+- `execution path`: direct Codex work, subagent plan, plugin, runtime, or backlog.
 
 ## Pattern Rules
 
@@ -59,10 +62,24 @@ correctness, security, performance, compatibility, UX, or reproducibility.
 Use a loop-until-dry pattern for open-ended discovery, but cap the loop with
 max rounds and a "no new findings" stop condition.
 
+For every risk gate, state the safe default. When unsure, stop, preserve
+completed artifacts, and ask the user before continuing.
+
 ## Output Format
 
 For short requests, provide a compact workflow blueprint in the conversation.
-For substantial work, write or update a spec file with:
+For substantial work, emit both:
+
+- `workflow.plan.json`: the machine-readable source of truth following
+  `references/workflow-plan-schema.md`.
+- rendered blueprint: a human-readable view derived from the same JSON.
+
+The JSON and blueprint must agree on activation, first slice, handoffs,
+verification, risk gates, budgets, and resume points. If the router-first rule
+does not justify activation, emit a downgrade artifact that names the target:
+direct Codex, `workflow-router`, or a simple plan.
+
+When writing a spec file, include:
 
 1. Research and prior art.
 2. Product position and non-goals.

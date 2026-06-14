@@ -1,0 +1,89 @@
+{
+  "fixture_id": "border-architecture-compare",
+  "packet_sha256": {
+    "blueprint.md": "6e4f3cf6d9f1b5d9cf9fd275f4cd680c0e434ce1c9847df55ba341be4229cb69",
+    "original prompt": "bea821b09bee16bea384f1f72b1a208ee0bad17c9ae5091a354accef4ab54723",
+    "workflow.plan.json": "78a194bf7fad357d5f2a65aec142df4a7b254f2e7c0ff45456659da1285e9713"
+  },
+  "producer": "dynamic-workflow-designer",
+  "raw_kind": "workflow-output",
+  "rendered_blueprint": "# border-architecture-compare\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (No downstream consumer or resumable execution is expected; use the router or a compact comparison.)\nPatterns: none\n\n## First Slice\n\nUse workflow-router instead of dynamic-workflow-designer for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- implementation decision: stop before implementation decisions and ask for approval\n",
+  "skill_sha256": "b3a20daf5e7e6c1d826f1167f39f64ab295836a83cce6f82d54ffa120842326a",
+  "source_prompt": "Compare two architecture options without downstream execution.",
+  "workflow_plan": {
+    "activation": {
+      "decision": "downgrade",
+      "downgrade_target": "workflow-router",
+      "matched_thresholds": [],
+      "reason": "No downstream consumer or resumable execution is expected; use the router or a compact comparison."
+    },
+    "assumptions": [
+      {
+        "claim": "The request lacks an exclusive V0.5 activation threshold.",
+        "verification": "Check for downstream consumer, resumable handoffs, or multi-surface fan-out before activating."
+      }
+    ],
+    "budget": {
+      "file_touch_limit": "none from this downgrade artifact",
+      "max_agents": 1,
+      "max_retries": 0,
+      "max_rounds": 1,
+      "time_box": "one direct response or routed workflow"
+    },
+    "created_by": "dynamic-workflow-designer",
+    "execution_path": {
+      "consumer": "human",
+      "first_slice": {
+        "completion_check": "no dynamic workflow artifact is needed",
+        "expected_output": "bounded response or routed workflow decision",
+        "forbidden_actions": [
+          "spawning agents",
+          "editing files",
+          "external messages"
+        ],
+        "inputs": [
+          "original prompt"
+        ],
+        "instruction": "Use workflow-router instead of dynamic-workflow-designer for this request."
+      },
+      "mode": "direct-codex"
+    },
+    "handoffs": [],
+    "objective": "Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.",
+    "parallelism": {
+      "barriers": [],
+      "concurrency_cap": 1,
+      "fan_in_rule": "No fan-in; route directly.",
+      "shape": "none"
+    },
+    "patterns": [],
+    "phases": [],
+    "plan_id": "border-architecture-compare",
+    "resume": {
+      "cacheable_outputs": [],
+      "invalidators": [
+        "prompt scope changes"
+      ],
+      "restart_points": []
+    },
+    "risk_gates": [
+      {
+        "requires_user_approval": true,
+        "safe_default": "stop before implementation decisions and ask for approval",
+        "trigger": "implementation decision"
+      }
+    ],
+    "schema_version": "0.5",
+    "source_prompt": "Compare two architecture options without downstream execution.",
+    "surfaces": [
+      {
+        "access_mode": "read-only",
+        "id": "request",
+        "kind": "document",
+        "locator": "user prompt"
+      }
+    ],
+    "verification": [],
+    "workers": []
+  }
+}

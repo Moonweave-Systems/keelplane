@@ -1,0 +1,354 @@
+{
+  "activation": {
+    "decision": "activate",
+    "downgrade_target": null,
+    "matched_thresholds": [
+      "downstream-consumer",
+      "resumable-handoffs",
+      "adversarial-verification",
+      "planned-fanout"
+    ],
+    "reason": "The prompt needs a reusable artifact with downstream handoffs, verification, and gated execution."
+  },
+  "assumptions": [
+    {
+      "claim": "The listed surfaces are sufficient to start the first slice.",
+      "verification": "The intake worker must confirm locators and record missing surfaces before fan-out."
+    },
+    {
+      "claim": "The workflow can be consumed by another agent without author commentary.",
+      "verification": "The consumer report must identify the first slice, inputs, output, completion check, and forbidden actions."
+    }
+  ],
+  "budget": {
+    "file_touch_limit": "no implementation edits until the human approves the write gate",
+    "max_agents": 4,
+    "max_retries": 1,
+    "max_rounds": 3,
+    "time_box": "one bounded planning session before execution"
+  },
+  "created_by": "dynamic-workflow-designer",
+  "execution_path": {
+    "consumer": "codex-agent",
+    "first_slice": {
+      "completion_check": "inventory validates and every gap is either resolved or recorded",
+      "expected_output": "validated inventory.json plus gaps list",
+      "forbidden_actions": [
+        "source edits",
+        "dependency installs",
+        "secret access",
+        "external messages"
+      ],
+      "inputs": [
+        "workflow.plan.json",
+        "blueprint.md",
+        "original prompt",
+        "repository path"
+      ],
+      "instruction": "Extract atomic claims and map each to required repository evidence before judging support."
+    },
+    "mode": "subagent-plan"
+  },
+  "handoffs": [
+    {
+      "artifact": "inventory.json",
+      "artifact_schema": {
+        "format": "json",
+        "required_fields": [
+          "surfaces",
+          "batches",
+          "assumptions",
+          "gaps"
+        ],
+        "validation_command": "python -m json.tool inventory.json"
+      },
+      "from_phase": "unsupported_claim_audit_intake",
+      "to_phase": "unsupported_claim_audit_verify"
+    },
+    {
+      "artifact": "verification-ledger.json",
+      "artifact_schema": {
+        "format": "json",
+        "required_fields": [
+          "claim",
+          "falsifier",
+          "evidence",
+          "decision"
+        ],
+        "validation_command": "python -m json.tool verification-ledger.json"
+      },
+      "from_phase": "unsupported_claim_audit_verify",
+      "to_phase": "unsupported_claim_audit_verify"
+    }
+  ],
+  "objective": "Extract PR-description claims, verify each against repository evidence, and produce a proof ledger.",
+  "parallelism": {
+    "barriers": [
+      "global dedupe before final synthesis"
+    ],
+    "concurrency_cap": 3,
+    "fan_in_rule": "Fan in only after each required ledger validates and unresolved items are labeled.",
+    "shape": "pipeline"
+  },
+  "patterns": [
+    "Pipeline",
+    "Adversarial Verify",
+    "Resume And Cache"
+  ],
+  "phases": [
+    {
+      "depends_on": [],
+      "entry_criteria": [
+        "Prompt and surface list are available"
+      ],
+      "exit_criteria": [
+        "Inventory artifact lists scope, exclusions, and batch keys"
+      ],
+      "id": "unsupported_claim_audit_intake",
+      "name": "Intake and inventory",
+      "outputs": [
+        "inventory.json"
+      ],
+      "worker_ids": [
+        "intake-worker"
+      ]
+    },
+    {
+      "depends_on": [
+        "unsupported_claim_audit_intake"
+      ],
+      "entry_criteria": [
+        "Inventory artifact validates against its schema"
+      ],
+      "exit_criteria": [
+        "Verifier records confirmed, refuted, and unresolved items with evidence"
+      ],
+      "id": "unsupported_claim_audit_verify",
+      "name": "Independent verification and synthesis",
+      "outputs": [
+        "verification-ledger.json",
+        "workflow-report.md"
+      ],
+      "worker_ids": [
+        "verifier-worker",
+        "synthesis-worker"
+      ]
+    }
+  ],
+  "plan_id": "pos-unsupported-claim-audit",
+  "resume": {
+    "cacheable_outputs": [
+      "inventory.json",
+      "verification-ledger.json"
+    ],
+    "invalidators": [
+      "prompt changes",
+      "surface locator changes",
+      "schema changes"
+    ],
+    "restart_points": [
+      "unsupported_claim_audit_intake",
+      "unsupported_claim_audit_verify"
+    ]
+  },
+  "risk_gates": [
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before writing and ask for approval",
+      "trigger": "write action"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before shell use and ask for approval",
+      "trigger": "shell action"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before network use and ask for approval",
+      "trigger": "network action"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before sending external messages and ask for approval",
+      "trigger": "external message action"
+    }
+  ],
+  "schema_version": "0.5",
+  "source_prompt": "Design a workflow to find every unsupported claim in this PR description using repo evidence.",
+  "surfaces": [
+    {
+      "access_mode": "read-only",
+      "id": "pr-description",
+      "kind": "document",
+      "locator": "fixture PR description"
+    },
+    {
+      "access_mode": "read-only",
+      "id": "repository",
+      "kind": "repo",
+      "locator": "."
+    }
+  ],
+  "verification": [
+    {
+      "claim_or_output": "The first slice is executable by another agent.",
+      "evidence_required": [
+        "consumer report"
+      ],
+      "falsifier": "A blinded consumer cannot identify inputs, expected output, completion check, or forbidden actions."
+    },
+    {
+      "claim_or_output": "Findings or decisions are evidence-backed.",
+      "evidence_required": [
+        "verification-ledger.json",
+        "source citations or file references"
+      ],
+      "falsifier": "An independent verifier can find contrary repository or source evidence."
+    }
+  ],
+  "workers": [
+    {
+      "context_budget": {
+        "max_files": 30,
+        "max_tokens": 9000,
+        "must_exclude": [
+          "secret values",
+          "unrelated generated output"
+        ],
+        "must_include": [
+          "prompt",
+          "surface locators",
+          "schema reference"
+        ]
+      },
+      "forbidden_actions": [
+        "editing source files",
+        "installing dependencies",
+        "reading secrets"
+      ],
+      "id": "intake-worker",
+      "ownership": [
+        "surface discovery",
+        "batch boundaries",
+        "assumption ledger"
+      ],
+      "prompt_contract": {
+        "inputs": [
+          "source prompt",
+          "surface records"
+        ],
+        "required_output_schema": "inventory.json with surfaces, batches, assumptions, and gaps",
+        "stop_conditions": [
+          "surface locator is inaccessible",
+          "scope requires secret access"
+        ]
+      },
+      "role": "Surface inventory worker",
+      "tool_permissions": {
+        "mcp_connectors": [],
+        "network": false,
+        "read": true,
+        "requires_escalation_for": [
+          "write",
+          "shell",
+          "network",
+          "external-message"
+        ],
+        "shell": false,
+        "write": false
+      }
+    },
+    {
+      "context_budget": {
+        "max_files": 40,
+        "max_tokens": 10000,
+        "must_exclude": [
+          "author commentary not in artifacts"
+        ],
+        "must_include": [
+          "inventory.json",
+          "candidate findings"
+        ]
+      },
+      "forbidden_actions": [
+        "accepting producer claims without evidence",
+        "editing implementation files"
+      ],
+      "id": "verifier-worker",
+      "ownership": [
+        "refutation attempts",
+        "evidence requirements",
+        "confirmed/refuted/unresolved labels"
+      ],
+      "prompt_contract": {
+        "inputs": [
+          "inventory.json",
+          "candidate findings"
+        ],
+        "required_output_schema": "verification-ledger.json with claim, falsifier, evidence, decision",
+        "stop_conditions": [
+          "missing inventory schema",
+          "unverifiable claim class"
+        ]
+      },
+      "role": "Adversarial verifier",
+      "tool_permissions": {
+        "mcp_connectors": [],
+        "network": false,
+        "read": true,
+        "requires_escalation_for": [
+          "write",
+          "shell",
+          "network",
+          "external-message"
+        ],
+        "shell": false,
+        "write": false
+      }
+    },
+    {
+      "context_budget": {
+        "max_files": 10,
+        "max_tokens": 6000,
+        "must_exclude": [
+          "raw unrelated files"
+        ],
+        "must_include": [
+          "verification-ledger.json"
+        ]
+      },
+      "forbidden_actions": [
+        "changing source behavior",
+        "dropping unresolved items silently"
+      ],
+      "id": "synthesis-worker",
+      "ownership": [
+        "final report",
+        "risk summary",
+        "next-step gate"
+      ],
+      "prompt_contract": {
+        "inputs": [
+          "verification-ledger.json"
+        ],
+        "required_output_schema": "workflow-report.md with summary, evidence links, residual risk, next gate",
+        "stop_conditions": [
+          "ledger does not validate"
+        ]
+      },
+      "role": "Fan-in reporter",
+      "tool_permissions": {
+        "mcp_connectors": [],
+        "network": false,
+        "read": true,
+        "requires_escalation_for": [
+          "shell",
+          "network",
+          "external-message"
+        ],
+        "shell": false,
+        "write": true
+      }
+    }
+  ]
+}

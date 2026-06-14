@@ -1,0 +1,53 @@
+{
+  "agreed_downgrade_target": "direct-codex",
+  "blinded_inputs": [
+    "workflow.plan.json",
+    "blueprint.md",
+    "original prompt"
+  ],
+  "completion_check": "no dynamic workflow artifact is needed",
+  "consumer_verdict": "pass",
+  "expected_output": "bounded response or routed workflow decision",
+  "first_slice": "Use direct-codex instead of dynamic-workflow-designer for this request.",
+  "fixture_id": "neg-fix-unit-test",
+  "forbidden_actions_identified": [
+    "spawning agents",
+    "editing files",
+    "external messages"
+  ],
+  "inputs_needed": [
+    "original prompt"
+  ],
+  "provenance": {
+    "field_support": {
+      "completion_check": "completion_check: no dynamic workflow artifact is needed",
+      "downgrade_target": "downgrade_target: direct-codex",
+      "expected_output": "expected_output: bounded response or routed workflow decision",
+      "first_slice": "first_slice: Use direct-codex instead of dynamic-workflow-designer for this request.",
+      "forbidden_actions": "forbidden_actions: spawning agents; editing files; external messages",
+      "inputs_needed": "inputs_needed: original prompt",
+      "risk_gates": "risk_gates: source edit action",
+      "safe_defaults": "safe_defaults: source edit action -> stop before source edits and ask for approval"
+    },
+    "packet_sha256": {
+      "blueprint.md": "e4f7f6c5b432796461ef64c84a08f2cdd6a29a7cde9f1392e688ef81cf5e6147",
+      "original prompt": "f8e61ddc5660e707003459711cdbd66f3cd203b102be88886d13841cbd4c3065",
+      "workflow.plan.json": "814b2a324c207c153593c305fedacca51fc342c2d3268cc5f70c0320ec083d29"
+    },
+    "reviewer_note": "Blinded sample reviewer identified the first slice, required inputs, forbidden actions, gates, and safe defaults from the supplied packet only.",
+    "run_kind": "blinded-sample-review",
+    "supplied_inputs": [
+      "workflow.plan.json",
+      "blueprint.md",
+      "original prompt"
+    ],
+    "transcript_excerpt": "Consumer selected first slice: Use direct-codex instead of dynamic-workflow-designer for this request."
+  },
+  "received_spec_or_expected_answer": false,
+  "risk_gates_identified": [
+    "source edit action"
+  ],
+  "safe_defaults_identified": {
+    "source edit action": "stop before source edits and ask for approval"
+  }
+}

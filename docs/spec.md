@@ -1,6 +1,6 @@
 # Dynamic Workflow Designer Skill Spec
 
-Status: Draft, Last updated: 2026-06-14
+Status: V0.5 implemented, Last updated: 2026-06-14
 
 ## Purpose
 
@@ -26,6 +26,10 @@ Positioning:
   work before execution.
 - Future `workflow-orchestrator` plugin/runtime: execute saved workflow plans
   with resumability, monitoring, and subagent coordination.
+- V0.5 continuation gate: prove the machine-readable `workflow.plan.json`
+  contract, deterministic fixture corpus, and evaluator before plugin/runtime
+  work begins. V0.5 validates tracked sample artifacts; it does not run a live
+  model against `SKILL.md`.
 
 ## Users
 
@@ -45,9 +49,10 @@ Key conclusions:
 - Claude Dynamic Workflows move orchestration out of chat and into a script.
 - Community repos already explore JavaScript harnesses, MCP runtimes, viewers,
   journals, and workflow command distribution.
-- This repo should not copy a runtime yet. It should first make Codex reliably
-  produce high-quality workflow designs that can later be executed by existing
-  subagent tools, a plugin, or a dedicated runtime.
+- This repo should not copy a runtime yet. It should first define a checkable
+  workflow-design contract and deterministic samples that can later be tested
+  against live Codex output, existing subagent tools, a plugin, or a dedicated
+  runtime.
 
 ## Scope
 
@@ -194,45 +199,107 @@ For each fixture, record:
 - whether verification can falsify the result
 - whether the plan overclaims execution
 
+### Fixture Smoke Gate
+
+Before calling v0 final, run at least two fixtures against the current skill
+instructions:
+
+1. one codebase-facing fixture, such as the API auth audit or 500-file migration
+2. one non-code or meta fixture, such as research, architecture judging, or
+   runtime planning
+
+Each smoke output passes only if it includes every field in
+`Workflow Design Output`, chooses patterns from `references/workflow-patterns.md`,
+names at least one falsifiable verification check, gates risky actions with a
+safe default, and does not imply the requested work has already been executed.
+
+Record the prompt, selected patterns, generated workflow output, failed
+criteria, and resulting spec/skill change if any under `docs/fixture-smoke/`. If
+a fixture fails, update `SKILL.md`, `docs/spec.md`, or
+`references/workflow-patterns.md`, then rerun the fixture category that failed.
+
 ## Release Criteria
 
 V0 is releasable when:
 
-- `quick_validate.py` passes on the skill folder.
+- `scripts/quick_validate_skill.py` passes on the skill folder.
 - `SKILL.md` has no placeholders.
 - `agents/openai.yaml` matches the skill name and purpose.
 - `docs/github-research.md` records prior-art decisions.
 - `docs/spec.md` has fixtures and non-goals.
 - `references/workflow-patterns.md` gives enough pattern guidance for v0.
+- at least two fixture smoke checks pass, covering one codebase-facing fixture
+  and one non-code or meta fixture, with records in `docs/fixture-smoke/`.
+- V0.5 remains a separate continuation gate; V0 release does not claim the
+  evaluator slice is complete.
 - whitespace check passes.
 - secret scan finds no committed secrets.
+
+V0.5 is releasable when:
+
+- `references/workflow-plan-schema.md` documents `workflow.plan.json`.
+- `scripts/evaluate_plan.py --self-test` passes.
+- `fixtures/v0.5/manifest.json` includes four positive, four negative, three
+  borderline, and one meta/runtime fixture.
+- tracked candidate samples under `samples/v0.5/candidates/` validate as
+  schema-valid plans or valid downgrade artifacts.
+- tracked raw outputs under `samples/v0.5/raw/` are distinct from parsed plans
+  and contain `raw_kind`, `fixture_id`, the prompt, producer, current
+  `SKILL.md` hash, packet hashes, parsed `workflow_plan`, and rendered blueprint
+  that matches the parsed plan.
+- each fixture has a structured consumer report under `samples/v0.5/consumer/`.
+- both confirmed baseline snapshots, `workflow-router-skill` and
+  `claude-agent-workflow-designer`, are scored through fixture-indexed,
+  prompt-matched source-hashed normalization-failure records whose scores are
+  derived by the evaluator from structured source-snapshot observations.
+- `python scripts/evaluate_plan.py --manifest fixtures/v0.5/manifest.json --out
+  out/v0.5` regenerates scorecards, parsed plans, raw outputs, skill hashes, and
+  rendered blueprints, then validates and copies tracked consumer reports; the
+  command exits nonzero if the keep/kill decision is not `keep` or if
+  `docs/v0.5-decision.md` drifts from the regenerated summary.
+- `docs/v0.5-decision.md` records the keep/kill outcome.
 
 ### Reproducible Check
 
 Run from the repository root:
 
 ```bash
-uv run python "$HOME/.codex/skills/.system/skill-creator/scripts/quick_validate.py" .
+python scripts/quick_validate_skill.py .
+python scripts/quick_validate_skill.py --self-test
 ```
 
 ```bash
-git diff --check "$(git hash-object -t tree /dev/null)" HEAD
+python scripts/check_whitespace.py .
 ```
 
 ```bash
-rg -n --pcre2 "(?i)(api[_-]?key|secret|token|password)\s*[:=]\s*['\"][^'\"]{8,}|-----BEGIN (RSA|OPENSSH) PRIVATE KEY-----" --glob '!LICENSE' .; test $? -eq 1
+python scripts/check_release_text.py .
 ```
 
 ```bash
-rg -n "T[O]DO|T[B]D|PLACE[H]OLDER|FIX[M]E" --glob '*.md' .; test $? -eq 1
+python scripts/check_release_text.py --self-test
 ```
+
+```bash
+python scripts/check_contract.py
+python scripts/check_contract.py --self-test
+```
+
+```bash
+python scripts/evaluate_plan.py --self-test
+python scripts/evaluate_plan.py --manifest fixtures/v0.5/manifest.json --out out/v0.5
+```
+
+The V0.5 manifest depends only on tracked baseline source snapshots named in
+`fixtures/v0.5/manifest.json`. The manifest evaluator regenerates `out/v0.5/`
+and verifies that `docs/v0.5-decision.md` matches the freshly generated summary.
 
 ## Open Questions
 
 - Whether v1 should be a Codex plugin, a Claude plugin, or both.
 - Whether a future runtime should wrap existing projects such as
   `claude-dynamic-workflows-codex` or start with a smaller local adapter.
-- Whether workflow designs should be serialized as Markdown, JSON, JavaScript,
-  or a dual spec plus generated script.
+- Whether the V0.5 JSON schema should later compile to JavaScript workflow
+  scripts, MCP runtime plans, or both.
 - Whether forward-testing should use live subagents or fixture-only review for
   the first release.

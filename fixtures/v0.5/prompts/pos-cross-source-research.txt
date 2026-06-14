@@ -1,0 +1,1 @@
+Research the current state of on-device LLM inference across papers, repos, and product docs with claim verification.

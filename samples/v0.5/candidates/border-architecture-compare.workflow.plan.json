@@ -1,0 +1,76 @@
+{
+  "activation": {
+    "decision": "downgrade",
+    "downgrade_target": "workflow-router",
+    "matched_thresholds": [],
+    "reason": "No downstream consumer or resumable execution is expected; use the router or a compact comparison."
+  },
+  "assumptions": [
+    {
+      "claim": "The request lacks an exclusive V0.5 activation threshold.",
+      "verification": "Check for downstream consumer, resumable handoffs, or multi-surface fan-out before activating."
+    }
+  ],
+  "budget": {
+    "file_touch_limit": "none from this downgrade artifact",
+    "max_agents": 1,
+    "max_retries": 0,
+    "max_rounds": 1,
+    "time_box": "one direct response or routed workflow"
+  },
+  "created_by": "dynamic-workflow-designer",
+  "execution_path": {
+    "consumer": "human",
+    "first_slice": {
+      "completion_check": "no dynamic workflow artifact is needed",
+      "expected_output": "bounded response or routed workflow decision",
+      "forbidden_actions": [
+        "spawning agents",
+        "editing files",
+        "external messages"
+      ],
+      "inputs": [
+        "original prompt"
+      ],
+      "instruction": "Use workflow-router instead of dynamic-workflow-designer for this request."
+    },
+    "mode": "direct-codex"
+  },
+  "handoffs": [],
+  "objective": "Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.",
+  "parallelism": {
+    "barriers": [],
+    "concurrency_cap": 1,
+    "fan_in_rule": "No fan-in; route directly.",
+    "shape": "none"
+  },
+  "patterns": [],
+  "phases": [],
+  "plan_id": "border-architecture-compare",
+  "resume": {
+    "cacheable_outputs": [],
+    "invalidators": [
+      "prompt scope changes"
+    ],
+    "restart_points": []
+  },
+  "risk_gates": [
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before implementation decisions and ask for approval",
+      "trigger": "implementation decision"
+    }
+  ],
+  "schema_version": "0.5",
+  "source_prompt": "Compare two architecture options without downstream execution.",
+  "surfaces": [
+    {
+      "access_mode": "read-only",
+      "id": "request",
+      "kind": "document",
+      "locator": "user prompt"
+    }
+  ],
+  "verification": [],
+  "workers": []
+}

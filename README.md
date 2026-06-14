@@ -18,10 +18,11 @@ itself needs dynamic orchestration.
 Claude Code Dynamic Workflows changed the useful abstraction: for large work,
 the plan can live outside the chat as an inspectable workflow. Codex does not
 currently have the same native workflow runtime in this environment, so this
-repo starts with the part we can make reliable now: workflow design.
+repo starts with the part we can make checkable now: a workflow design contract.
 
-The first slice is a skill that produces high-quality workflow blueprints and
-specs. A plugin or runtime can follow once the design layer proves useful.
+The first slice defines the skill contract and deterministic V0.5 sample
+evidence for workflow blueprints and specs. A plugin or runtime can follow once
+live generation or execution slices prove useful.
 
 ## Use
 
@@ -40,7 +41,17 @@ Use $dynamic-workflow-designer to plan a 500-file migration with verification ga
 ```text
 .
 ├── SKILL.md                         # Runtime skill instructions
+├── scripts/check_contract.py         # Release contract smoke check
+├── scripts/evaluate_plan.py          # V0.5 schema and benchmark evaluator
 ├── references/workflow-patterns.md  # Pattern guide for workflow designs
+├── references/workflow-plan-schema.md
+│                                      # workflow.plan.json contract
+├── fixtures/v0.5/manifest.json       # Benchmark fixture manifest
+├── samples/v0.5/                     # Deterministic candidate/baseline samples
+├── docs/fixture-smoke/v0-smoke.md    # Auditable fixture smoke results
+├── docs/v0.5-plan-schema-evaluator-spec.md
+│                                      # V0.5 evaluator spec
+├── docs/v0.5-decision.md             # Keep/kill decision
 ├── docs/github-research.md          # Prior-art survey and import decisions
 ├── docs/spec.md                     # Product spec and release criteria
 ├── agents/openai.yaml               # UI metadata
@@ -68,11 +79,34 @@ what not to vendor.
 Run from the repository root:
 
 ```bash
-uv run python "$HOME/.codex/skills/.system/skill-creator/scripts/quick_validate.py" .
-git diff --check "$(git hash-object -t tree /dev/null)" HEAD
-rg -n --pcre2 "(?i)(api[_-]?key|secret|token|password)\s*[:=]\s*['\"][^'\"]{8,}|-----BEGIN (RSA|OPENSSH) PRIVATE KEY-----" --glob '!LICENSE' .; test $? -eq 1
-rg -n "T[O]DO|T[B]D|PLACE[H]OLDER|FIX[M]E" --glob '*.md' .; test $? -eq 1
+python scripts/quick_validate_skill.py .
+python scripts/quick_validate_skill.py --self-test
+python scripts/check_contract.py
+python scripts/check_contract.py --self-test
+python scripts/evaluate_plan.py --self-test
+python scripts/evaluate_plan.py --manifest fixtures/v0.5/manifest.json --out out/v0.5
+python scripts/check_whitespace.py .
+python scripts/check_release_text.py .
+python scripts/check_release_text.py --self-test
 ```
+
+The contract check requires passing fixture records under
+[`docs/fixture-smoke/`](docs/fixture-smoke/).
+
+The V0.5 manifest uses tracked baseline source snapshots under
+[`samples/v0.5/baseline-sources/`](samples/v0.5/baseline-sources/) so the
+manifest gate is reproducible from this repository.
+
+The V0.5 evaluator regenerates repo-local `out/v0.5/` from tracked fixtures and
+samples. That directory is verification evidence, not source of truth. Raw
+records are bound to the current `SKILL.md` hash, baseline observations require
+source-backed excerpts, and consumer reports require blinded sample-review
+provenance with field-level support. The manifest run exits nonzero if the
+keep/kill decision is not `keep` or if `docs/v0.5-decision.md` does not match the
+freshly regenerated summary.
+
+The V0.5 keep/kill decision is
+[`docs/v0.5-decision.md`](docs/v0.5-decision.md).
 
 ## License
 
