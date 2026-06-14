@@ -325,9 +325,11 @@ def resolve_out_root(value: str) -> Path:
     path = Path(value)
     resolved = path.resolve() if path.is_absolute() else (ROOT / path).resolve()
     try:
-        resolved.relative_to(ROOT)
+        relative = resolved.relative_to(ROOT)
     except ValueError as exc:
         raise EvaluationError(f"--out must resolve inside this repository: {value}") from exc
+    require(relative.parts and relative.parts[0] == "out", "--out must resolve under this repository's out/ directory")
+    require(relative != Path("out"), "--out must name a subdirectory under out/")
     return resolved
 
 
@@ -1256,14 +1258,15 @@ def validate_decision_doc(summary: dict[str, Any], decision_path: Path | None = 
     forbidden_boundary_claims = [
         r"\bfresh baseline re-execution\b",
         r"\bfreshly rechecked\b.{0,120}\bsibling baseline\b",
-        r"\bfresh rerun\b.{0,120}\b(peer|sibling) baseline\b",
-        r"\bfreshly rerun\b.{0,120}\b(peer|sibling) baseline\b",
+        r"\bfresh rerun\b.{0,120}\b(peer|sibling) baselines?\b",
+        r"\bfreshly rerun\b.{0,120}\b(peer|sibling) baselines?\b",
         r"\bbaseline re-execution\b",
         r"\breran the baseline\b",
         r"\blive source\b",
         r"\bruntime evidence\b",
         r"\bruntime-backed evidence\b",
         r"\bcompares\b.{0,120}\bsibling baselines live\b",
+        r"\bcompares\b.{0,120}\bfreshly rerun\b.{0,120}\bsibling baselines\b",
         r"\bbaseline skills?\b.{0,120}\brerun live\b",
         r"\blive\b.{0,120}\bfor this gate\b",
         r"\brerun live\b",
@@ -1416,6 +1419,19 @@ def evaluate_manifest(manifest_path: Path, out_root: Path) -> dict[str, Any]:
         require(not missing, f"baseline {baseline.get('name')} missing fixture records: {missing}")
         extra = sorted(set(fixture_records) - set(fixture_ids))
         require(not extra, f"baseline {baseline.get('name')} has unknown fixture records: {extra}")
+        for fixture_id, record in fixture_records.items():
+            require(isinstance(record, dict), f"baseline {baseline.get('name')} fixture record {fixture_id} must be an object")
+            require_keys(record, ["normalization_failure"], f"baseline {baseline.get('name')} fixture record {fixture_id}")
+    expected_baseline_paths = {
+        record["normalization_failure"]
+        for baseline in manifest["baselines"]
+        for record in baseline["fixture_records"].values()
+    }
+    actual_baseline_paths = {
+        rel(path)
+        for path in sorted((ROOT / "samples" / "v0.5" / "baselines").glob("*/*.normalization-failure.json"))
+    }
+    require(expected_baseline_paths == actual_baseline_paths, "manifest baseline records must match tracked baseline corpus")
     fixture_keys = [
         "id",
         "category",
@@ -1445,6 +1461,8 @@ def evaluate_manifest(manifest_path: Path, out_root: Path) -> dict[str, Any]:
     require(expected_candidate_paths == actual_candidate_paths, "manifest candidate paths must match tracked candidate corpus")
     require(expected_raw_paths == actual_raw_paths, "manifest raw-output paths must match tracked raw corpus")
     require(expected_consumer_paths == actual_consumer_paths, "manifest consumer paths must match tracked consumer corpus")
+    if out_root.exists():
+        shutil.rmtree(out_root)
     out_root.mkdir(parents=True, exist_ok=True)
     skill_hash = hash_file(ROOT / "SKILL.md")
     scorecards = [
