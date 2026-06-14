@@ -296,6 +296,36 @@
       "type": "compile"
     },
     {
+      "expected_blocked_categories": [
+        "dependency-install"
+      ],
+      "expected_status": "blocked-risk-gate",
+      "expected_synthetic_count": 0,
+      "id": "risk-v05-alias-dependency-change",
+      "mutation": {
+        "gate_trigger": "dependency change",
+        "plan_id": "risk-v05-alias-dependency-change",
+        "risk": "dependency-install"
+      },
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "compile"
+    },
+    {
+      "expected_blocked_categories": [
+        "paid-api"
+      ],
+      "expected_status": "blocked-risk-gate",
+      "expected_synthetic_count": 0,
+      "id": "risk-v05-alias-paid-external-api-use",
+      "mutation": {
+        "gate_trigger": "paid external API use",
+        "plan_id": "risk-v05-alias-paid-external-api-use",
+        "risk": "paid-api"
+      },
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "compile"
+    },
+    {
       "expected_status": "ready",
       "expected_synthetic_count": 0,
       "id": "risk-near-miss-no-false-positive",
@@ -333,6 +363,13 @@
     },
     {
       "check_duplicate_inputs": true,
+      "expected_input_labels": [
+        "workflow.plan.json",
+        "original prompt",
+        "repository path",
+        "path:README.md",
+        "path:README.md"
+      ],
       "expected_status": "ready",
       "id": "input-duplicate-labels",
       "mutation": {
@@ -362,6 +399,22 @@
       "type": "resume"
     },
     {
+      "expected_resume_gate_statuses": [
+        "blocked"
+      ],
+      "expected_resume_packet_status": "blocked-risk-gate",
+      "expected_resume_state": "resumable",
+      "id": "resume-blocked-stays-blocked",
+      "mutate_artifact": "none",
+      "mutation": {
+        "gate_trigger": "write action",
+        "plan_id": "resume-blocked-stays-blocked",
+        "risk": "write"
+      },
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
       "expected_invalidator": "ERR_RESUME_STALE_PLAN",
       "expected_invalidator_records": [
         {
@@ -369,6 +422,13 @@
           "id": "<fixture_plan>",
           "kind": "plan",
           "message": "source plan hash changed"
+        }
+      ],
+      "expected_hash_records": [
+        {
+          "actual_hash": "source_plan_canonical_hash",
+          "expected_hash": "sentinel_source_plan_hash",
+          "record_index": 0
         }
       ],
       "id": "resume-stale-source-plan",
@@ -387,6 +447,13 @@
           "id": "plan.snapshot.json",
           "kind": "plan",
           "message": "plan snapshot hash changed"
+        }
+      ],
+      "expected_hash_records": [
+        {
+          "actual_hash": "plan_snapshot_canonical_hash",
+          "expected_hash": "sentinel_plan_hash",
+          "record_index": 0
         }
       ],
       "id": "resume-stale-plan-snapshot",
@@ -412,6 +479,13 @@
       "expected_invalidators": [
         "ERR_RESUME_STALE_PACKET",
         "ERR_RESUME_STALE_PROMPT"
+      ],
+      "expected_hash_records": [
+        {
+          "actual_hash": "packet_canonical_hash",
+          "expected_hash": "sentinel_packet_hash",
+          "record_index": 0
+        }
       ],
       "id": "resume-stale-packet",
       "mutate_artifact": "packet",
@@ -578,6 +652,28 @@
           "code": "ERR_RESUME_STALE_PACKET",
           "id": "001-first-slice",
           "kind": "packet",
+          "message": "artifact JSON is malformed"
+        }
+      ],
+      "expected_hash_records": [
+        {
+          "actual_hash": "packet_bytes_sha256",
+          "expected_hash": "none",
+          "record_index": 0
+        }
+      ],
+      "id": "resume-packet-invalid-utf8",
+      "mutate_artifact": "packet_invalid_utf8",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
+      "expected_invalidator": "ERR_RESUME_STALE_PACKET",
+      "expected_invalidator_records": [
+        {
+          "code": "ERR_RESUME_STALE_PACKET",
+          "id": "001-first-slice",
+          "kind": "packet",
           "message": "artifact JSON root must be an object"
         }
       ],
@@ -629,8 +725,42 @@
         "ERR_RESUME_STALE_PROMPT",
         "ERR_RESUME_STALE_PROMPT"
       ],
+      "expected_hash_records": [
+        {
+          "actual_hash": "prompt_sha256",
+          "expected_hash": "sentinel_prompt_hash",
+          "record_index": 0
+        },
+        {
+          "actual_hash": "packet_prompt_hash",
+          "expected_hash": "prompt_sha256",
+          "record_index": 1
+        }
+      ],
       "id": "resume-stale-prompt",
       "mutate_artifact": "prompt",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
+      "expected_invalidator": "ERR_RESUME_STALE_PROMPT",
+      "expected_invalidator_records": [
+        {
+          "code": "ERR_RESUME_STALE_PROMPT",
+          "id": "packets/001-first-slice.prompt.md",
+          "kind": "prompt",
+          "message": "artifact is not valid UTF-8"
+        }
+      ],
+      "expected_hash_records": [
+        {
+          "actual_hash": "prompt_bytes_sha256",
+          "expected_hash": "none",
+          "record_index": 0
+        }
+      ],
+      "id": "resume-prompt-invalid-utf8",
+      "mutate_artifact": "prompt_invalid_utf8",
       "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
       "type": "resume"
     },
@@ -659,6 +789,13 @@
       "expected_invalidators": [
         "ERR_RESUME_STALE_PACKET",
         "ERR_RESUME_STALE_INPUT"
+      ],
+      "expected_hash_records": [
+        {
+          "actual_hash": "packet_input_snapshot_hash",
+          "expected_hash": "sentinel_input_hash",
+          "record_index": 1
+        }
       ],
       "id": "resume-stale-input",
       "mutate_artifact": "input",
@@ -1152,6 +1289,13 @@
     },
     {
       "expected_error": "ERR_RESUME_MISSING_ARTIFACT",
+      "id": "resume-sentinel-snapshot-hash-non-string",
+      "mutate_artifact": "sentinel_snapshot_hash_non_string",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "resume"
+    },
+    {
+      "expected_error": "ERR_RESUME_MISSING_ARTIFACT",
       "id": "resume-sentinel-invalid-utf8",
       "mutate_artifact": "sentinel_invalid_utf8",
       "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
@@ -1221,14 +1365,18 @@
     "risk-delete",
     "risk-synthetic-gate",
     "risk-v05-alias-no-duplicate-synthetic",
+    "risk-v05-alias-dependency-change",
+    "risk-v05-alias-paid-external-api-use",
     "risk-near-miss-no-false-positive",
     "risk-multiple-synthetic-ordering",
     "input-duplicate-labels",
     "drift-prompt-packet",
     "resume-clean",
+    "resume-blocked-stays-blocked",
     "resume-stale-source-plan",
     "resume-stale-plan-snapshot",
     "resume-stale-packet",
+    "resume-packet-invalid-utf8",
     "resume-prompt-packet-disagree",
     "resume-packet-prompt-hash",
     "resume-packet-prompt-path",
@@ -1237,6 +1385,7 @@
     "resume-packet-array",
     "resume-malformed-packet-inputs",
     "resume-stale-prompt",
+    "resume-prompt-invalid-utf8",
     "resume-repair-after-invalidated",
     "resume-stale-input",
     "resume-snapshot-null",
@@ -1264,6 +1413,7 @@
     "resume-sentinel-malformed-status-sections",
     "resume-sentinel-empty-status-object",
     "resume-sentinel-empty-status-sections",
+    "resume-sentinel-snapshot-hash-non-string",
     "resume-sentinel-invalid-utf8",
     "resume-missing-handoff",
     "resume-handoff-traversal"

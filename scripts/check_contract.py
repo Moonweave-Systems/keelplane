@@ -150,6 +150,7 @@ def require_v1_decision_summary_consistency() -> None:
 def require_release_commands_pass() -> None:
     commands = [
         [sys.executable, "scripts/quick_validate_skill.py", "."],
+        [sys.executable, "scripts/quick_validate_skill.py", "--self-test"],
         [sys.executable, "scripts/evaluate_plan.py", "--self-test"],
         [sys.executable, "scripts/compile_workflow.py", "--self-test"],
         [sys.executable, "scripts/check_whitespace.py", "."],
@@ -158,6 +159,32 @@ def require_release_commands_pass() -> None:
     ]
     for command in commands:
         run_contract_command(command)
+    cli_out = ROOT / "out" / "v1" / "contract-cli"
+    completed = run_contract_command(
+        [
+            sys.executable,
+            "scripts/compile_workflow.py",
+            "--plan",
+            "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+            "--out",
+            "out/v1/contract-cli",
+        ]
+    )
+    try:
+        compiled = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"V1 compile CLI output was not JSON: {completed.stdout}") from exc
+    if compiled.get("status") != "ready":
+        raise SystemExit(f"V1 compile CLI did not produce a ready packet: {completed.stdout}")
+    completed = run_contract_command([sys.executable, "scripts/compile_workflow.py", "--resume", "out/v1/contract-cli"])
+    try:
+        resumed = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"V1 resume CLI output was not JSON: {completed.stdout}") from exc
+    if resumed.get("resume_state") != "resumable" or resumed.get("invalidators") != []:
+        raise SystemExit(f"V1 resume CLI did not produce a clean resumable state: {completed.stdout}")
+    if not (cli_out / "status.json").is_file() or not (cli_out / "resume.md").is_file():
+        raise SystemExit("V1 compile/resume CLI did not write status.json and resume.md")
 
 
 def canonical_patterns() -> set[str]:

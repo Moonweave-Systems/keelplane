@@ -1158,6 +1158,22 @@ def read_metadata_json(path: Path, run_dir: Path, label: str) -> dict[str, Any]:
     return data
 
 
+def require_hash_map(snapshots: dict[str, Any], map_key: str, owner: str, run_dir: Path) -> dict[str, str]:
+    value = snapshots.get(map_key)
+    if not isinstance(value, dict):
+        raise CompileError("ERR_RESUME_MISSING_ARTIFACT", f"{owner} snapshots missing object key: {map_key}", path=run_dir)
+    for item_key, item_value in value.items():
+        if not isinstance(item_key, str) or not isinstance(item_value, str):
+            raise CompileError("ERR_RESUME_MISSING_ARTIFACT", f"{owner} snapshots hash map is malformed: {map_key}", path=run_dir)
+    return value
+
+
+def require_hash_map_entries(hash_map: dict[str, str], map_key: str, owner: str, required_keys: set[str], run_dir: Path) -> None:
+    missing = sorted(required_keys - set(hash_map))
+    if missing:
+        raise CompileError("ERR_RESUME_MISSING_ARTIFACT", f"{owner} snapshots missing hash entries for {map_key}: {missing}", path=run_dir)
+
+
 def require_resume_metadata(sentinel: dict[str, Any], run: dict[str, Any], status: dict[str, Any], run_dir: Path) -> None:
     for key in ["tool", "schema_version", "run_id", "mode"]:
         if not isinstance(sentinel.get(key), str):
@@ -1173,9 +1189,10 @@ def require_resume_metadata(sentinel: dict[str, Any], run: dict[str, Any], statu
     for key in ["plan_hash", "approval_state_hash", "compiler_version"]:
         if not isinstance(snapshots.get(key), str):
             raise CompileError("ERR_RESUME_MISSING_ARTIFACT", f"status snapshots missing string key: {key}", path=run_dir)
-    for key in ["packet_hashes", "prompt_hashes", "input_snapshot_hashes", "handoff_schema_hashes", "gate_approval_hashes"]:
-        if not isinstance(snapshots.get(key), dict):
-            raise CompileError("ERR_RESUME_MISSING_ARTIFACT", f"status snapshots missing object key: {key}", path=run_dir)
+    status_hash_maps = {
+        key: require_hash_map(snapshots, key, "status", run_dir)
+        for key in ["packet_hashes", "prompt_hashes", "input_snapshot_hashes", "handoff_schema_hashes", "gate_approval_hashes"]
+    }
     for key in ["source_plan_path", "source_plan_hash", "plan_hash"]:
         if not isinstance(sentinel.get(key), str):
             raise CompileError("ERR_RESUME_MISSING_ARTIFACT", f"sentinel missing string key: {key}", path=run_dir)
@@ -1185,9 +1202,10 @@ def require_resume_metadata(sentinel: dict[str, Any], run: dict[str, Any], statu
     for key in ["plan_hash", "approval_state_hash", "compiler_version"]:
         if not isinstance(sentinel_snapshots.get(key), str):
             raise CompileError("ERR_RESUME_MISSING_ARTIFACT", f"sentinel snapshots missing string key: {key}", path=run_dir)
-    for key in ["packet_hashes", "prompt_hashes", "input_snapshot_hashes", "handoff_schema_hashes", "gate_approval_hashes"]:
-        if not isinstance(sentinel_snapshots.get(key), dict):
-            raise CompileError("ERR_RESUME_MISSING_ARTIFACT", f"sentinel snapshots missing object key: {key}", path=run_dir)
+    sentinel_hash_maps = {
+        key: require_hash_map(sentinel_snapshots, key, "sentinel", run_dir)
+        for key in ["packet_hashes", "prompt_hashes", "input_snapshot_hashes", "handoff_schema_hashes", "gate_approval_hashes"]
+    }
     for key in ["packet_statuses", "handoff_statuses", "gate_statuses"]:
         if not isinstance(sentinel.get(key), list):
             raise CompileError("ERR_RESUME_MISSING_ARTIFACT", f"sentinel missing list key: {key}", path=run_dir)
@@ -1207,6 +1225,16 @@ def require_resume_metadata(sentinel: dict[str, Any], run: dict[str, Any], statu
             for key, value in item.items():
                 if value is not None and not isinstance(value, (str, int)):
                     raise CompileError("ERR_RESUME_MISSING_ARTIFACT", f"sentinel status entry has invalid field type: {section}.{key}", path=run_dir)
+    required_snapshot_entries = {
+        "packet_hashes": {str(item["packet_id"]) for item in sentinel["packet_statuses"]},
+        "prompt_hashes": {"packets/001-first-slice.prompt.md"},
+        "input_snapshot_hashes": {str(item["packet_id"]) for item in sentinel["packet_statuses"]},
+        "handoff_schema_hashes": {str(item["handoff_id"]) for item in sentinel["handoff_statuses"]},
+        "gate_approval_hashes": {str(item["gate_id"]) for item in sentinel["gate_statuses"]},
+    }
+    for map_key, required_keys in required_snapshot_entries.items():
+        require_hash_map_entries(sentinel_hash_maps[map_key], map_key, "sentinel", required_keys, run_dir)
+        require_hash_map_entries(status_hash_maps[map_key], map_key, "status", required_keys, run_dir)
 
 
 def read_resume_json(path: Path, kind: str, artifact_id: str, invalidators: list[dict[str, Any]], *, root: Path | None = None) -> dict[str, Any] | None:
@@ -1222,7 +1250,7 @@ def read_resume_json(path: Path, kind: str, artifact_id: str, invalidators: list
     try:
         text = path.read_text()
     except UnicodeDecodeError:
-        invalidators.append(hash_invalidator(kind, artifact_id, None, sha256_text(path.read_bytes()), "artifact JSON is malformed"))
+        invalidators.append(hash_invalidator(kind, artifact_id, None, sha256_bytes(path.read_bytes()), "artifact JSON is malformed"))
         return None
     try:
         data = json.loads(text)
@@ -1248,7 +1276,7 @@ def read_resume_text(path: Path, kind: str, artifact_id: str, invalidators: list
     try:
         return path.read_text()
     except UnicodeDecodeError:
-        invalidators.append(hash_invalidator(kind, artifact_id, None, sha256_text(path.read_bytes()), "artifact is not valid UTF-8"))
+        invalidators.append(hash_invalidator(kind, artifact_id, None, sha256_bytes(path.read_bytes()), "artifact is not valid UTF-8"))
         return None
 
 
@@ -1783,6 +1811,67 @@ def invalidator_record_shape(signature: dict[str, Any]) -> dict[str, str]:
     return {key: signature[key] for key in ["code", "kind", "id", "message"]}
 
 
+def resolve_hash_expectation(expression: str, plan_path: Path, run_dir: Path) -> str | None:
+    sentinel = json.loads((run_dir / SENTINEL).read_text())
+    prompt_rel = "packets/001-first-slice.prompt.md"
+    if expression == "sentinel_source_plan_hash":
+        return sentinel["source_plan_hash"]
+    if expression == "source_plan_canonical_hash":
+        return canonical_hash(json.loads(plan_path.read_text()))
+    if expression == "sentinel_plan_hash":
+        return sentinel["snapshots"]["plan_hash"]
+    if expression == "plan_snapshot_canonical_hash":
+        return canonical_hash(json.loads((run_dir / "plan.snapshot.json").read_text()))
+    if expression == "sentinel_packet_hash":
+        return sentinel["snapshots"]["packet_hashes"][PACKET_ID]
+    if expression == "packet_canonical_hash":
+        return canonical_hash(json.loads((run_dir / "packets" / "001-first-slice.packet.json").read_text()))
+    if expression == "sentinel_prompt_hash":
+        return sentinel["snapshots"]["prompt_hashes"][prompt_rel]
+    if expression == "prompt_sha256":
+        return sha256_text((run_dir / prompt_rel).read_text())
+    if expression == "prompt_bytes_sha256":
+        return sha256_bytes((run_dir / prompt_rel).read_bytes())
+    if expression == "packet_prompt_hash":
+        return json.loads((run_dir / "packets" / "001-first-slice.packet.json").read_text()).get("prompt_hash")
+    if expression == "packet_bytes_sha256":
+        return sha256_bytes((run_dir / "packets" / "001-first-slice.packet.json").read_bytes())
+    if expression == "sentinel_input_hash":
+        return sentinel["snapshots"]["input_snapshot_hashes"][PACKET_ID]
+    if expression == "packet_input_snapshot_hash":
+        packet = json.loads((run_dir / "packets" / "001-first-slice.packet.json").read_text())
+        return input_snapshot_hash(packet["input_snapshots"])
+    if expression == "none":
+        return None
+    raise CompileError("ERR_SELF_TEST_WRONG_REASON", f"unknown expected hash expression: {expression}")
+
+
+def check_expected_hash_records(fixture: dict[str, Any], plan_path: Path, run_dir: Path, signatures: list[dict[str, Any]]) -> None:
+    records = fixture.get("expected_hash_records", [])
+    if not records:
+        return
+    if not isinstance(records, list):
+        raise CompileError("ERR_SELF_TEST_WRONG_REASON", "expected_hash_records must be a list", fixture_id=fixture["id"])
+    for record in records:
+        if not isinstance(record, dict):
+            raise CompileError("ERR_SELF_TEST_WRONG_REASON", "expected hash record must be an object", fixture_id=fixture["id"])
+        index = record.get("record_index")
+        if not isinstance(index, int) or index < 0 or index >= len(signatures):
+            raise CompileError("ERR_SELF_TEST_WRONG_REASON", "expected hash record index is invalid", fixture_id=fixture["id"])
+        actual_record = signatures[index]
+        for field in ["expected_hash", "actual_hash"]:
+            expression = record.get(field)
+            if not isinstance(expression, str):
+                raise CompileError("ERR_SELF_TEST_WRONG_REASON", f"expected hash record missing expression: {field}", fixture_id=fixture["id"])
+            expected_value = resolve_hash_expectation(expression, plan_path, run_dir)
+            if actual_record[field] != expected_value:
+                raise CompileError(
+                    "ERR_SELF_TEST_WRONG_REASON",
+                    f"expected invalidator {field} from {expression}, got {actual_record[field]}",
+                    fixture_id=fixture["id"],
+                )
+
+
 def check_fixture_result(fixture: dict[str, Any], result: dict[str, Any]) -> None:
     validate_generated_artifacts(result)
     status = result["status"]["packet_statuses"][0]["status"]
@@ -1797,9 +1886,13 @@ def check_fixture_result(fixture: dict[str, Any], result: dict[str, Any]) -> Non
     if "expected_synthetic_count" in fixture and len(synthetic) != fixture["expected_synthetic_count"]:
         raise CompileError("ERR_RISK_GATE_BLOCKED", f"synthetic gate count mismatch: {len(synthetic)}", fixture_id=fixture["id"])
     if fixture.get("check_duplicate_inputs"):
-        ids = [item["input_id"] for item in result["packet"]["input_snapshots"]]
+        inputs = result["packet"]["input_snapshots"]
+        ids = [item["input_id"] for item in inputs]
         if len(ids) != len(set(ids)):
             raise CompileError("ERR_SELF_TEST_WRONG_REASON", "duplicate input IDs were not distinct", fixture_id=fixture["id"])
+        expected_labels = fixture.get("expected_input_labels")
+        if expected_labels is not None and [item["input_label"] for item in inputs] != expected_labels:
+            raise CompileError("ERR_SELF_TEST_WRONG_REASON", "input labels were not preserved in order", fixture_id=fixture["id"])
 
 
 def run_fixture(fixture: dict[str, Any], suite_dir: Path, temp_root: Path, *, suite_id: str | None = None) -> dict[str, Any]:
@@ -1863,8 +1956,25 @@ def run_fixture(fixture: dict[str, Any], suite_dir: Path, temp_root: Path, *, su
             if "expected_resume_state" in fixture:
                 if status["resume_state"] != fixture["expected_resume_state"]:
                     raise CompileError("ERR_SELF_TEST_WRONG_REASON", f"expected resume state {fixture['expected_resume_state']}, got {status['resume_state']}", fixture_id=fixture_id)
+                expected_packet_status = fixture.get("expected_resume_packet_status")
+                if expected_packet_status is not None and status["packet_statuses"][0]["status"] != expected_packet_status:
+                    raise CompileError(
+                        "ERR_SELF_TEST_WRONG_REASON",
+                        f"expected resume packet status {expected_packet_status}, got {status['packet_statuses'][0]['status']}",
+                        fixture_id=fixture_id,
+                    )
+                expected_gate_statuses = fixture.get("expected_resume_gate_statuses")
+                if expected_gate_statuses is not None:
+                    actual_gate_statuses = [gate["status"] for gate in status["gate_statuses"]]
+                    if actual_gate_statuses != expected_gate_statuses:
+                        raise CompileError(
+                            "ERR_SELF_TEST_WRONG_REASON",
+                            f"expected resume gate statuses {expected_gate_statuses}, got {actual_gate_statuses}",
+                            fixture_id=fixture_id,
+                        )
                 return {"id": fixture_id, "status": "passed"}
             actual_signatures = [invalidator_signature(item) for item in status["invalidators"]]
+            check_expected_hash_records(fixture, plan_path, run_dir, actual_signatures)
             if actual_signatures != expected_signatures:
                 raise CompileError(
                     "ERR_SELF_TEST_WRONG_REASON",
@@ -1932,6 +2042,8 @@ def mutate_run_artifact(run_dir: Path, plan_path: Path, mutation: str) -> None:
         data = json.loads(path.read_text())
         data["objective"] += " changed"
         write_json_atomic(path, data)
+    elif mutation == "packet_invalid_utf8":
+        (run_dir / "packets" / "001-first-slice.packet.json").write_bytes(b"\xff")
     elif mutation == "packet_status_rehash":
         path = run_dir / "packets" / "001-first-slice.packet.json"
         data = json.loads(path.read_text())
@@ -1995,6 +2107,8 @@ def mutate_run_artifact(run_dir: Path, plan_path: Path, mutation: str) -> None:
     elif mutation == "prompt":
         path = run_dir / "packets" / "001-first-slice.prompt.md"
         write_text_atomic(path, path.read_text() + "\nchanged\n")
+    elif mutation == "prompt_invalid_utf8":
+        (run_dir / "packets" / "001-first-slice.prompt.md").write_bytes(b"\xff")
     elif mutation == "input":
         path = run_dir / "packets" / "001-first-slice.packet.json"
         data = json.loads(path.read_text())
@@ -2161,6 +2275,11 @@ def mutate_run_artifact(run_dir: Path, plan_path: Path, mutation: str) -> None:
         path = run_dir / SENTINEL
         data = json.loads(path.read_text())
         data["packet_statuses"] = []
+        write_json_atomic(path, data)
+    elif mutation == "sentinel_snapshot_hash_non_string":
+        path = run_dir / SENTINEL
+        data = json.loads(path.read_text())
+        data["snapshots"]["packet_hashes"][PACKET_ID] = 123
         write_json_atomic(path, data)
     elif mutation == "sentinel_invalid_utf8":
         (run_dir / SENTINEL).write_bytes(b"\xff")
@@ -2408,6 +2527,31 @@ def self_test() -> None:
             or required_invalid_summary["skipped"] != 1
         ):
             raise CompileError("ERR_SELF_TEST_WRONG_REASON", "required invalid fixture summary did not count skipped required fixture")
+        missing_required_manifest = {
+            "suite_id": "missing-required",
+            "fixtures": [fixtures["positive-ready-readonly"]],
+            "required_fixture_ids": ["positive-ready-readonly", "missing-required-fixture"],
+        }
+        missing_required_path = tmp_path / "missing-required-manifest.json"
+        missing_required_out = tmp_path / "missing-required"
+        write_json_atomic(missing_required_path, missing_required_manifest)
+        try:
+            evaluate_manifest(missing_required_path, missing_required_out)
+        except CompileError as exc:
+            if exc.code != "ERR_PLAN_INVALID":
+                raise
+        else:
+            raise CompileError("ERR_SELF_TEST_WRONG_REASON", "missing required fixture did not kill manifest")
+        missing_required_summary = json.loads((missing_required_out / "summary.json").read_text())
+        if (
+            missing_required_summary["decision"] != "kill"
+            or missing_required_summary["required_fixture_count"] != 2
+            or missing_required_summary["required_passed"] != 1
+            or missing_required_summary["passed"] != 1
+            or missing_required_summary["failed"] != 1
+            or missing_required_summary["skipped"] != 1
+        ):
+            raise CompileError("ERR_SELF_TEST_WRONG_REASON", "missing required fixture summary did not count skipped required fixture")
         required_duplicate_manifest = {
             "suite_id": "required-duplicate",
             "fixtures": [
