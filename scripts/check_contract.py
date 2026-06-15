@@ -479,6 +479,45 @@ def require_v9_decision_summary_consistency() -> None:
         raise SystemExit(f"V9 decision consistency failed: {exc}") from exc
 
 
+def require_v10_decision_summary_text(doctor: dict[str, object], decision_text: str) -> None:
+    normalized_decision_text = " ".join(decision_text.lower().split())
+    final_status = doctor.get("final_status")
+    release_commands = doctor.get("release_commands")
+    if not isinstance(final_status, dict):
+        raise SystemExit("V10 doctor output is missing final_status")
+    if not isinstance(release_commands, list):
+        raise SystemExit("V10 doctor output is missing release_commands")
+    required_snippets = [
+        "decision: keep",
+        "python scripts/dwm.py --self-test",
+        "python scripts/dwm.py status --run out/v9/v32-semantic-dogfood --json",
+        "python scripts/dwm.py doctor --json",
+        "python scripts/dwm.py commands --kind release --json",
+        f"`run_id`: `{final_status['run_id']}`",
+        f"`version`: `{final_status['version']}`",
+        f"`status`: `{final_status['status']}`",
+        f"`resume_state`: `{final_status['resume_state']}`",
+        f"`completed_phase_ids`: `{', '.join(str(phase) for phase in final_status['completed_phase_ids'])}`",
+        f"`human_approved_phase_ids`: `{', '.join(str(phase) for phase in final_status['human_approved_phase_ids'])}`",
+        f"`selected_phase_ids`: `{', '.join(str(phase) for phase in final_status['selected_phase_ids'])}`",
+        f"`doctor_ok`: `{str(doctor['ok']).lower()}`",
+        f"`release_command_count`: `{len(release_commands)}`",
+        "does not claim workflow execution",
+    ]
+    missing = [snippet for snippet in required_snippets if snippet not in normalized_decision_text]
+    if missing:
+        raise SystemExit(f"docs/v10-decision.md does not match DWM doctor output: {missing}")
+
+
+def require_v10_decision_summary_consistency() -> None:
+    try:
+        completed = run_contract_command([sys.executable, "scripts/dwm.py", "doctor", "--json"])
+        doctor = json.loads(completed.stdout)
+        require_v10_decision_summary_text(doctor, (ROOT / "docs" / "v10-decision.md").read_text())
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"V10 decision consistency failed: {exc}") from exc
+
+
 def require_release_commands_pass() -> None:
     commands = [
         [sys.executable, "scripts/quick_validate_skill.py", "."],
@@ -489,9 +528,20 @@ def require_release_commands_pass() -> None:
         [sys.executable, "scripts/execute_packet.py", "--manifest", "fixtures/v2.5/manifest.json", "--out", "out/v2.5/final"],
         [sys.executable, "scripts/run_workflow.py", "--self-test"],
         [sys.executable, "scripts/run_workflow.py", "--manifest", "fixtures/v3/manifest.json", "--out", "out/v3/final"],
+        [sys.executable, "scripts/orchestrate_workflow.py", "--self-test"],
+        [sys.executable, "scripts/dispatch_worker.py", "--self-test"],
+        [sys.executable, "scripts/run_worker_result.py", "--self-test"],
+        [sys.executable, "scripts/review_worker_result.py", "--self-test"],
+        [sys.executable, "scripts/ingest_worker_review.py", "--self-test"],
+        [sys.executable, "scripts/dispatch_frontier.py", "--self-test"],
+        [sys.executable, "scripts/run_frontier_result.py", "--self-test"],
         [sys.executable, "scripts/review_frontier_result.py", "--self-test"],
         [sys.executable, "scripts/ingest_frontier_review.py", "--self-test"],
         [sys.executable, "scripts/resolve_human_gate.py", "--self-test"],
+        [sys.executable, "scripts/dwm.py", "--self-test"],
+        [sys.executable, "scripts/dwm.py", "status", "--run", "out/v9/v32-semantic-dogfood", "--json"],
+        [sys.executable, "scripts/dwm.py", "doctor", "--json"],
+        [sys.executable, "scripts/dwm.py", "commands", "--kind", "release", "--json"],
         [sys.executable, "scripts/check_whitespace.py", "."],
         [sys.executable, "scripts/check_release_text.py", "."],
         [sys.executable, "scripts/check_release_text.py", "--self-test"],
@@ -1067,6 +1117,44 @@ Overclaims execution: no
     else:
         raise SystemExit("self-test failed: stale V9 decision summary passed")
 
+    v10_doctor = {
+        "ok": True,
+        "final_status": {
+            "run_id": "v32-semantic-dogfood",
+            "version": "v9",
+            "status": "workflow-complete",
+            "resume_state": "resumable",
+            "completed_phase_ids": ["release_inventory", "evidence_review", "release_decision", "human_gate"],
+            "human_approved_phase_ids": ["human_gate"],
+            "selected_phase_ids": [],
+        },
+        "release_commands": ["a", "b", "c"],
+    }
+    good_v10_decision = (
+        "Decision: keep\n"
+        "python scripts/dwm.py --self-test\n"
+        "python scripts/dwm.py status --run out/v9/v32-semantic-dogfood --json\n"
+        "python scripts/dwm.py doctor --json\n"
+        "python scripts/dwm.py commands --kind release --json\n"
+        "- `run_id`: `v32-semantic-dogfood`\n"
+        "- `version`: `v9`\n"
+        "- `status`: `workflow-complete`\n"
+        "- `resume_state`: `resumable`\n"
+        "- `completed_phase_ids`: `release_inventory, evidence_review, release_decision, human_gate`\n"
+        "- `human_approved_phase_ids`: `human_gate`\n"
+        "- `selected_phase_ids`: ``\n"
+        "- `doctor_ok`: `true`\n"
+        "- `release_command_count`: `3`\n"
+        "This decision does not claim workflow execution.\n"
+    )
+    require_v10_decision_summary_text(v10_doctor, good_v10_decision)
+    try:
+        require_v10_decision_summary_text(v10_doctor, good_v10_decision.replace("`3`", "`4`", 1))
+    except SystemExit:
+        pass
+    else:
+        raise SystemExit("self-test failed: stale V10 decision summary passed")
+
     print("contract self-test: pass")
 
 
@@ -1126,6 +1214,10 @@ def main() -> None:
             "python scripts/review_frontier_result.py --self-test",
             "python scripts/ingest_frontier_review.py --self-test",
             "python scripts/resolve_human_gate.py --self-test",
+            "python scripts/dwm.py --self-test",
+            "python scripts/dwm.py status --run out/v9/v32-semantic-dogfood",
+            "docs/v10-product-packaging-spec.md",
+            "docs/v10-decision.md",
             "docs/v2.5-review-repair-spec.md",
             "docs/v2.5-to-v3.workflow.plan.json",
             "docs/v2.5-decision.md",
@@ -1146,6 +1238,7 @@ def main() -> None:
             "docs/v8-decision.md",
             "docs/v9-human-gate-resolution-spec.md",
             "docs/v9-decision.md",
+            "read-only product cli",
         ],
     )
     require_terms("docs/v0.5-plan-schema-evaluator-spec.md", V05_REQUIRED_TERMS)
@@ -1233,6 +1326,10 @@ def main() -> None:
             "v9 human gate resolution implemented",
             "docs/v9-human-gate-resolution-spec.md",
             "first resolution slice implemented",
+            "v10 product cli implemented",
+            "docs/v10-product-packaging-spec.md",
+            "first cli packaging slice implemented",
+            "scripts/dwm.py",
         ],
     )
     require_terms(
@@ -1272,6 +1369,20 @@ def main() -> None:
             "`resume_state`: `resumable`",
             "`human_approved_phase_ids`: `human_gate`",
             "does not claim worker execution",
+        ],
+    )
+    require_terms(
+        "docs/v10-decision.md",
+        [
+            "decision: keep",
+            "python scripts/dwm.py --self-test",
+            "python scripts/dwm.py status --run out/v9/v32-semantic-dogfood --json",
+            "python scripts/dwm.py doctor --json",
+            "python scripts/dwm.py commands --kind release --json",
+            "`status`: `workflow-complete`",
+            "`doctor_ok`: `true`",
+            "`release_command_count`: `27`",
+            "does not claim workflow execution",
         ],
     )
     require_terms(
@@ -1367,6 +1478,7 @@ def main() -> None:
     require_v75_decision_summary_consistency()
     require_v8_decision_summary_consistency()
     require_v9_decision_summary_consistency()
+    require_v10_decision_summary_consistency()
     print("contract smoke: pass")
 
 

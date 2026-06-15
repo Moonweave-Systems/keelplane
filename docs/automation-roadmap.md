@@ -1,6 +1,6 @@
 # DWM Automation Roadmap
 
-Status: draft; V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented
+Status: draft; V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented; V10 product CLI implemented
 Date: 2026-06-15
 
 ## Purpose
@@ -36,7 +36,7 @@ entrypoint remains `dynamic-workflow-designer`.
 | Frontier result review | approve or reject next-phase worker evidence before ingestion | first review slice implemented |
 | Frontier review ingestion | consume reviewed frontier results and emit the next frontier | first ingestion slice implemented |
 | Human gate resolution | consume explicit human approval and complete human-gated frontier | first resolution slice implemented |
-| Product surface | plugin, CLI, dashboard, and release packaging | last |
+| Product surface | plugin, CLI, dashboard, and release packaging | first CLI slice implemented |
 
 Prior art such as `oh-my-codex` already covers a broad Codex runtime layer:
 launch UX, worktree/tmux operation, durable state, and team execution. This repo
@@ -512,16 +512,30 @@ Full human gate resolution done means:
 
 ### V10: Product Packaging
 
-Status: planned.
+Status: first CLI packaging slice implemented.
 
 Purpose: make the system usable as a durable tool, not only as scripts.
 
-Done means:
+Spec: `docs/v10-product-packaging-spec.md`.
 
-- package as a Codex skill/plugin or CLI surface.
-- expose run status, gates, evidence, and resume actions.
-- include migration guides from V1/V2 artifacts.
-- publish stable command contracts and compatibility notes.
+Workflow plan: `docs/v10-product-packaging.workflow.plan.json`.
+
+First CLI packaging slice done means:
+
+- `scripts/dwm.py` exposes `status`, `doctor`, `commands`, and `--self-test`,
+- `status` summarizes a DWM run directory under repo-local `out/`,
+- `doctor` checks the repo product surface and canonical V9 dogfood completion,
+- `commands` prints release and dogfood command sets,
+- V10 release checks include the DWM CLI self-test,
+- V10 does not execute workflow stages, launch workers, call external runtimes,
+  install dependencies, write artifacts, or use the network.
+
+Full product packaging done means:
+
+- package as a Codex plugin or installable CLI surface,
+- expose run status, gates, evidence, and resume actions,
+- include migration guides from V1/V2 artifacts,
+- publish stable command contracts and compatibility notes,
 - keep external runtime integrations optional and adapter-based.
 
 ## Strategic Decisions

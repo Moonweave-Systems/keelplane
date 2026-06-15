@@ -1,0 +1,331 @@
+{
+  "activation": {
+    "decision": "activate",
+    "downgrade_target": null,
+    "matched_thresholds": [
+      "downstream-consumer",
+      "resumable-handoffs",
+      "adversarial-verification"
+    ],
+    "reason": "V9 completes the dogfood loop, but users still need one stable product command surface for status, doctor checks, release commands, and resume guidance."
+  },
+  "assumptions": [
+    {
+      "claim": "The first product packaging slice should be read-only and stdlib-only.",
+      "verification": "The CLI must not execute workflow stages, mutate source files, invoke network services, install dependencies, or call external runtimes."
+    },
+    {
+      "claim": "A useful product surface can be built before a plugin or dashboard.",
+      "verification": "Expose status, doctor, and command-discovery commands that read existing V1-V9 artifacts and are covered by release checks."
+    }
+  ],
+  "budget": {
+    "file_touch_limit": "one new product CLI, one V10 plan, one V10 spec, one decision doc, README, roadmap, and release contract updates",
+    "max_agents": 1,
+    "max_retries": 1,
+    "max_rounds": 1,
+    "time_box": "one implementation slice"
+  },
+  "created_by": "dynamic-workflow-designer",
+  "execution_path": {
+    "consumer": "codex-agent",
+    "first_slice": {
+      "completion_check": "python scripts/dwm.py doctor --json reports ok true and final dogfood status workflow-complete",
+      "expected_output": "A read-only DWM CLI with status, doctor, commands, and self-test modes",
+      "forbidden_actions": [
+        "workflow execution",
+        "worker execution",
+        "external runtime calls",
+        "network access",
+        "dependency installation",
+        "source mutation"
+      ],
+      "inputs": [
+        "repository path",
+        "out/v9/v32-semantic-dogfood",
+        "docs/automation-roadmap.md",
+        "README.md"
+      ],
+      "instruction": "Package the existing deterministic artifact chain behind a stable repo-local CLI that reports state and command guidance without running the workflow."
+    },
+    "mode": "direct-codex"
+  },
+  "handoffs": [
+    {
+      "artifact": "dwm-status.json",
+      "artifact_schema": {
+        "format": "json",
+        "required_fields": [
+          "run_id",
+          "version",
+          "status",
+          "resume_state",
+          "completed_phase_ids",
+          "selected_phase_ids",
+          "human_approved_phase_ids",
+          "snapshots"
+        ],
+        "validation_command": "python scripts/dwm.py status --run out/v9/v32-semantic-dogfood --json"
+      },
+      "from_phase": "status_surface",
+      "to_phase": "doctor_surface"
+    },
+    {
+      "artifact": "dwm-doctor.json",
+      "artifact_schema": {
+        "format": "json",
+        "required_fields": [
+          "ok",
+          "checks",
+          "final_status",
+          "release_commands"
+        ],
+        "validation_command": "python scripts/dwm.py doctor --json"
+      },
+      "from_phase": "doctor_surface",
+      "to_phase": "contract_update"
+    }
+  ],
+  "objective": "Make DWM usable as a durable repo-local product surface by adding a read-only CLI that summarizes status, health, release commands, and resume guidance over the V1-V9 artifact chain.",
+  "parallelism": {
+    "barriers": [
+      "status surface before doctor surface",
+      "doctor surface before contract update",
+      "contract update before release decision"
+    ],
+    "concurrency_cap": 1,
+    "fan_in_rule": "No parallel fan-in in the first slice; product packaging reads one canonical dogfood chain.",
+    "shape": "pipeline"
+  },
+  "patterns": [
+    "Sequential",
+    "Adversarial Verify",
+    "Resume And Cache"
+  ],
+  "phases": [
+    {
+      "depends_on": [],
+      "entry_criteria": [
+        "V9 dogfood artifacts exist",
+        "README documents the V1-V9 chain"
+      ],
+      "exit_criteria": [
+        "status command reads an owned run directory",
+        "status command returns stable JSON"
+      ],
+      "id": "status_surface",
+      "name": "Status Surface",
+      "outputs": [
+        "scripts/dwm.py",
+        "dwm-status.json"
+      ],
+      "worker_ids": [
+        "packaging-worker"
+      ]
+    },
+    {
+      "depends_on": [
+        "status_surface"
+      ],
+      "entry_criteria": [
+        "status command is available"
+      ],
+      "exit_criteria": [
+        "doctor command checks required scripts and docs",
+        "doctor command reports final dogfood status"
+      ],
+      "id": "doctor_surface",
+      "name": "Doctor Surface",
+      "outputs": [
+        "dwm-doctor.json"
+      ],
+      "worker_ids": [
+        "packaging-worker"
+      ]
+    },
+    {
+      "depends_on": [
+        "doctor_surface"
+      ],
+      "entry_criteria": [
+        "doctor command is available"
+      ],
+      "exit_criteria": [
+        "release commands include the DWM CLI self-test",
+        "contract checks validate V10 docs and CLI output"
+      ],
+      "id": "contract_update",
+      "name": "Contract Update",
+      "outputs": [
+        "docs/v10-product-packaging-spec.md",
+        "README.md",
+        "docs/automation-roadmap.md",
+        "scripts/check_contract.py"
+      ],
+      "worker_ids": [
+        "packaging-worker"
+      ]
+    },
+    {
+      "depends_on": [
+        "contract_update"
+      ],
+      "entry_criteria": [
+        "contract checks pass"
+      ],
+      "exit_criteria": [
+        "docs/v10-decision.md records keep with generated CLI values",
+        "quick validation and release checks pass"
+      ],
+      "id": "release_decision",
+      "name": "Release Decision",
+      "outputs": [
+        "docs/v10-decision.md"
+      ],
+      "worker_ids": [
+        "packaging-worker"
+      ]
+    }
+  ],
+  "plan_id": "v10-product-packaging-first-slice",
+  "resume": {
+    "cacheable_outputs": [
+      "docs/v10-product-packaging-spec.md",
+      "docs/v10-decision.md",
+      "scripts/dwm.py"
+    ],
+    "invalidators": [
+      "V9 dogfood status changes",
+      "release command list changes",
+      "README product surface claims drift",
+      "doctor check list changes"
+    ],
+    "restart_points": [
+      "status_surface",
+      "doctor_surface",
+      "contract_update",
+      "release_decision"
+    ]
+  },
+  "risk_gates": [
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before writing and ask for approval",
+      "trigger": "write"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before shell use and ask for approval",
+      "trigger": "shell process"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before network use and ask for approval",
+      "trigger": "network"
+    }
+  ],
+  "schema_version": "0.5",
+  "source_prompt": "Package DWM so it is usable as a real tool after V9 completes the dogfood workflow.",
+  "surfaces": [
+    {
+      "access_mode": "write-approved",
+      "id": "repo",
+      "kind": "repo",
+      "locator": "."
+    },
+    {
+      "access_mode": "read-only",
+      "id": "v9-dogfood",
+      "kind": "artifact",
+      "locator": "out/v9/v32-semantic-dogfood"
+    },
+    {
+      "access_mode": "write-approved",
+      "id": "product-cli",
+      "kind": "artifact",
+      "locator": "scripts/dwm.py"
+    }
+  ],
+  "verification": [
+    {
+      "claim_or_output": "The product CLI reports the canonical V9 dogfood completion state.",
+      "evidence_required": [
+        "python scripts/dwm.py status --run out/v9/v32-semantic-dogfood --json",
+        "python scripts/dwm.py doctor --json"
+      ],
+      "falsifier": "The CLI reports workflow-complete without matching the V9 status artifact."
+    },
+    {
+      "claim_or_output": "The product CLI is read-only and does not execute the workflow.",
+      "evidence_required": [
+        "python scripts/dwm.py --self-test",
+        "source review of scripts/dwm.py"
+      ],
+      "falsifier": "The CLI invokes workflow stage scripts, writes out artifacts, calls network services, or installs dependencies."
+    },
+    {
+      "claim_or_output": "The product packaging docs match the implemented CLI.",
+      "evidence_required": [
+        "python scripts/check_contract.py",
+        "python scripts/check_release_text.py ."
+      ],
+      "falsifier": "README, roadmap, or decision docs claim commands or completion states the CLI cannot report."
+    }
+  ],
+  "workers": [
+    {
+      "context_budget": {
+        "max_files": 18,
+        "max_tokens": 12000,
+        "must_exclude": [
+          "out/**/work/"
+        ],
+        "must_include": [
+          "scripts/dwm.py",
+          "README.md",
+          "docs/automation-roadmap.md",
+          "docs/v10-product-packaging-spec.md",
+          "scripts/check_contract.py"
+        ]
+      },
+      "forbidden_actions": [
+        "workflow execution",
+        "worker execution",
+        "external runtime calls",
+        "network access",
+        "dependency installation",
+        "source mutation from CLI"
+      ],
+      "id": "packaging-worker",
+      "ownership": [
+        "status_surface",
+        "doctor_surface",
+        "contract_update",
+        "release_decision"
+      ],
+      "prompt_contract": {
+        "inputs": [
+          "V9 dogfood run directory",
+          "release command list",
+          "README product claims"
+        ],
+        "required_output_schema": "dwm status and doctor JSON",
+        "stop_conditions": [
+          "V9 dogfood artifacts are missing",
+          "CLI would need to execute workflow stages",
+          "CLI would need external runtime integration",
+          "docs cannot be made consistent with implementation"
+        ]
+      },
+      "role": "Product packaging CLI worker",
+      "tool_permissions": {
+        "mcp_connectors": [],
+        "network": false,
+        "read": true,
+        "requires_escalation_for": [],
+        "shell": true,
+        "write": true
+      }
+    }
+  ]
+}

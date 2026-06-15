@@ -62,6 +62,7 @@ Use $dynamic-workflow-designer to plan a 500-file migration with verification ga
 ├── scripts/review_frontier_result.py    # V7.5 frontier-result review
 ├── scripts/ingest_frontier_review.py    # V8 frontier-review ingestion
 ├── scripts/resolve_human_gate.py        # V9 human-gate resolution
+├── scripts/dwm.py                       # V10 product CLI surface
 ├── references/workflow-patterns.md  # Pattern guide for workflow designs
 ├── references/workflow-plan-schema.md
 │                                      # workflow.plan.json contract
@@ -96,6 +97,9 @@ Use $dynamic-workflow-designer to plan a 500-file migration with verification ga
 ├── docs/v9-human-gate-resolution-spec.md
 │                                      # V9 human-gate resolution spec
 ├── docs/v9-decision.md                # V9 keep/kill decision
+├── docs/v10-product-packaging-spec.md
+│                                      # V10 product packaging spec
+├── docs/v10-decision.md               # V10 keep/kill decision
 ├── docs/github-research.md          # Prior-art survey and import decisions
 ├── docs/dwm-branding.md             # Product naming and compatibility rules
 ├── assets/dwm-hero.svg              # README hero image
@@ -148,9 +152,18 @@ python scripts/run_frontier_result.py --self-test
 python scripts/review_frontier_result.py --self-test
 python scripts/ingest_frontier_review.py --self-test
 python scripts/resolve_human_gate.py --self-test
+python scripts/dwm.py --self-test
 python scripts/check_whitespace.py .
 python scripts/check_release_text.py .
 python scripts/check_release_text.py --self-test
+```
+
+For day-to-day product checks, use the DWM CLI surface:
+
+```bash
+python scripts/dwm.py status --run out/v9/v32-semantic-dogfood
+python scripts/dwm.py doctor
+python scripts/dwm.py commands --kind release
 ```
 
 For V2 release-candidate verification, also run two manual smokes after the V2
@@ -280,7 +293,10 @@ and the keep decision is
 and the keep decision is [`docs/v8-decision.md`](docs/v8-decision.md). V9 is
 described in
 [`docs/v9-human-gate-resolution-spec.md`](docs/v9-human-gate-resolution-spec.md)
-and the keep decision is [`docs/v9-decision.md`](docs/v9-decision.md). V9 still
+and the keep decision is [`docs/v9-decision.md`](docs/v9-decision.md). V10 is
+described in [`docs/v10-product-packaging-spec.md`](docs/v10-product-packaging-spec.md)
+and the keep decision is [`docs/v10-decision.md`](docs/v10-decision.md). V10
+adds a read-only product CLI for status, doctor, and command discovery. It still
 does not execute workers, merge worktrees, deploy, call external services, or
 claim unattended autonomous execution beyond recorded approval ingestion.
 
