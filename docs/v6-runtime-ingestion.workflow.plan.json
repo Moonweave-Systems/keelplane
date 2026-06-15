@@ -1,0 +1,319 @@
+{
+  "activation": {
+    "decision": "activate",
+    "downgrade_target": null,
+    "matched_thresholds": [
+      "downstream-consumer",
+      "resumable-handoffs",
+      "adversarial-verification"
+    ],
+    "reason": "Reviewed V5.5 worker results need a deterministic downstream consumer before the runtime can safely schedule the next frontier."
+  },
+  "assumptions": [
+    {
+      "claim": "A V5.5 review-approved artifact is enough to mark its source V4 phase complete.",
+      "verification": "Recompute V5.5 resume and require status review-approved with no invalidators."
+    },
+    {
+      "claim": "The original V4 schedule can be recovered from the reviewed worker result lineage.",
+      "verification": "Follow V5 result sentinel to V4.5 dispatch, then V4 packet and schedule, and verify hashes through resume."
+    }
+  ],
+  "budget": {
+    "file_touch_limit": "one new script plus V6 docs and roadmap updates",
+    "max_agents": 1,
+    "max_retries": 1,
+    "max_rounds": 1,
+    "time_box": "one implementation slice"
+  },
+  "created_by": "dynamic-workflow-designer",
+  "execution_path": {
+    "consumer": "codex-agent",
+    "first_slice": {
+      "completion_check": "out/v6/v32-semantic-dogfood/status.json reports frontier-ready and resume_state resumable",
+      "expected_output": "V6 runtime ingestion artifact with completed phase list and next frontier packet",
+      "forbidden_actions": [
+        "runtime advancement without reviewed V5.5 evidence",
+        "worker execution",
+        "backend execution",
+        "external service calls"
+      ],
+      "inputs": [
+        "workflow.plan.json",
+        "original prompt",
+        "repository path",
+        "out/v5.5/v32-semantic-dogfood",
+        "out/v4/v32-semantic-dogfood/schedule.json"
+      ],
+      "instruction": "Consume one review-approved V5.5 worker result, mark its source phase complete, and emit the next deterministic frontier without executing it."
+    },
+    "mode": "direct-codex"
+  },
+  "handoffs": [
+    {
+      "artifact": "review.json",
+      "artifact_schema": {
+        "format": "json",
+        "required_fields": [
+          "verdict",
+          "source_result_path",
+          "source_phase_id",
+          "approved_outputs"
+        ],
+        "validation_command": "python -m json.tool review.json"
+      },
+      "from_phase": "review_validation",
+      "to_phase": "lineage_reconstruction"
+    },
+    {
+      "artifact": "state.json",
+      "artifact_schema": {
+        "format": "json",
+        "required_fields": [
+          "completed_phase_ids",
+          "reviewed_phase_ids",
+          "ready_phase_ids",
+          "selected_phase_ids"
+        ],
+        "validation_command": "python -m json.tool state.json"
+      },
+      "from_phase": "frontier_generation",
+      "to_phase": "resume_verification"
+    }
+  ],
+  "objective": "Implement the first V6 runtime-ingestion slice that consumes reviewed V5.5 worker results and emits the next scheduler frontier without executing workers or advancing unsafely.",
+  "parallelism": {
+    "barriers": [
+      "review validation before lineage reconstruction",
+      "lineage reconstruction before frontier generation"
+    ],
+    "concurrency_cap": 1,
+    "fan_in_rule": "No fan-in in the first slice; one reviewed result is consumed at a time.",
+    "shape": "pipeline"
+  },
+  "patterns": [
+    "Sequential",
+    "Resume And Cache",
+    "Adversarial Verify"
+  ],
+  "phases": [
+    {
+      "depends_on": [],
+      "entry_criteria": [
+        "V5.5 review directory is owned",
+        "V5.5 resume is clean"
+      ],
+      "exit_criteria": [
+        "review verdict is approve",
+        "approved output list is non-empty"
+      ],
+      "id": "review_validation",
+      "name": "Review Validation",
+      "outputs": [
+        "review.json"
+      ],
+      "worker_ids": [
+        "runtime-ingest-worker"
+      ]
+    },
+    {
+      "depends_on": [
+        "review_validation"
+      ],
+      "entry_criteria": [
+        "trusted review context exists"
+      ],
+      "exit_criteria": [
+        "V4 schedule and plan snapshot are recovered",
+        "source selected phase matches review phase"
+      ],
+      "id": "lineage_reconstruction",
+      "name": "Lineage Reconstruction",
+      "outputs": [
+        "lineage.json"
+      ],
+      "worker_ids": [
+        "runtime-ingest-worker"
+      ]
+    },
+    {
+      "depends_on": [
+        "lineage_reconstruction"
+      ],
+      "entry_criteria": [
+        "lineage validates"
+      ],
+      "exit_criteria": [
+        "state.json records completed and next ready phases",
+        "next frontier packet is emitted when ready phases exist"
+      ],
+      "id": "frontier_generation",
+      "name": "Frontier Generation",
+      "outputs": [
+        "state.json",
+        "packets/0001.release_decision.packet.json",
+        "packets/0001.release_decision.prompt.md",
+        "journal/0000.json"
+      ],
+      "worker_ids": [
+        "runtime-ingest-worker"
+      ]
+    },
+    {
+      "depends_on": [
+        "frontier_generation"
+      ],
+      "entry_criteria": [
+        "state and packets exist"
+      ],
+      "exit_criteria": [
+        "resume recomputes the same state and hashes",
+        "tampered state invalidates resume"
+      ],
+      "id": "resume_verification",
+      "name": "Resume Verification",
+      "outputs": [
+        "status.json",
+        "resume.md"
+      ],
+      "worker_ids": [
+        "runtime-ingest-worker"
+      ]
+    }
+  ],
+  "plan_id": "v6-runtime-ingestion-first-slice",
+  "resume": {
+    "cacheable_outputs": [
+      "state.json",
+      "packets/0001.release_decision.packet.json",
+      "packets/0001.release_decision.prompt.md",
+      "journal/0000.json"
+    ],
+    "invalidators": [
+      "V5.5 review status changes",
+      "review artifact hash changes",
+      "V4 schedule changes",
+      "V1 plan snapshot changes",
+      "generated state or packet tampering"
+    ],
+    "restart_points": [
+      "review_validation",
+      "lineage_reconstruction",
+      "frontier_generation",
+      "resume_verification"
+    ]
+  },
+  "risk_gates": [
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before runtime advancement, preserve frontier artifacts, and ask for approval",
+      "trigger": "runtime advancement beyond artifact generation"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before worker execution, preserve completed evidence, and ask for approval",
+      "trigger": "worker or backend execution"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before shell command execution, preserve completed evidence, and ask for approval",
+      "trigger": "shell command execution"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before writing outside approved script and docs scope, preserve completed evidence, and ask for approval",
+      "trigger": "write access"
+    }
+  ],
+  "schema_version": "0.5",
+  "source_prompt": "Use dynamic-workflow-designer to design and execute the next workflow for the dynamic workflow control plane.",
+  "surfaces": [
+    {
+      "access_mode": "write-approved",
+      "id": "repo",
+      "kind": "repo",
+      "locator": "."
+    },
+    {
+      "access_mode": "read-only",
+      "id": "v55-review",
+      "kind": "artifact",
+      "locator": "out/v5.5/v32-semantic-dogfood"
+    },
+    {
+      "access_mode": "read-only",
+      "id": "v4-schedule",
+      "kind": "artifact",
+      "locator": "out/v4/v32-semantic-dogfood"
+    }
+  ],
+  "verification": [
+    {
+      "claim_or_output": "V6 consumes only reviewed V5.5 evidence.",
+      "evidence_required": [
+        "scripts/ingest_worker_review.py --self-test",
+        "out/v6/v32-semantic-dogfood/status.json"
+      ],
+      "falsifier": "A non-approved or stale review can produce frontier-ready status."
+    },
+    {
+      "claim_or_output": "V6 emits the next frontier without executing it.",
+      "evidence_required": [
+        "out/v6/v32-semantic-dogfood/packets/0001.release_decision.packet.json",
+        "out/v6/v32-semantic-dogfood/state.json"
+      ],
+      "falsifier": "The script writes worker output, executes a backend, or advances without stop conditions."
+    }
+  ],
+  "workers": [
+    {
+      "context_budget": {
+        "max_files": 24,
+        "max_tokens": 18000,
+        "must_exclude": [
+          "out/**/work/"
+        ],
+        "must_include": [
+          "scripts/review_worker_result.py",
+          "scripts/orchestrate_workflow.py",
+          "docs/v6-runtime-ingestion.workflow.plan.json"
+        ]
+      },
+      "forbidden_actions": [
+        "worker execution",
+        "backend execution",
+        "unsupported approval",
+        "external service calls"
+      ],
+      "id": "runtime-ingest-worker",
+      "ownership": [
+        "review_validation",
+        "lineage_reconstruction",
+        "frontier_generation",
+        "resume_verification"
+      ],
+      "prompt_contract": {
+        "inputs": [
+          "V5.5 review directory",
+          "V4 schedule lineage",
+          "plan snapshot"
+        ],
+        "required_output_schema": "state.json plus frontier packet",
+        "stop_conditions": [
+          "review is not approved",
+          "source lineage is stale",
+          "runtime execution would be required"
+        ]
+      },
+      "role": "Runtime ingestion implementer",
+      "tool_permissions": {
+        "mcp_connectors": [],
+        "network": false,
+        "read": true,
+        "requires_escalation_for": [],
+        "shell": true,
+        "write": true
+      }
+    }
+  ]
+}

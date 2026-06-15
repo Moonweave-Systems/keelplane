@@ -47,6 +47,11 @@ Use $dynamic-workflow-designer to plan a 500-file migration with verification ga
 ├── scripts/compile_workflow.py        # V1 first-slice packet compiler
 ├── scripts/execute_packet.py          # V2 first-slice execution adapter
 ├── scripts/run_workflow.py             # V3 runtime entry loop
+├── scripts/orchestrate_workflow.py      # V4 scheduler
+├── scripts/dispatch_worker.py           # V4.5 dispatch preparation
+├── scripts/run_worker_result.py         # V5 fixture worker-result adapter
+├── scripts/review_worker_result.py      # V5.5 worker-result review
+├── scripts/ingest_worker_review.py      # V6 runtime ingestion
 ├── references/workflow-patterns.md  # Pattern guide for workflow designs
 ├── references/workflow-plan-schema.md
 │                                      # workflow.plan.json contract
@@ -66,6 +71,8 @@ Use $dynamic-workflow-designer to plan a 500-file migration with verification ga
 ├── docs/v2.5-decision.md              # V2.5 keep/kill decision
 ├── docs/v3-runtime-entry-spec.md      # V3 runtime-entry spec
 ├── docs/v3-decision.md                # V3 keep/kill decision
+├── docs/v6-runtime-ingestion-spec.md  # V6 runtime-ingestion spec
+├── docs/v6-decision.md                # V6 keep/kill decision
 ├── docs/github-research.md          # Prior-art survey and import decisions
 ├── docs/spec.md                     # Product spec and release criteria
 ├── agents/openai.yaml               # UI metadata
@@ -106,6 +113,11 @@ python scripts/execute_packet.py --manifest fixtures/v2/manifest.json --out out/
 python scripts/execute_packet.py --manifest fixtures/v2.5/manifest.json --out out/v2.5/final
 python scripts/run_workflow.py --self-test
 python scripts/run_workflow.py --manifest fixtures/v3/manifest.json --out out/v3/final
+python scripts/orchestrate_workflow.py --self-test
+python scripts/dispatch_worker.py --self-test
+python scripts/run_worker_result.py --self-test
+python scripts/review_worker_result.py --self-test
+python scripts/ingest_worker_review.py --self-test
 python scripts/check_whitespace.py .
 python scripts/check_release_text.py .
 python scripts/check_release_text.py --self-test
@@ -210,6 +222,19 @@ python scripts/run_workflow.py --manifest fixtures/v3/manifest.json --out out/v3
 The V3 keep/kill decision is
 [`docs/v3-decision.md`](docs/v3-decision.md). V3 still does not execute later
 packets, orchestrate parallel workers, merge worktrees, or claim fully
+autonomous large-task completion.
+
+V4 through V6 extend the runtime bridge without opening unrestricted execution:
+V4 schedules ready phase packets, V4.5 prepares dispatch bundles, V5 records
+fixture-only worker result evidence, V5.5 reviews that result, and V6 ingests
+approved reviewed results into the next frontier. The current dogfood chain
+ends with `out/v6/v32-semantic-dogfood/status.json` reporting
+`status: frontier-ready` and selecting `release_decision`.
+
+The V6 runtime-ingestion spec and decision are
+[`docs/v6-runtime-ingestion-spec.md`](docs/v6-runtime-ingestion-spec.md) and
+[`docs/v6-decision.md`](docs/v6-decision.md). V6 still does not execute the
+next packet, run arbitrary worker backends, merge worktrees, or claim fully
 autonomous large-task completion.
 
 ## License

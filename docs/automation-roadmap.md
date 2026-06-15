@@ -29,6 +29,7 @@ workflows.
 | Worker dispatch | prepare reviewed dispatch bundles for scheduled packets | first dispatch slice implemented |
 | Worker result adapter | execute fixture-only worker result bundles under owned output | first controlled slice implemented |
 | Worker result review | approve or reject worker results before runtime advancement | first review slice implemented |
+| Runtime ingestion | consume reviewed worker results and emit the next frontier | first ingestion slice implemented |
 | Product surface | plugin, CLI, dashboard, and release packaging | last |
 
 Prior art such as `oh-my-codex` already covers a broad Codex runtime layer:
@@ -321,7 +322,36 @@ Full worker result review done means:
 - rejected worker results can route to a bounded repair workflow,
 - only reviewed results can be consumed by future runtime ingestion.
 
-### V6: Product Packaging
+### V6: Runtime Ingestion
+
+Status: first ingestion slice implemented.
+
+Purpose: consume reviewed V5.5 worker results as completed phase evidence and
+emit the next scheduler frontier without executing it.
+
+First ingestion slice done means:
+
+- `scripts/ingest_worker_review.py` consumes one trusted V5.5 review directory.
+- V6 requires V5.5 `status: review-approved` and clean resume.
+- V6 reconstructs V5 -> V4.5 -> V4 -> V3 -> V1 lineage before ingestion.
+- V6 marks the reviewed source phase complete only when it was selected by the
+  original V4 schedule.
+- V6 emits `state.json`, frontier packet prompts, journal, hashes, status, and
+  resume docs under owned `out/v6/`.
+- V6 resume detects tampered state, packet, prompt, journal, hashes, and stale
+  source review evidence.
+- V6 dogfood over `out/v5.5/v32-semantic-dogfood` produces
+  `status: frontier-ready` and selects `release_decision`.
+- V6 does not execute the next packet.
+
+Full runtime ingestion done means:
+
+- multiple reviewed worker results can fan in safely,
+- rejected worker results route to repair instead of blocking manually,
+- human-gated phases preserve completed evidence while waiting,
+- the scheduler can loop from V6 frontier back to V4/V4.5/V5/V5.5.
+
+### V7: Product Packaging
 
 Status: planned.
 

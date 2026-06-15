@@ -285,8 +285,10 @@ def build_dispatch(context: dict[str, Any], *, created_at: str | None = None) ->
 
 
 def build_hashes(context: dict[str, Any], dispatch: dict[str, Any]) -> dict[str, str]:
+    source_status = dict(context["status"])
+    source_status.pop("checked_at", None)
     return {
-        "source_v4_status_hash": canonical_hash(context["status"]),
+        "source_v4_status_hash": canonical_hash(source_status),
         "source_v4_schedule_hash": canonical_hash(context["schedule"]),
         "source_packet_hash": canonical_hash(context["packet"]),
         "source_prompt_hash": sha256_text(context["prompt"]),
