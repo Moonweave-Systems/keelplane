@@ -1302,6 +1302,11 @@ def main() -> None:
             "docs/v10-decision.md",
             "docs/v11-operator-guidance-spec.md",
             "docs/v11-decision.md",
+            "docs/v12-to-v20-final-roadmap.md",
+            "docs/v12-adapter-command-planner-spec.md",
+            "docs/v13-dwm-runner-mvp-spec.md",
+            "docs/v20-1.0-release-hardening-spec.md",
+            "planning documents, not implemented runtime claims",
             "docs/v2.5-review-repair-spec.md",
             "docs/v2.5-to-v3.workflow.plan.json",
             "docs/v2.5-decision.md",
@@ -1417,9 +1422,50 @@ def main() -> None:
             "v11 operator guidance implemented",
             "docs/v11-operator-guidance-spec.md",
             "first operator guidance slice implemented",
+            "planned v12",
+            "planned v13",
+            "planned v20",
+            "docs/v12-to-v20-final-roadmap.md",
+            "omx optional",
             "scripts/dwm.py",
         ],
     )
+    require_terms(
+        "docs/v12-to-v20-final-roadmap.md",
+        [
+            "status: planning specs; not implemented.",
+            "dwm core",
+            "dwm runner",
+            "codex cli workers",
+            "omx remains optional",
+            "v12",
+            "v20",
+        ],
+    )
+    for spec_path in [
+        "docs/v12-adapter-command-planner-spec.md",
+        "docs/v13-dwm-runner-mvp-spec.md",
+        "docs/v14-session-worktree-runtime-spec.md",
+        "docs/v15-multi-worker-fanout-spec.md",
+        "docs/v16-runtime-review-repair-spec.md",
+        "docs/v17-dashboard-hud-spec.md",
+        "docs/v18-plugin-install-packaging-spec.md",
+        "docs/v19-adapter-ecosystem-spec.md",
+        "docs/v20-1.0-release-hardening-spec.md",
+    ]:
+        require_terms(
+            spec_path,
+            [
+                "status: planned; not implemented.",
+                "## research and prior art",
+                "## product position and non-goals",
+                "## workflow architecture",
+                "## execution model",
+                "## safety and verification gates",
+                "## evaluation fixtures",
+                "## release plan",
+            ],
+        )
     require_terms(
         "docs/v7.5-decision.md",
         [

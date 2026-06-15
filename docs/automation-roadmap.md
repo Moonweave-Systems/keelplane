@@ -37,6 +37,15 @@ entrypoint remains `dynamic-workflow-designer`.
 | Frontier review ingestion | consume reviewed frontier results and emit the next frontier | first ingestion slice implemented |
 | Human gate resolution | consume explicit human approval and complete human-gated frontier | first resolution slice implemented |
 | Product surface | plugin, CLI, dashboard, and release packaging | first operator guidance slice implemented |
+| Adapter command planner | generate exact next adapter commands without execution | planned V12 |
+| DWM Runner | execute DWM-approved packets through Codex CLI with evidence | planned V13 |
+| Session/worktree runtime | durable sessions, worktree isolation, logs, and resume | planned V14 |
+| Multi-worker fanout | bounded parallel Codex workers and deterministic fan-in | planned V15 |
+| Runtime review/repair | runner-backed review, repair, and retry loops | planned V16 |
+| Dashboard/HUD | local evidence browser, human gates, and next-action UI | planned V17 |
+| Plugin/install packaging | installable CLI/plugin and migration surface | planned V18 |
+| Adapter ecosystem | optional Codex, OMX, Claude, shell, and fixture adapters | planned V19 |
+| 1.0 hardening | compatibility, migration, security, and acceptance gates | planned V20 |
 
 Prior art such as `oh-my-codex` already covers a broad Codex runtime layer:
 launch UX, worktree/tmux operation, durable state, and team execution. This repo
@@ -568,11 +577,44 @@ Full operator guidance done means:
 - make stale, tampered, blocked, complete, and ready states visually distinct,
 - keep every recommendation falsifiable through hash-bound evidence.
 
+### V12-V20: Planned Final Product Roadmap
+
+Status: planned; not implemented.
+
+Index: `docs/v12-to-v20-final-roadmap.md`.
+
+The planned roadmap splits the remaining product into versioned specs:
+
+- V12 adapter command planner:
+  `docs/v12-adapter-command-planner-spec.md`,
+- V13 DWM Runner MVP:
+  `docs/v13-dwm-runner-mvp-spec.md`,
+- V14 session and worktree runtime:
+  `docs/v14-session-worktree-runtime-spec.md`,
+- V15 multi-worker fanout:
+  `docs/v15-multi-worker-fanout-spec.md`,
+- V16 runtime review and repair:
+  `docs/v16-runtime-review-repair-spec.md`,
+- V17 dashboard and approval UI:
+  `docs/v17-dashboard-hud-spec.md`,
+- V18 plugin and install packaging:
+  `docs/v18-plugin-install-packaging-spec.md`,
+- V19 adapter ecosystem:
+  `docs/v19-adapter-ecosystem-spec.md`,
+- V20 1.0 release hardening:
+  `docs/v20-1.0-release-hardening-spec.md`.
+
+These specs define the intended path to an independent DWM product that can use
+Codex CLI directly through DWM Runner while keeping OMX optional rather than a
+required dependency.
+
 ## Strategic Decisions
 
 - Build the compiler/control-plane path before a full runtime.
 - Treat execution backends as adapters, not as the source of truth.
 - Prefer OMX/Codex integration over copying an existing runtime surface.
+- Keep DWM Core and DWM Runner as separate layers under one DWM product.
+- Make OMX an optional adapter target, not a required dependency.
 - Never mark work complete from a model message alone; require evidence and
   verification.
 - Keep destructive, external, costly, production, secret, dependency, database,

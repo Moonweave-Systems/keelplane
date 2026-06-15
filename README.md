@@ -103,6 +103,16 @@ Use $dynamic-workflow-designer to plan a 500-file migration with verification ga
 ├── docs/v11-operator-guidance-spec.md
 │                                      # V11 operator guidance spec
 ├── docs/v11-decision.md               # V11 keep/kill decision
+├── docs/v12-to-v20-final-roadmap.md   # planned final roadmap
+├── docs/v12-adapter-command-planner-spec.md
+├── docs/v13-dwm-runner-mvp-spec.md
+├── docs/v14-session-worktree-runtime-spec.md
+├── docs/v15-multi-worker-fanout-spec.md
+├── docs/v16-runtime-review-repair-spec.md
+├── docs/v17-dashboard-hud-spec.md
+├── docs/v18-plugin-install-packaging-spec.md
+├── docs/v19-adapter-ecosystem-spec.md
+├── docs/v20-1.0-release-hardening-spec.md
 ├── docs/github-research.md          # Prior-art survey and import decisions
 ├── docs/dwm-branding.md             # Product naming and compatibility rules
 ├── assets/dwm-hero.svg              # README hero image
@@ -225,6 +235,9 @@ The large-task automation roadmap is
 [`docs/automation-roadmap.md`](docs/automation-roadmap.md). The current
 DWM implementation started with the V2 first-slice execution adapter described
 in [`docs/v2-execution-adapter-spec.md`](docs/v2-execution-adapter-spec.md).
+The planned final product roadmap is split across
+[`docs/v12-to-v20-final-roadmap.md`](docs/v12-to-v20-final-roadmap.md) and the
+V12-V20 spec files. Those future specs are planning documents, not implemented runtime claims.
 V2 Slice 1 adds `scripts/execute_packet.py` dry-run evidence generation and V1
 trust precondition checks. V2 Slice 2 adds manifest-scoped `local-shell`
 execution fixtures, deterministic worktree creation, stdout/stderr capture, and
