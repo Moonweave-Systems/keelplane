@@ -1,0 +1,337 @@
+{
+  "activation": {
+    "decision": "activate",
+    "downgrade_target": null,
+    "matched_thresholds": [
+      "downstream-consumer",
+      "resumable-handoffs",
+      "adversarial-verification"
+    ],
+    "reason": "V10 exposes status and doctor output, but operators still need a deterministic next-action contract before DWM can safely grow into execution orchestration."
+  },
+  "assumptions": [
+    {
+      "claim": "The next useful product slice is operator guidance, not external runtime execution.",
+      "verification": "The new command must derive recommendations only from trusted repo-local artifacts and must not execute workflow stages."
+    },
+    {
+      "claim": "A stable next-action JSON contract can become the handoff between the control-plane and later adapters.",
+      "verification": "The command must expose action, trust checks, approval requirement, safe default, commands, and blockers."
+    }
+  ],
+  "budget": {
+    "file_touch_limit": "one product CLI update, one V11 plan, one V11 spec, one decision doc, README, roadmap, and release contract updates",
+    "max_agents": 1,
+    "max_retries": 1,
+    "max_rounds": 1,
+    "time_box": "one implementation slice"
+  },
+  "created_by": "dynamic-workflow-designer",
+  "execution_path": {
+    "consumer": "codex-agent",
+    "first_slice": {
+      "completion_check": "python scripts/dwm.py next --run out/v9/v32-semantic-dogfood --json reports trusted true and recommendation.action complete",
+      "expected_output": "A read-only DWM next-action command with stable JSON operator guidance",
+      "forbidden_actions": [
+        "workflow execution",
+        "worker execution",
+        "external runtime calls",
+        "network access",
+        "dependency installation",
+        "source mutation from the CLI"
+      ],
+      "inputs": [
+        "repository path",
+        "out/v9/v32-semantic-dogfood",
+        "scripts/dwm.py",
+        "docs/automation-roadmap.md",
+        "README.md"
+      ],
+      "instruction": "Extend the DWM product CLI with a read-only next-action command that verifies run trust and recommends the next safe operator action."
+    },
+    "mode": "direct-codex"
+  },
+  "handoffs": [
+    {
+      "artifact": "dwm-next.json",
+      "artifact_schema": {
+        "format": "json",
+        "required_fields": [
+          "trusted",
+          "trust_checks",
+          "verified_artifact_hashes",
+          "recommendation",
+          "recommendation.action",
+          "recommendation.safe_default"
+        ],
+        "validation_command": "python scripts/dwm.py next --run out/v9/v32-semantic-dogfood --json"
+      },
+      "from_phase": "next_surface",
+      "to_phase": "product_commands"
+    },
+    {
+      "artifact": "dwm-product-commands.json",
+      "artifact_schema": {
+        "format": "json",
+        "required_fields": [
+          "commands",
+          "commands.product"
+        ],
+        "validation_command": "python scripts/dwm.py commands --kind product --json"
+      },
+      "from_phase": "product_commands",
+      "to_phase": "contract_update"
+    }
+  ],
+  "objective": "Add deterministic operator guidance to DWM so a user or future runtime adapter can ask what the next safe action is for a trusted run.",
+  "parallelism": {
+    "barriers": [
+      "next surface before product command discovery",
+      "product command discovery before contract update",
+      "contract update before release decision"
+    ],
+    "concurrency_cap": 1,
+    "fan_in_rule": "No parallel fan-in in the first slice; one canonical dogfood run is enough to prove the operator guidance contract.",
+    "shape": "pipeline"
+  },
+  "patterns": [
+    "Sequential",
+    "Adversarial Verify",
+    "Resume And Cache"
+  ],
+  "phases": [
+    {
+      "depends_on": [],
+      "entry_criteria": [
+        "V10 product CLI exists",
+        "V9 dogfood artifacts exist"
+      ],
+      "exit_criteria": [
+        "next command reads an owned run directory",
+        "next command returns stable JSON",
+        "next command validates trust before recommending action"
+      ],
+      "id": "next_surface",
+      "name": "Next Action Surface",
+      "outputs": [
+        "scripts/dwm.py",
+        "dwm-next.json"
+      ],
+      "worker_ids": [
+        "operator-guidance-worker"
+      ]
+    },
+    {
+      "depends_on": [
+        "next_surface"
+      ],
+      "entry_criteria": [
+        "next command is available"
+      ],
+      "exit_criteria": [
+        "commands --kind product lists status, next, doctor, and commands",
+        "self-test asserts the product command set"
+      ],
+      "id": "product_commands",
+      "name": "Product Command Discovery",
+      "outputs": [
+        "dwm-product-commands.json"
+      ],
+      "worker_ids": [
+        "operator-guidance-worker"
+      ]
+    },
+    {
+      "depends_on": [
+        "product_commands"
+      ],
+      "entry_criteria": [
+        "product command discovery is available"
+      ],
+      "exit_criteria": [
+        "contract checks validate V11 docs and CLI output",
+        "README and roadmap describe the V11 operator surface"
+      ],
+      "id": "contract_update",
+      "name": "Contract Update",
+      "outputs": [
+        "docs/v11-operator-guidance-spec.md",
+        "README.md",
+        "docs/automation-roadmap.md",
+        "scripts/check_contract.py"
+      ],
+      "worker_ids": [
+        "operator-guidance-worker"
+      ]
+    },
+    {
+      "depends_on": [
+        "contract_update"
+      ],
+      "entry_criteria": [
+        "contract checks pass"
+      ],
+      "exit_criteria": [
+        "docs/v11-decision.md records keep with generated CLI values",
+        "quick validation and release checks pass"
+      ],
+      "id": "release_decision",
+      "name": "Release Decision",
+      "outputs": [
+        "docs/v11-decision.md"
+      ],
+      "worker_ids": [
+        "operator-guidance-worker"
+      ]
+    }
+  ],
+  "plan_id": "v11-operator-guidance-first-slice",
+  "resume": {
+    "cacheable_outputs": [
+      "docs/v11-operator-guidance-spec.md",
+      "docs/v11-decision.md",
+      "scripts/dwm.py"
+    ],
+    "invalidators": [
+      "V9 dogfood status changes",
+      "hash ledger validation changes",
+      "product command list changes",
+      "operator recommendation vocabulary changes"
+    ],
+    "restart_points": [
+      "next_surface",
+      "product_commands",
+      "contract_update",
+      "release_decision"
+    ]
+  },
+  "risk_gates": [
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before writing and ask for approval",
+      "trigger": "write"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before shell use and ask for approval",
+      "trigger": "shell process"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before network use and ask for approval",
+      "trigger": "network"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before sending external messages and ask for approval",
+      "trigger": "external-message"
+    }
+  ],
+  "schema_version": "0.5",
+  "source_prompt": "Write the next DWM spec, design the full workflow, and execute the next workflow.",
+  "surfaces": [
+    {
+      "access_mode": "write-approved",
+      "id": "repo",
+      "kind": "repo",
+      "locator": "."
+    },
+    {
+      "access_mode": "read-only",
+      "id": "v9-dogfood",
+      "kind": "artifact",
+      "locator": "out/v9/v32-semantic-dogfood"
+    },
+    {
+      "access_mode": "write-approved",
+      "id": "product-cli",
+      "kind": "artifact",
+      "locator": "scripts/dwm.py"
+    }
+  ],
+  "verification": [
+    {
+      "claim_or_output": "The next command recommends complete for the trusted V9 dogfood run.",
+      "evidence_required": [
+        "python scripts/dwm.py next --run out/v9/v32-semantic-dogfood --json"
+      ],
+      "falsifier": "The command returns a recommendation without first proving trusted artifacts."
+    },
+    {
+      "claim_or_output": "The product command set exposes the operator guidance workflow.",
+      "evidence_required": [
+        "python scripts/dwm.py commands --kind product --json"
+      ],
+      "falsifier": "The product command set omits the next command or references a missing path."
+    },
+    {
+      "claim_or_output": "V11 does not claim autonomous external execution.",
+      "evidence_required": [
+        "docs/v11-operator-guidance-spec.md",
+        "docs/v11-decision.md"
+      ],
+      "falsifier": "Docs imply Codex, OMX, worker, worktree, network, or deployment execution."
+    }
+  ],
+  "workers": [
+    {
+      "context_budget": {
+        "max_files": 8,
+        "max_tokens": 24000,
+        "must_exclude": [
+          "unrelated out/ evidence",
+          "external repositories"
+        ],
+        "must_include": [
+          "scripts/dwm.py",
+          "docs/v10-product-packaging-spec.md",
+          "docs/automation-roadmap.md",
+          "README.md"
+        ]
+      },
+      "forbidden_actions": [
+        "execute workflow stages",
+        "launch external runtimes",
+        "write from the product CLI",
+        "call network services"
+      ],
+      "id": "operator-guidance-worker",
+      "ownership": [
+        "scripts/dwm.py",
+        "docs/v11-operator-guidance-spec.md",
+        "docs/v11-decision.md",
+        "docs/v11-operator-guidance.workflow.plan.json",
+        "README.md",
+        "docs/automation-roadmap.md",
+        "scripts/check_contract.py"
+      ],
+      "prompt_contract": {
+        "inputs": [
+          "repository path",
+          "V9 dogfood run",
+          "V10 product CLI"
+        ],
+        "required_output_schema": "dwm next JSON and product command JSON",
+        "stop_conditions": [
+          "next command mutates files",
+          "hash ledger validation is bypassed",
+          "recommendation claims external execution"
+        ]
+      },
+      "role": "Implement a read-only operator guidance command and bind it into release contracts.",
+      "tool_permissions": {
+        "mcp_connectors": [],
+        "network": false,
+        "read": true,
+        "requires_escalation_for": [
+          "network",
+          "external-message",
+          "write",
+          "shell"
+        ],
+        "shell": true,
+        "write": true
+      }
+    }
+  ]
+}

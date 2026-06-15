@@ -1,6 +1,6 @@
 # DWM Automation Roadmap
 
-Status: draft; V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented; V10 product CLI implemented
+Status: draft; V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented; V10 product CLI implemented; V11 operator guidance implemented
 Date: 2026-06-15
 
 ## Purpose
@@ -36,7 +36,7 @@ entrypoint remains `dynamic-workflow-designer`.
 | Frontier result review | approve or reject next-phase worker evidence before ingestion | first review slice implemented |
 | Frontier review ingestion | consume reviewed frontier results and emit the next frontier | first ingestion slice implemented |
 | Human gate resolution | consume explicit human approval and complete human-gated frontier | first resolution slice implemented |
-| Product surface | plugin, CLI, dashboard, and release packaging | first CLI slice implemented |
+| Product surface | plugin, CLI, dashboard, and release packaging | first operator guidance slice implemented |
 
 Prior art such as `oh-my-codex` already covers a broad Codex runtime layer:
 launch UX, worktree/tmux operation, durable state, and team execution. This repo
@@ -537,6 +537,36 @@ Full product packaging done means:
 - include migration guides from V1/V2 artifacts,
 - publish stable command contracts and compatibility notes,
 - keep external runtime integrations optional and adapter-based.
+
+### V11: Operator Guidance
+
+Status: first operator guidance slice implemented.
+
+Purpose: make the product CLI useful as a safe day-to-day operator loop, not
+only a status dashboard.
+
+Spec: `docs/v11-operator-guidance-spec.md`.
+
+Workflow plan: `docs/v11-operator-guidance.workflow.plan.json`.
+
+First operator guidance slice done means:
+
+- `scripts/dwm.py next` verifies one run and recommends the next safe action,
+- `next` returns trust checks, verified artifact hash count, blockers, safe
+  default, approval requirement, and recommended commands,
+- `commands --kind product` lists day-to-day DWM product commands,
+- V11 release checks include `next` and product command discovery,
+- V11 does not execute workflow stages, launch workers, create approvals, call
+  external runtimes, install dependencies, write artifacts, or use the network.
+
+Full operator guidance done means:
+
+- recommend exact deterministic adapter commands for every V1-V9 terminal
+  state,
+- expose approval packet summaries and evidence paths for human review,
+- provide machine-readable stop reasons for future UI/plugin surfaces,
+- make stale, tampered, blocked, complete, and ready states visually distinct,
+- keep every recommendation falsifiable through hash-bound evidence.
 
 ## Strategic Decisions
 

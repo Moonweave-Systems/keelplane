@@ -518,6 +518,47 @@ def require_v10_decision_summary_consistency() -> None:
         raise SystemExit(f"V10 decision consistency failed: {exc}") from exc
 
 
+def require_v11_decision_summary_text(next_status: dict[str, object], product_commands: dict[str, object], decision_text: str) -> None:
+    normalized_decision_text = " ".join(decision_text.lower().split())
+    recommendation = next_status.get("recommendation")
+    command_groups = product_commands.get("commands")
+    if not isinstance(recommendation, dict):
+        raise SystemExit("V11 next output is missing recommendation")
+    if not isinstance(command_groups, dict) or not isinstance(command_groups.get("product"), list):
+        raise SystemExit("V11 product command output is missing commands.product")
+    product = command_groups["product"]
+    required_snippets = [
+        "decision: keep",
+        "python scripts/dwm.py --self-test",
+        "python scripts/dwm.py next --run out/v9/v32-semantic-dogfood --json",
+        "python scripts/dwm.py commands --kind product --json",
+        f"`run_id`: `{next_status['run_id']}`",
+        f"`version`: `{next_status['version']}`",
+        f"`status`: `{next_status['status']}`",
+        f"`resume_state`: `{next_status['resume_state']}`",
+        f"`trusted`: `{str(next_status['trusted']).lower()}`",
+        f"`verified_artifact_hashes`: `{next_status['verified_artifact_hashes']}`",
+        f"`recommendation.action`: `{recommendation['action']}`",
+        f"`recommendation.requires_user_approval`: `{str(recommendation['requires_user_approval']).lower()}`",
+        f"`product_command_count`: `{len(product)}`",
+        "does not claim workflow execution",
+    ]
+    missing = [snippet for snippet in required_snippets if snippet not in normalized_decision_text]
+    if missing:
+        raise SystemExit(f"docs/v11-decision.md does not match DWM next output: {missing}")
+
+
+def require_v11_decision_summary_consistency() -> None:
+    try:
+        next_completed = run_contract_command([sys.executable, "scripts/dwm.py", "next", "--run", "out/v9/v32-semantic-dogfood", "--json"])
+        commands_completed = run_contract_command([sys.executable, "scripts/dwm.py", "commands", "--kind", "product", "--json"])
+        next_status = json.loads(next_completed.stdout)
+        product_commands = json.loads(commands_completed.stdout)
+        require_v11_decision_summary_text(next_status, product_commands, (ROOT / "docs" / "v11-decision.md").read_text())
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"V11 decision consistency failed: {exc}") from exc
+
+
 def require_release_commands_pass() -> None:
     commands = [
         [sys.executable, "scripts/quick_validate_skill.py", "."],
@@ -540,8 +581,10 @@ def require_release_commands_pass() -> None:
         [sys.executable, "scripts/resolve_human_gate.py", "--self-test"],
         [sys.executable, "scripts/dwm.py", "--self-test"],
         [sys.executable, "scripts/dwm.py", "status", "--run", "out/v9/v32-semantic-dogfood", "--json"],
+        [sys.executable, "scripts/dwm.py", "next", "--run", "out/v9/v32-semantic-dogfood", "--json"],
         [sys.executable, "scripts/dwm.py", "doctor", "--json"],
         [sys.executable, "scripts/dwm.py", "commands", "--kind", "release", "--json"],
+        [sys.executable, "scripts/dwm.py", "commands", "--kind", "product", "--json"],
         [sys.executable, "scripts/check_whitespace.py", "."],
         [sys.executable, "scripts/check_release_text.py", "."],
         [sys.executable, "scripts/check_release_text.py", "--self-test"],
@@ -1155,6 +1198,43 @@ Overclaims execution: no
     else:
         raise SystemExit("self-test failed: stale V10 decision summary passed")
 
+    v11_next = {
+        "run_id": "v32-semantic-dogfood",
+        "version": "v9",
+        "status": "workflow-complete",
+        "resume_state": "resumable",
+        "trusted": True,
+        "verified_artifact_hashes": 4,
+        "recommendation": {
+            "action": "complete",
+            "requires_user_approval": False,
+        },
+    }
+    v11_product_commands = {"commands": {"product": ["a", "b", "c", "d"]}}
+    good_v11_decision = (
+        "Decision: keep\n"
+        "python scripts/dwm.py --self-test\n"
+        "python scripts/dwm.py next --run out/v9/v32-semantic-dogfood --json\n"
+        "python scripts/dwm.py commands --kind product --json\n"
+        "- `run_id`: `v32-semantic-dogfood`\n"
+        "- `version`: `v9`\n"
+        "- `status`: `workflow-complete`\n"
+        "- `resume_state`: `resumable`\n"
+        "- `trusted`: `true`\n"
+        "- `verified_artifact_hashes`: `4`\n"
+        "- `recommendation.action`: `complete`\n"
+        "- `recommendation.requires_user_approval`: `false`\n"
+        "- `product_command_count`: `4`\n"
+        "This decision does not claim workflow execution.\n"
+    )
+    require_v11_decision_summary_text(v11_next, v11_product_commands, good_v11_decision)
+    try:
+        require_v11_decision_summary_text(v11_next, v11_product_commands, good_v11_decision.replace("`4`", "`5`", 1))
+    except SystemExit:
+        pass
+    else:
+        raise SystemExit("self-test failed: stale V11 decision summary passed")
+
     print("contract self-test: pass")
 
 
@@ -1216,8 +1296,12 @@ def main() -> None:
             "python scripts/resolve_human_gate.py --self-test",
             "python scripts/dwm.py --self-test",
             "python scripts/dwm.py status --run out/v9/v32-semantic-dogfood",
+            "python scripts/dwm.py next --run out/v9/v32-semantic-dogfood",
+            "python scripts/dwm.py commands --kind product",
             "docs/v10-product-packaging-spec.md",
             "docs/v10-decision.md",
+            "docs/v11-operator-guidance-spec.md",
+            "docs/v11-decision.md",
             "docs/v2.5-review-repair-spec.md",
             "docs/v2.5-to-v3.workflow.plan.json",
             "docs/v2.5-decision.md",
@@ -1239,6 +1323,7 @@ def main() -> None:
             "docs/v9-human-gate-resolution-spec.md",
             "docs/v9-decision.md",
             "read-only product cli",
+            "operator guidance",
         ],
     )
     require_terms("docs/v0.5-plan-schema-evaluator-spec.md", V05_REQUIRED_TERMS)
@@ -1329,6 +1414,9 @@ def main() -> None:
             "v10 product cli implemented",
             "docs/v10-product-packaging-spec.md",
             "first cli packaging slice implemented",
+            "v11 operator guidance implemented",
+            "docs/v11-operator-guidance-spec.md",
+            "first operator guidance slice implemented",
             "scripts/dwm.py",
         ],
     )
@@ -1382,6 +1470,20 @@ def main() -> None:
             "`status`: `workflow-complete`",
             "`doctor_ok`: `true`",
             "`release_command_count`: `27`",
+            "does not claim workflow execution",
+        ],
+    )
+    require_terms(
+        "docs/v11-decision.md",
+        [
+            "decision: keep",
+            "python scripts/dwm.py --self-test",
+            "python scripts/dwm.py next --run out/v9/v32-semantic-dogfood --json",
+            "python scripts/dwm.py commands --kind product --json",
+            "`trusted`: `true`",
+            "`verified_artifact_hashes`: `4`",
+            "`recommendation.action`: `complete`",
+            "`product_command_count`: `4`",
             "does not claim workflow execution",
         ],
     )
@@ -1479,6 +1581,7 @@ def main() -> None:
     require_v8_decision_summary_consistency()
     require_v9_decision_summary_consistency()
     require_v10_decision_summary_consistency()
+    require_v11_decision_summary_consistency()
     print("contract smoke: pass")
 
 

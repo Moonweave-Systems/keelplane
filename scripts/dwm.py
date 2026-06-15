@@ -56,6 +56,13 @@ DOGFOOD_COMMANDS = [
     "python scripts/resolve_human_gate.py --resume out/v9/v32-semantic-dogfood",
 ]
 
+PRODUCT_COMMANDS = [
+    "python scripts/dwm.py status --run out/v9/v32-semantic-dogfood --json",
+    "python scripts/dwm.py next --run out/v9/v32-semantic-dogfood --json",
+    "python scripts/dwm.py doctor --json",
+    "python scripts/dwm.py commands --kind product --json",
+]
+
 BASE_REQUIRED_PATHS = [
     "SKILL.md",
     "README.md",
@@ -63,6 +70,9 @@ BASE_REQUIRED_PATHS = [
     "docs/v10-product-packaging-spec.md",
     "docs/v10-product-packaging.workflow.plan.json",
     "docs/v10-decision.md",
+    "docs/v11-operator-guidance-spec.md",
+    "docs/v11-operator-guidance.workflow.plan.json",
+    "docs/v11-decision.md",
     "scripts/dwm.py",
 ]
 
@@ -318,9 +328,124 @@ def check_path(path_text: str) -> dict[str, Any]:
     }
 
 
+def run_trust_summary(run_dir: Path) -> dict[str, Any]:
+    run_dir = resolve_out_run(run_dir)
+    checks: list[dict[str, Any]] = []
+    try:
+        status = read_json_obj(run_dir / "status.json", label="status.json")
+        checks.append({"id": "status-json", "ok": True, "path": rel(run_dir / "status.json"), "message": "present"})
+    except DwmError as exc:
+        checks.append({"id": "status-json", "ok": False, "path": rel(run_dir / "status.json"), "message": exc.message})
+        return {"trusted": False, "checks": checks, "verified_artifact_hashes": 0}
+
+    hashes_path = run_dir / "hashes.json"
+    if hashes_path.exists():
+        try:
+            hashes = read_json_obj(hashes_path, label="hashes.json")
+            verified = validate_hash_ledger(run_dir, status, hashes)
+            checks.append(
+                {
+                    "id": "hash-ledger",
+                    "ok": True,
+                    "path": rel(hashes_path),
+                    "message": f"verified {verified} artifact hashes",
+                }
+            )
+            return {"trusted": True, "checks": checks, "verified_artifact_hashes": verified}
+        except DwmError as exc:
+            checks.append({"id": "hash-ledger", "ok": False, "path": rel(hashes_path), "message": exc.message})
+            return {"trusted": False, "checks": checks, "verified_artifact_hashes": 0}
+
+    checks.append({"id": "hash-ledger", "ok": False, "path": rel(hashes_path), "message": "missing hashes.json"})
+    return {"trusted": False, "checks": checks, "verified_artifact_hashes": 0}
+
+
+def recommended_action(summary: dict[str, Any], trust: dict[str, Any]) -> dict[str, Any]:
+    invalidators = summary.get("invalidators", [])
+    selected = summary.get("selected_phase_ids", [])
+    status = summary.get("status")
+    resume_state = summary.get("resume_state")
+    run_path = str(summary.get("run_path", ""))
+    if not trust.get("trusted"):
+        return {
+            "action": "repair-required",
+            "summary": "Run artifacts are not trusted; inspect invalidators and regenerate from the prior trusted stage.",
+            "requires_user_approval": True,
+            "safe_default": "stop before executing or ingesting this run",
+            "commands": [],
+            "blocked_by": ["untrusted-artifacts"],
+        }
+    if invalidators or status == "invalid" or resume_state == "invalidated":
+        return {
+            "action": "repair-required",
+            "summary": "The run is invalidated; do not advance it until the stale or malformed artifact is repaired.",
+            "requires_user_approval": True,
+            "safe_default": "stop and inspect status invalidators",
+            "commands": [],
+            "blocked_by": [str(item.get("code", "invalidator")) for item in invalidators if isinstance(item, dict)] or ["invalid-run"],
+        }
+    if status == "workflow-complete":
+        return {
+            "action": "complete",
+            "summary": "The workflow is complete; no next workflow action is required for this run.",
+            "requires_user_approval": False,
+            "safe_default": "archive evidence or start a new workflow",
+            "commands": [f"python scripts/dwm.py doctor --run {run_path} --json"],
+            "blocked_by": [],
+        }
+    if isinstance(selected, list) and "human_gate" in selected:
+        return {
+            "action": "human-approval-required",
+            "summary": "The next selected phase is a human gate; collect a tracked approval artifact before advancing.",
+            "requires_user_approval": True,
+            "safe_default": "stop before approval or execution",
+            "commands": [],
+            "blocked_by": ["human_gate"],
+        }
+    if isinstance(selected, list) and selected:
+        return {
+            "action": "next-phase-ready",
+            "summary": "The run has selected phases ready for the next controlled dispatch step.",
+            "requires_user_approval": False,
+            "safe_default": "dispatch only through the matching deterministic adapter",
+            "commands": [f"python scripts/dwm.py status --run {run_path} --json"],
+            "blocked_by": ["adapter-selection-required"],
+        }
+    return {
+        "action": "inspect",
+        "summary": "No selected next phase is recorded; inspect status and resume artifacts before deciding.",
+        "requires_user_approval": False,
+        "safe_default": "inspect before advancing",
+        "commands": [f"python scripts/dwm.py status --run {run_path} --json"],
+        "blocked_by": [],
+    }
+
+
+def next_summary(run_dir: Path) -> dict[str, Any]:
+    summary = status_summary(run_dir)
+    trust = run_trust_summary(run_dir)
+    action = recommended_action(summary, trust)
+    return {
+        "schema_version": "1.0",
+        "tool": "dwm.py",
+        "run_path": summary["run_path"],
+        "version": summary["version"],
+        "run_id": summary["run_id"],
+        "status": summary["status"],
+        "resume_state": summary["resume_state"],
+        "trusted": trust["trusted"],
+        "trust_checks": trust["checks"],
+        "verified_artifact_hashes": trust["verified_artifact_hashes"],
+        "selected_phase_ids": summary["selected_phase_ids"],
+        "human_approved_phase_ids": summary["human_approved_phase_ids"],
+        "invalidators": summary["invalidators"],
+        "recommendation": action,
+    }
+
+
 def advertised_command_paths() -> list[str]:
     paths: set[str] = set(BASE_REQUIRED_PATHS)
-    for command in [*RELEASE_COMMANDS, *DOGFOOD_COMMANDS]:
+    for command in [*RELEASE_COMMANDS, *DOGFOOD_COMMANDS, *PRODUCT_COMMANDS]:
         for token in shlex.split(command):
             if token.startswith("scripts/") and token.endswith(".py"):
                 paths.add(token)
@@ -365,6 +490,7 @@ def doctor_summary(run_dir: Path = DEFAULT_RUN) -> dict[str, Any]:
         "final_status": final_status,
         "release_commands": RELEASE_COMMANDS,
         "dogfood_commands": DOGFOOD_COMMANDS,
+        "product_commands": PRODUCT_COMMANDS,
     }
 
 
@@ -374,6 +500,8 @@ def command_summary(kind: str) -> dict[str, Any]:
         commands["release"] = RELEASE_COMMANDS
     if kind in {"all", "dogfood"}:
         commands["dogfood"] = DOGFOOD_COMMANDS
+    if kind in {"all", "product"}:
+        commands["product"] = PRODUCT_COMMANDS
     return {"schema_version": "1.0", "tool": "dwm.py", "commands": commands}
 
 
@@ -405,6 +533,21 @@ def print_text_commands(summary: dict[str, Any]) -> None:
             print(f"  {command}")
 
 
+def print_text_next(summary: dict[str, Any]) -> None:
+    recommendation = summary["recommendation"]
+    print(f"DWM next: {recommendation['action']}")
+    print(f"Run: {summary['run_path']}")
+    print(f"Trusted: {'yes' if summary['trusted'] else 'no'}")
+    print(f"Status: {summary['status']}")
+    print(f"Summary: {recommendation['summary']}")
+    if recommendation["commands"]:
+        print("Commands:")
+        for command in recommendation["commands"]:
+            print(f"  {command}")
+    if recommendation["blocked_by"]:
+        print(f"Blocked by: {', '.join(str(item) for item in recommendation['blocked_by'])}")
+
+
 def self_test() -> None:
     summary = status_summary(DEFAULT_RUN)
     if summary["status"] != "workflow-complete":
@@ -423,6 +566,24 @@ def self_test() -> None:
     out_checks = [check for check in doctor["checks"] if str(check.get("id", "")).startswith("path:out/")]
     if not out_checks or not all("verified" in str(check.get("message", "")) for check in out_checks):
         raise DwmError("ERR_DWM_SELF_TEST_FAILED", "doctor should verify dogfood hash ledgers", path=DEFAULT_RUN)
+    next_step = next_summary(DEFAULT_RUN)
+    if next_step["recommendation"]["action"] != "complete" or not next_step["trusted"]:
+        raise DwmError("ERR_DWM_SELF_TEST_FAILED", "canonical dogfood next action should be trusted complete", path=DEFAULT_RUN)
+    product_commands = command_summary("product")["commands"].get("product", [])
+    if "python scripts/dwm.py next --run out/v9/v32-semantic-dogfood --json" not in product_commands:
+        raise DwmError("ERR_DWM_SELF_TEST_FAILED", "product commands should include DWM next")
+    inspect_action = recommended_action(
+        {"run_path": "out/v5/example", "status": "executed", "resume_state": "resumable", "selected_phase_ids": [], "invalidators": []},
+        {"trusted": True},
+    )
+    if inspect_action["commands"] != ["python scripts/dwm.py status --run out/v5/example --json"]:
+        raise DwmError("ERR_DWM_SELF_TEST_FAILED", "inspect recommendation should stay bound to the inspected run")
+    ready_action = recommended_action(
+        {"run_path": "out/v6/example", "status": "frontier-ready", "resume_state": "resumable", "selected_phase_ids": ["release_decision"], "invalidators": []},
+        {"trusted": True},
+    )
+    if ready_action["commands"] != ["python scripts/dwm.py status --run out/v6/example --json"] or "adapter-selection-required" not in ready_action["blocked_by"]:
+        raise DwmError("ERR_DWM_SELF_TEST_FAILED", "ready recommendation should avoid canonical dogfood commands")
     canonical_status = read_json_obj(DEFAULT_RUN / "status.json", label="canonical status.json")
     canonical_hashes = read_json_obj(DEFAULT_RUN / "hashes.json", label="canonical hashes.json")
     tampered_hashes = dict(canonical_hashes)
@@ -470,8 +631,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     doctor.add_argument("--run", default=str(DEFAULT_RUN), help="canonical final run directory under out/")
     doctor.add_argument("--json", action="store_true", help="emit stable JSON")
 
+    next_parser = subparsers.add_parser("next", help="recommend the next safe operator action for one run")
+    next_parser.add_argument("--run", default=str(DEFAULT_RUN), help="run directory under out/")
+    next_parser.add_argument("--json", action="store_true", help="emit stable JSON")
+
     commands = subparsers.add_parser("commands", help="print release or dogfood commands")
-    commands.add_argument("--kind", choices=["all", "release", "dogfood"], default="all")
+    commands.add_argument("--kind", choices=["all", "release", "dogfood", "product"], default="all")
     commands.add_argument("--json", action="store_true", help="emit stable JSON")
     return parser.parse_args(argv)
 
@@ -497,6 +662,13 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 print_text_doctor(summary)
             return 0 if summary["ok"] else 1
+        if args.command == "next":
+            summary = next_summary(Path(args.run))
+            if args.json:
+                print(canonical_json(summary))
+            else:
+                print_text_next(summary)
+            return 0 if summary["trusted"] and summary["recommendation"]["action"] != "repair-required" else 1
         if args.command == "commands":
             summary = command_summary(args.kind)
             if args.json:
