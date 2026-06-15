@@ -28,6 +28,7 @@ workflows.
 | Parallel orchestration | schedule ready phase packets under a concurrency cap | first scheduler slice implemented |
 | Worker dispatch | prepare reviewed dispatch bundles for scheduled packets | first dispatch slice implemented |
 | Worker result adapter | execute fixture-only worker result bundles under owned output | first controlled slice implemented |
+| Worker result review | approve or reject worker results before runtime advancement | planned |
 | Product surface | plugin, CLI, dashboard, and release packaging | last |
 
 Prior art such as `oh-my-codex` already covers a broad Codex runtime layer:
@@ -292,7 +293,33 @@ Full worker result adapter done means:
 - V3/V4 can advance from reviewed worker results,
 - non-fixture backends remain behind explicit trust and human gate contracts.
 
-### V5: Product Packaging
+### V5.5: Worker Result Review
+
+Status: planned.
+
+Purpose: review V5 worker-result evidence before any runtime treats a later
+phase as complete.
+
+Planned first slice means:
+
+- `scripts/review_worker_result.py` consumes one trusted V5 result directory.
+- V5.5 validates V5 ownership, status, hashes, stdout/stderr, and produced
+  outputs.
+- V5.5 approves only the dogfood `evidence_review` result with
+  `verification.md`.
+- V5.5 writes `review.json`, `review.md`, `hashes.json`, `status.json`, and
+  `resume.md`.
+- V5.5 resume detects stale source evidence and tampered review artifacts.
+- V5.5 does not advance runtime or execute workers.
+
+Full worker result review done means:
+
+- reviewed worker results can satisfy phase exit criteria,
+- unsupported output schemas produce `needs-human` instead of guessed approval,
+- rejected worker results can route to a bounded repair workflow,
+- only reviewed results can be consumed by future runtime ingestion.
+
+### V6: Product Packaging
 
 Status: planned.
 
