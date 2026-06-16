@@ -120,6 +120,9 @@ Use $dynamic-workflow-designer to plan a 500-file migration with verification ga
 ├── docs/v19-adapter-ecosystem-spec.md
 ├── docs/v19-decision.md
 ├── docs/v20-1.0-release-hardening-spec.md
+├── docs/v20-decision.md
+├── docs/v20-compatibility-matrix.md
+├── docs/v20-migration-rollback.md
 ├── docs/github-research.md          # Prior-art survey and import decisions
 ├── docs/dwm-branding.md             # Product naming and compatibility rules
 ├── assets/dwm-hero.svg              # README hero image
@@ -174,6 +177,8 @@ python scripts/dwm_install.py --self-test
 python scripts/dwm_install.py --manifest fixtures/v18/manifest.json --out out/install/v18-final
 python scripts/dwm_adapters.py --self-test
 python scripts/dwm_adapters.py --manifest fixtures/v19/manifest.json --out out/adapters/v19-final
+python scripts/dwm_release.py --self-test
+python scripts/dwm_release.py --manifest fixtures/v20/manifest.json --out out/release/v20-final
 python scripts/run_workflow.py --self-test
 python scripts/run_workflow.py --manifest fixtures/v3/manifest.json --out out/v3/final
 python scripts/orchestrate_workflow.py --self-test
@@ -214,6 +219,13 @@ For adapter registry checks, use:
 ```bash
 python scripts/dwm_adapters.py registry
 python scripts/dwm_adapters.py fixture-run --out out/adapters/<run_id>
+```
+
+For 1.0 release-candidate hardening, use:
+
+```bash
+python scripts/dwm_release.py --manifest fixtures/v20/manifest.json --out out/release/v20-final
+python scripts/dwm_release.py status --out out/release/<release_id>
 ```
 
 ```bash

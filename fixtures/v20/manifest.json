@@ -1,0 +1,43 @@
+{
+  "fixtures": [
+    {
+      "expected_status": "accepted",
+      "id": "compatibility-policy",
+      "kind": "compatibility",
+      "required": true
+    },
+    {
+      "expected_status": "accepted",
+      "id": "security-boundaries",
+      "kind": "security",
+      "required": true
+    },
+    {
+      "expected_status": "accepted",
+      "id": "migration-rollback",
+      "kind": "migration",
+      "required": true
+    },
+    {
+      "expected_status": "accepted",
+      "id": "release-corpus",
+      "kind": "release-corpus",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_RELEASE_OMX_REQUIRED",
+      "expected_status": "blocked",
+      "id": "omx-required-rejected",
+      "kind": "omx-required-negative",
+      "required": true
+    }
+  ],
+  "required_fixture_ids": [
+    "compatibility-policy",
+    "security-boundaries",
+    "migration-rollback",
+    "release-corpus",
+    "omx-required-rejected"
+  ],
+  "suite_id": "v20-release-hardening"
+}
