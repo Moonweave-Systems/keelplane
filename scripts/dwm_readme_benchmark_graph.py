@@ -163,9 +163,9 @@ def validate_graph_metrics(report: dict[str, Any], *, report_dir: Path) -> dict[
 
 def svg_text(metrics: dict[str, int], *, report_hash: str) -> str:
     task_count = max(metrics["task_count"], 1)
-    pass_width = round(520 * metrics["pass_count"] / task_count)
-    fail_width = round(520 * metrics["failed_task_count"] / task_count)
-    unverified_width = max(0, 520 - pass_width - fail_width)
+    pass_width = round(620 * metrics["pass_count"] / task_count)
+    fail_width = round(620 * metrics["failed_task_count"] / task_count)
+    unverified_width = max(0, 620 - pass_width - fail_width)
     claim = "claimed" if metrics["claim_value"] else "not claimed"
     return f"""<svg width="960" height="320" viewBox="0 0 960 320" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">DWM live benchmark graph</title>
@@ -174,15 +174,18 @@ def svg_text(metrics: dict[str, int], *, report_hash: str) -> str:
   <rect x="40" y="40" width="880" height="240" rx="18" fill="#FFFFFF" stroke="#E2E8F0"/>
   <text x="72" y="90" fill="#0F172A" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="28" font-weight="800">DWM live benchmark evidence</text>
   <text x="72" y="124" fill="#64748B" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16">source: V35 report.json.graph_metrics / report {report_hash[:12]}</text>
-  <rect x="72" y="160" width="520" height="34" rx="17" fill="#E2E8F0"/>
-  <rect x="72" y="160" width="{pass_width}" height="34" rx="17" fill="#059669"/>
-  <rect x="{72 + pass_width}" y="160" width="{fail_width}" height="34" fill="#DC2626"/>
-  <rect x="{72 + pass_width + fail_width}" y="160" width="{unverified_width}" height="34" rx="17" fill="#CBD5E1"/>
-  <text x="72" y="228" fill="#0F172A" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="700">{metrics['pass_count']}/{metrics['task_count']} passed</text>
-  <text x="260" y="228" fill="#991B1B" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="700">{metrics['failed_task_count']} failed</text>
-  <text x="420" y="228" fill="#475569" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="700">{metrics['unverified_count']} unverified</text>
-  <text x="680" y="178" fill="#0F172A" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="46" font-weight="800">{claim}</text>
-  <text x="682" y="210" fill="#64748B" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16">benchmark claim status</text>
+  <rect x="72" y="154" width="620" height="34" rx="17" fill="#E2E8F0"/>
+  <rect x="72" y="154" width="{pass_width}" height="34" rx="17" fill="#059669"/>
+  <rect x="{72 + pass_width}" y="154" width="{fail_width}" height="34" fill="#DC2626"/>
+  <rect x="{72 + pass_width + fail_width}" y="154" width="{unverified_width}" height="34" rx="17" fill="#CBD5E1"/>
+  <rect x="72" y="214" width="168" height="38" rx="8" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <rect x="264" y="214" width="144" height="38" rx="8" fill="#FEF2F2" stroke="#FECACA"/>
+  <rect x="432" y="214" width="176" height="38" rx="8" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <rect x="632" y="214" width="132" height="38" rx="8" fill="#ECFDF5" stroke="#A7F3D0"/>
+  <text x="88" y="239" fill="#0F172A" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="800">{metrics['pass_count']}/{metrics['task_count']} passed</text>
+  <text x="280" y="239" fill="#991B1B" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="800">{metrics['failed_task_count']} failed</text>
+  <text x="448" y="239" fill="#475569" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="800">{metrics['unverified_count']} unverified</text>
+  <text x="648" y="239" fill="#047857" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="800">{claim}</text>
 </svg>
 """
 

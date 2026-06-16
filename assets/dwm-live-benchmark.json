@@ -1,0 +1,18 @@
+{
+  "graph_id": "readme-graph-published-report",
+  "graph_metrics": {
+    "claim_value": 1,
+    "failed_task_count": 0,
+    "pass_count": 6,
+    "refuted_count": 0,
+    "task_count": 6,
+    "unverified_count": 1
+  },
+  "published_asset": "assets/dwm-live-benchmark.svg",
+  "source": "report.json.graph_metrics",
+  "source_artifact": "out/readme-benchmark-graphs/v36-final/readme-graph-published-report/benchmark-graph.json",
+  "source_hashes": {
+    "report": "7ee95534551a2ce088ae99c0e65656cdf87e86b16a3e4ed5b66e4e1824c91533"
+  },
+  "status": "graph-published-to-readme"
+}

@@ -72,6 +72,8 @@ gates with a safe default.
 
 ## Live Scoring
 
+![DWM live benchmark evidence](assets/dwm-live-benchmark.svg)
+
 The live benchmark path is intentionally staged:
 
 ```text
@@ -86,9 +88,11 @@ V28 command plan
   -> V36 README graph artifacts
 ```
 
-The README graph pipeline is source-bound. Future README benchmark visuals
-should read `report.json.graph_metrics`, not terminal output, generated prose,
-or manually copied numbers.
+The README graph pipeline is source-bound. Benchmark visuals read
+`report.json.graph_metrics`, not terminal output, generated prose, or manually
+copied numbers. The tracked README image in `assets/dwm-live-benchmark.svg` is a
+published snapshot of the V36 graph artifact and keeps its source hash in
+`assets/dwm-live-benchmark.json`.
 
 Generate graph artifacts with:
 
@@ -148,7 +152,7 @@ python scripts/dwm_release.py status --out out/release/<release_id>
 | `docs/v32-to-v35-live-scoring-workflow.md` | Live scoring workflow design. |
 | `docs/v36-readme-benchmark-graph-spec.md` | README benchmark graph artifact contract. |
 | `fixtures/` | Deterministic manifests used by release gates. |
-| `assets/` | Tracked README visuals. |
+| `assets/` | Tracked README visuals and published benchmark graph snapshots. |
 
 ## Key Docs
 
@@ -159,15 +163,16 @@ python scripts/dwm_release.py status --out out/release/<release_id>
 - [`docs/v23-harness-benchmark-spec.md`](docs/v23-harness-benchmark-spec.md): benchmark corpus contract.
 - [`docs/v35-live-report-spec.md`](docs/v35-live-report-spec.md): live benchmark report gate.
 - [`docs/v36-readme-benchmark-graph-spec.md`](docs/v36-readme-benchmark-graph-spec.md): README graph artifact generator.
+- [`docs/v37-readme-public-page-spec.md`](docs/v37-readme-public-page-spec.md): README public page and graph publish gate.
 
 Generated `out/` directories are verification evidence, not source of truth.
 
 ## Position
 
-DWM is not an OMO clone and not a prompt-only workflow router. It is a
-deterministic control-plane above Codex, Claude, OpenCode, and optional OMO-like
-surfaces. The goal is to make agentic work inspectable, reproducible, resumable,
-and honest about what has actually been executed.
+DWM is not a prompt-only workflow router and not a clone of any one runtime.
+DWM is a deterministic control-plane above agent CLIs, local harnesses, and
+bounded adapter surfaces. The goal is to make agentic work inspectable,
+reproducible, resumable, and honest about what has actually been executed.
 
 ## License
 

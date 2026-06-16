@@ -1,0 +1,20 @@
+<svg width="960" height="320" viewBox="0 0 960 320" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">DWM live benchmark graph</title>
+  <desc id="desc">Hash-bound README benchmark graph generated from V35 report graph metrics.</desc>
+  <rect width="960" height="320" rx="20" fill="#F8FAFC"/>
+  <rect x="40" y="40" width="880" height="240" rx="18" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="72" y="90" fill="#0F172A" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="28" font-weight="800">DWM live benchmark evidence</text>
+  <text x="72" y="124" fill="#64748B" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="16">source: V35 report.json.graph_metrics / report 7ee95534551a</text>
+  <rect x="72" y="154" width="620" height="34" rx="17" fill="#E2E8F0"/>
+  <rect x="72" y="154" width="620" height="34" rx="17" fill="#059669"/>
+  <rect x="692" y="154" width="0" height="34" fill="#DC2626"/>
+  <rect x="692" y="154" width="0" height="34" rx="17" fill="#CBD5E1"/>
+  <rect x="72" y="214" width="168" height="38" rx="8" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <rect x="264" y="214" width="144" height="38" rx="8" fill="#FEF2F2" stroke="#FECACA"/>
+  <rect x="432" y="214" width="176" height="38" rx="8" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <rect x="632" y="214" width="132" height="38" rx="8" fill="#ECFDF5" stroke="#A7F3D0"/>
+  <text x="88" y="239" fill="#0F172A" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="800">6/6 passed</text>
+  <text x="280" y="239" fill="#991B1B" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="800">0 failed</text>
+  <text x="448" y="239" fill="#475569" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="800">1 unverified</text>
+  <text x="648" y="239" fill="#047857" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="18" font-weight="800">claimed</text>
+</svg>

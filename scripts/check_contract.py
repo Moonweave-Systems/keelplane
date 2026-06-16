@@ -3204,6 +3204,8 @@ def main() -> None:
             "benchmark-graph.svg",
             "readme-snippet.md",
             "assets/dwm-hero.svg",
+            "assets/dwm-live-benchmark.svg",
+            "assets/dwm-live-benchmark.json",
             "docs/spec.md",
             "docs/automation-roadmap.md",
             "docs/github-research.md",
@@ -3211,8 +3213,10 @@ def main() -> None:
             "docs/v23-harness-benchmark-spec.md",
             "docs/v35-live-report-spec.md",
             "docs/v36-readme-benchmark-graph-spec.md",
+            "docs/v37-readme-public-page-spec.md",
             "generated `out/` directories are verification evidence, not source of truth",
-            "deterministic control-plane above codex, claude, opencode, and optional omo-like",
+            "deterministic control-plane above agent clis",
+            "bounded adapter surfaces",
         ],
     )
     require_terms("docs/v0.5-plan-schema-evaluator-spec.md", V05_REQUIRED_TERMS)
@@ -3311,7 +3315,8 @@ def main() -> None:
             "mvp implemented",
             "planned v20",
             "docs/v12-to-v20-final-roadmap.md",
-            "omx optional",
+            "optional adapter targets",
+            "external runtimes optional adapter targets",
             "scripts/dwm.py",
         ],
     )

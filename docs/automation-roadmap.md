@@ -51,6 +51,7 @@ entrypoint remains `dynamic-workflow-designer`.
 | Product shell | memorable `plan`, `run`, and `resume` commands over safe artifacts | planned V21, first shell slice implemented |
 | Role pack | role contracts for planner, explorer, worker, reviewer, verifier, and operator | planned V22, first registry implemented |
 | Harness benchmark | corpus and scoring gate for direct harness comparisons | planned V23, first benchmark gate implemented |
+| README public page | source-bound benchmark graph on the GitHub landing page | planned V37, first publish slice implemented |
 
 Prior art such as `oh-my-codex` already covers a broad Codex runtime layer:
 launch UX, worktree/tmux operation, durable state, and team execution. This repo
@@ -646,18 +647,20 @@ The planned roadmap splits the remaining product into versioned specs:
   `docs/v35-live-report-spec.md`.
 - V36 README benchmark graph:
   `docs/v36-readme-benchmark-graph-spec.md`.
+- V37 README public page:
+  `docs/v37-readme-public-page-spec.md`.
 
 These specs define the intended path to an independent DWM product that can use
-Codex CLI directly through DWM Runner while keeping OMX optional rather than a
-required dependency.
+Codex CLI directly through DWM Runner while keeping optional adapter targets
+outside DWM Core.
 
 ## Strategic Decisions
 
 - Build the compiler/control-plane path before a full runtime.
 - Treat execution backends as adapters, not as the source of truth.
-- Prefer OMX/Codex integration over copying an existing runtime surface.
+- Prefer narrow adapter integration over copying an existing runtime surface.
 - Keep DWM Core and DWM Runner as separate layers under one DWM product.
-- Make OMX an optional adapter target, not a required dependency.
+- Make external runtimes optional adapter targets, not required dependencies.
 - Never mark work complete from a model message alone; require evidence and
   verification.
 - Keep destructive, external, costly, production, secret, dependency, database,
