@@ -181,6 +181,8 @@ task itself needs dynamic orchestration.
 ├── docs/v29-decision.md
 ├── docs/v30-live-receipt-ingestion-spec.md
 ├── docs/v30-decision.md
+├── docs/v31-live-receipt-judgment-spec.md
+├── docs/v31-decision.md
 ├── docs/github-research.md          # Prior-art survey and import decisions
 ├── docs/dwm-branding.md             # Product naming and compatibility rules
 ├── assets/dwm-hero.svg              # README hero image
@@ -262,6 +264,8 @@ python scripts/dwm_live_runner_preflight.py --self-test
 python scripts/dwm_live_runner_preflight.py --manifest fixtures/v29/manifest.json --out out/live-runner-preflight/v29-final
 python scripts/dwm_live_receipt.py --self-test
 python scripts/dwm_live_receipt.py --manifest fixtures/v30/manifest.json --out out/live-receipts/v30-final
+python scripts/dwm_live_receipt_judge.py --self-test
+python scripts/dwm_live_receipt_judge.py --manifest fixtures/v31/manifest.json --out out/live-receipt-judgments/v31-final
 python scripts/run_workflow.py --self-test
 python scripts/run_workflow.py --manifest fixtures/v3/manifest.json --out out/v3/final
 python scripts/orchestrate_workflow.py --self-test
@@ -351,6 +355,12 @@ For V30 live receipt ingestion, use:
 
 ```bash
 python scripts/dwm_live_receipt.py ingest --preflight out/live-runner-preflight/<preflight_id> --receipt receipt.json --out out/live-receipts/<receipt_id>
+```
+
+For V31 live receipt judgment, use:
+
+```bash
+python scripts/dwm_live_receipt_judge.py judge --receipt-dir out/live-receipts/<receipt_id> --out out/live-receipt-judgments/<judgment_id>
 ```
 
 For hash-bound HUD evidence approval, use:

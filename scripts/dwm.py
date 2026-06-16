@@ -73,6 +73,8 @@ RELEASE_COMMANDS = [
     "python scripts/dwm_live_runner_preflight.py --manifest fixtures/v29/manifest.json --out out/live-runner-preflight/v29-final",
     "python scripts/dwm_live_receipt.py --self-test",
     "python scripts/dwm_live_receipt.py --manifest fixtures/v30/manifest.json --out out/live-receipts/v30-final",
+    "python scripts/dwm_live_receipt_judge.py --self-test",
+    "python scripts/dwm_live_receipt_judge.py --manifest fixtures/v31/manifest.json --out out/live-receipt-judgments/v31-final",
     "python scripts/run_workflow.py --self-test",
     "python scripts/run_workflow.py --manifest fixtures/v3/manifest.json --out out/v3/final",
     "python scripts/orchestrate_workflow.py --self-test",
@@ -154,6 +156,8 @@ BASE_REQUIRED_PATHS = [
     "docs/v29-live-runner-preflight-spec.md",
     "docs/v30-decision.md",
     "docs/v30-live-receipt-ingestion-spec.md",
+    "docs/v31-decision.md",
+    "docs/v31-live-receipt-judgment-spec.md",
     "packaging/dwm-benchmark-attempts.json",
     "packaging/dwm-adapters.json",
     "packaging/dwm-benchmarks.json",
@@ -177,6 +181,7 @@ BASE_REQUIRED_PATHS = [
     "scripts/dwm_live_attempt_plan.py",
     "scripts/dwm_live_runner_preflight.py",
     "scripts/dwm_live_receipt.py",
+    "scripts/dwm_live_receipt_judge.py",
 ]
 
 

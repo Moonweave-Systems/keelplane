@@ -1,0 +1,57 @@
+{
+  "fixtures": [
+    {
+      "expected_status": "judgment-recorded",
+      "expected_verdict": "runner-returned-zero",
+      "id": "receipt-zero-returncode-judged",
+      "kind": "returncode-zero-judged",
+      "required": true
+    },
+    {
+      "expected_status": "judgment-recorded",
+      "expected_verdict": "runner-returned-nonzero",
+      "id": "receipt-nonzero-returncode-judged",
+      "kind": "returncode-nonzero-judged",
+      "required": true,
+      "returncode": 2
+    },
+    {
+      "expected_error": "ERR_LIVE_RECEIPT_JUDGE_STALE_RECEIPT",
+      "expected_status": "blocked",
+      "expected_receipt_hash": "stale-receipt-hash",
+      "id": "receipt-stale-hash-blocked",
+      "kind": "stale-receipt",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_LIVE_RECEIPT_JUDGE_RECEIPT_NOT_ACCEPTED",
+      "expected_status": "blocked",
+      "id": "receipt-not-accepted-blocked",
+      "kind": "receipt-not-accepted",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_LIVE_RECEIPT_JUDGE_HASH_MISMATCH",
+      "expected_status": "blocked",
+      "id": "receipt-hash-mismatch-blocked",
+      "kind": "hash-mismatch",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_LIVE_RECEIPT_JUDGE_ARTIFACT_MISSING",
+      "expected_status": "blocked",
+      "id": "receipt-missing-artifact-blocked",
+      "kind": "missing-artifact",
+      "required": true
+    }
+  ],
+  "required_fixture_ids": [
+    "receipt-zero-returncode-judged",
+    "receipt-nonzero-returncode-judged",
+    "receipt-stale-hash-blocked",
+    "receipt-not-accepted-blocked",
+    "receipt-hash-mismatch-blocked",
+    "receipt-missing-artifact-blocked"
+  ],
+  "suite_id": "v31-live-receipt-judgment"
+}
