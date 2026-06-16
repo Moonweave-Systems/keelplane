@@ -37,7 +37,7 @@ entrypoint remains `dynamic-workflow-designer`.
 | Frontier review ingestion | consume reviewed frontier results and emit the next frontier | first ingestion slice implemented |
 | Human gate resolution | consume explicit human approval and complete human-gated frontier | first resolution slice implemented |
 | Product surface | plugin, CLI, dashboard, and release packaging | first operator guidance slice implemented |
-| Adapter command planner | generate exact next adapter commands without execution | planned V12 |
+| Adapter command planner | generate exact next adapter commands without execution | planned V12, implemented |
 | DWM Runner | execute read-only or pre-isolated DWM-approved packets through Codex CLI with evidence | planned V13 |
 | Session/worktree runtime | durable sessions, worktree isolation, logs, and resume | planned V14 |
 | Runtime review/repair | runner-backed review, repair, and retry loops | planned V15 |

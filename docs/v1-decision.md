@@ -11,10 +11,10 @@ python scripts/compile_workflow.py --manifest fixtures/v1/manifest.json --out ou
 Generated summary values:
 
 - `suite_id`: `final`
-- `fixture_count`: 78
-- `required_fixture_count`: 78
-- `required_passed`: 78
-- `passed`: 78
+- `fixture_count`: 82
+- `required_fixture_count`: 82
+- `required_passed`: 82
+- `passed`: 82
 - `failed`: 0
 - `skipped`: 0
 - `decision`: `keep`

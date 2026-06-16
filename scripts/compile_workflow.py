@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 import re
+import shlex
 import shutil
 import sys
 import tempfile
@@ -100,6 +101,20 @@ RESUME_CODES = {
     "gate": "ERR_RESUME_STALE_GATE",
     "compiler": "ERR_RESUME_STALE_COMPILER",
     "missing": "ERR_RESUME_MISSING_ARTIFACT",
+}
+SUPPORTED_PLAN_ADAPTERS = {"codex"}
+DANGEROUS_PLAN_RISKS = {
+    "write",
+    "network",
+    "dependency-install",
+    "database-migration",
+    "production-deploy",
+    "public-api-change",
+    "external-message",
+    "paid-api",
+    "secret-access",
+    "history-rewrite",
+    "delete",
 }
 DIGEST_FIELDS = [
     "packet_id",
@@ -1006,6 +1021,114 @@ def render_resume(status: dict[str, Any], packet: dict[str, Any] | None = None) 
             lines.extend(["", "## Directory Inputs", "Directories are recorded but not recursively hashed in V1."])
             lines.extend(f"- `{input_id}`" for input_id in directory_inputs)
     return "\n".join(lines) + "\n"
+
+
+def source_hashes_for_plan_command(status: dict[str, Any]) -> dict[str, Any]:
+    packet_status = status["packet_statuses"][0] if status.get("packet_statuses") else {}
+    return {
+        "plan_hash": status.get("plan_hash"),
+        "source_plan_hash": status.get("source_plan_hash"),
+        "packet_hash": packet_status.get("packet_hash"),
+        "prompt_hash": packet_status.get("prompt_hash"),
+        "input_snapshot_hash": packet_status.get("input_snapshot_hash"),
+        "gate_snapshot_hash": packet_status.get("gate_snapshot_hash"),
+        "snapshots": status.get("snapshots", {}),
+    }
+
+
+def read_plan_command_packet(run_dir: Path, status: dict[str, Any]) -> dict[str, Any] | None:
+    packet_statuses = status.get("packet_statuses")
+    if not isinstance(packet_statuses, list) or not packet_statuses:
+        return None
+    packet_path = run_dir / "packets" / "001-first-slice.packet.json"
+    if not packet_path.is_file() or packet_path.is_symlink():
+        return None
+    try:
+        packet = json.loads(packet_path.read_text())
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    return packet if isinstance(packet, dict) else None
+
+
+def codex_plan_command(run_dir: Path, packet: dict[str, Any]) -> str:
+    prompt_path = run_dir / str(packet.get("prompt_path", "packets/001-first-slice.prompt.md"))
+    prompt_rel = rel_or_abs(prompt_path)
+    return f"codex exec --sandbox read-only -- \"$(cat {shlex.quote(prompt_rel)})\""
+
+
+def render_plan_command(record: dict[str, Any]) -> str:
+    lines = [
+        "# V12 Adapter Command Plan",
+        "",
+        f"Decision: `{record['decision']}`",
+        f"Adapter: `{record['adapter']}`",
+        "",
+        "V12 planned this command only. It did not execute Codex, create a worktree, attach a session, or approve gates.",
+        "",
+        "## Command",
+    ]
+    if record["command"]:
+        lines.append(f"```bash\n{record['command']}\n```")
+    else:
+        lines.append("- none")
+    lines.extend(["", "## Blocked By"])
+    if record["blocked_by"]:
+        lines.extend(f"- `{item}`" for item in record["blocked_by"])
+    else:
+        lines.append("- none")
+    lines.extend(["", "## Risk Codes"])
+    if record["risk_codes"]:
+        lines.extend(f"- `{item}`" for item in record["risk_codes"])
+    else:
+        lines.append("- none")
+    return "\n".join(lines) + "\n"
+
+
+def plan_adapter_command(run_dir: Path, *, adapter: str = "codex") -> dict[str, Any]:
+    if adapter not in SUPPORTED_PLAN_ADAPTERS:
+        raise CompileError("ERR_PLAN_COMMAND_UNSUPPORTED_ADAPTER", f"unsupported adapter: {adapter}", path=run_dir)
+    run_dir = resolve_v1_out(run_dir)
+    status = resume_run(run_dir)
+    packet = read_plan_command_packet(run_dir, status)
+    blocked_by: list[str] = []
+    risk_codes = sorted(
+        {
+            str(gate.get("risk_category"))
+            for gate in status.get("gate_statuses", [])
+            if isinstance(gate, dict) and gate.get("risk_category") and gate.get("status") == "blocked"
+        }
+    )
+    if status["resume_state"] != "resumable":
+        blocked_by.append("resume-invalidated")
+    packet_status = status["packet_statuses"][0]["status"] if status.get("packet_statuses") else "missing"
+    if status["resume_state"] != "resumable":
+        pass
+    elif packet_status == "blocked-risk-gate":
+        blocked_by.append("risk-gate")
+    elif packet_status != "ready":
+        blocked_by.append(packet_status)
+    if any(risk in DANGEROUS_PLAN_RISKS for risk in risk_codes) and "risk-gate" not in blocked_by:
+        blocked_by.append("risk-gate")
+    if packet is None and "packet-missing" not in blocked_by:
+        blocked_by.append("packet-missing")
+    blocked_by = ordered_unique(blocked_by)
+    command = None if blocked_by else codex_plan_command(run_dir, packet or {})
+    record = {
+        "schema_version": SCHEMA_VERSION,
+        "tool": TOOL,
+        "planner_version": "12.0.0",
+        "generated_at": now_utc(),
+        "run_path": rel_or_abs(run_dir),
+        "decision": "blocked" if blocked_by else "command_ready",
+        "adapter": adapter,
+        "command": command,
+        "blocked_by": blocked_by,
+        "risk_codes": risk_codes,
+        "source_hashes": source_hashes_for_plan_command(status),
+    }
+    write_json_atomic(run_dir / "adapter-command.json", record, root=run_dir)
+    write_text_atomic(run_dir / "adapter-command.md", render_plan_command(record), root=run_dir)
+    return record
 
 
 def ensure_replaceable_run_dir(path: Path, run_id: str, mode: str) -> None:
@@ -2046,6 +2169,54 @@ def run_fixture(fixture: dict[str, Any], suite_dir: Path, temp_root: Path, *, su
                     f"manifest expected resume invalidators {declared_codes}, got {actual_codes}",
                     fixture_id=fixture_id,
                 )
+        elif fixture_type == "planner":
+            plan_path = write_fixture_plan(temp_root, fixture)
+            result = compile_plan(plan_path, fixture_run_dir(suite_dir, fixture_id), run_id=f"{suite_label}/{fixture_id}", mode="fixture")
+            run_dir = result["out_dir"]
+            mutate_run_artifact(run_dir, plan_path, fixture["mutate_artifact"])
+            try:
+                record = plan_adapter_command(run_dir, adapter=fixture.get("adapter", "codex"))
+            except CompileError as exc:
+                if fixture.get("expected_error") == exc.code:
+                    return {"id": fixture_id, "status": "passed"}
+                raise
+            expected_decision = fixture.get("expected_decision")
+            if expected_decision is not None and record["decision"] != expected_decision:
+                raise CompileError(
+                    "ERR_SELF_TEST_WRONG_REASON",
+                    f"expected planner decision {expected_decision}, got {record['decision']}",
+                    fixture_id=fixture_id,
+                )
+            expected_adapter = fixture.get("expected_adapter")
+            if expected_adapter is not None and record["adapter"] != expected_adapter:
+                raise CompileError(
+                    "ERR_SELF_TEST_WRONG_REASON",
+                    f"expected planner adapter {expected_adapter}, got {record['adapter']}",
+                    fixture_id=fixture_id,
+                )
+            expected_blocked_by = fixture.get("expected_blocked_by")
+            if expected_blocked_by is not None and record["blocked_by"] != expected_blocked_by:
+                raise CompileError(
+                    "ERR_SELF_TEST_WRONG_REASON",
+                    f"expected planner blocked_by {expected_blocked_by}, got {record['blocked_by']}",
+                    fixture_id=fixture_id,
+                )
+            expected_risk_codes = fixture.get("expected_risk_codes")
+            if expected_risk_codes is not None and record["risk_codes"] != expected_risk_codes:
+                raise CompileError(
+                    "ERR_SELF_TEST_WRONG_REASON",
+                    f"expected planner risk_codes {expected_risk_codes}, got {record['risk_codes']}",
+                    fixture_id=fixture_id,
+                )
+            if record["decision"] == "command_ready" and not record["command"]:
+                raise CompileError("ERR_SELF_TEST_WRONG_REASON", "planner ready decision has no command", fixture_id=fixture_id)
+            if record["decision"] == "blocked" and record["command"] is not None:
+                raise CompileError("ERR_SELF_TEST_WRONG_REASON", "planner blocked decision produced a command", fixture_id=fixture_id)
+            if fixture.get("expected_files"):
+                disk_record = json.loads((run_dir / "adapter-command.json").read_text())
+                disk_doc = (run_dir / "adapter-command.md").read_text()
+                if disk_record != record or f"Decision: `{record['decision']}`" not in disk_doc:
+                    raise CompileError("ERR_SELF_TEST_WRONG_REASON", "planner files do not match returned record", fixture_id=fixture_id)
         elif fixture_type == "resume-repair":
             plan_path = write_fixture_plan(temp_root, fixture)
             result = compile_plan(plan_path, fixture_run_dir(suite_dir, fixture_id), run_id=f"{suite_label}/{fixture_id}", mode="fixture")
@@ -2720,6 +2891,8 @@ def main() -> int:
     parser.add_argument("--mode", default="compile", choices=["compile"])
     parser.add_argument("--resume")
     parser.add_argument("--manifest")
+    parser.add_argument("--plan-command", action="store_true")
+    parser.add_argument("--adapter", default="codex")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
     try:
@@ -2730,6 +2903,11 @@ def main() -> int:
                 raise CompileError("ERR_OUT_PATH_UNSAFE", "--manifest requires --out")
             summary = evaluate_manifest(Path(args.manifest), Path(args.out))
             print(canonical_json_text(summary))
+        elif args.plan_command:
+            if not args.resume:
+                raise CompileError("ERR_OUT_PATH_UNSAFE", "--plan-command requires --resume")
+            record = plan_adapter_command(Path(args.resume), adapter=args.adapter)
+            print(canonical_json_text(record))
         elif args.resume:
             status = resume_run(Path(args.resume))
             print(canonical_json_text({"resume_state": status["resume_state"], "invalidators": status["invalidators"]}))
@@ -2738,7 +2916,7 @@ def main() -> int:
             result = compile_plan(Path(args.plan), Path(args.out), mode=args.mode)
             print(canonical_json_text({"run_id": result["run"]["run_id"], "status": result["status"]["packet_statuses"][0]["status"]}))
         else:
-            parser.error("expected --self-test, --manifest, --resume, or --plan with --out")
+            parser.error("expected --self-test, --manifest, --plan-command --resume, --resume, or --plan with --out")
     except CompileError as exc:
         print(canonical_json_text(exc.to_record()), file=sys.stderr)
         return 1

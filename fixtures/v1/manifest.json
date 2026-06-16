@@ -427,6 +427,51 @@
       "type": "resume"
     },
     {
+      "expected_adapter": "codex",
+      "expected_decision": "command_ready",
+      "expected_files": true,
+      "id": "planner-ready-readonly",
+      "mutate_artifact": "none",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "planner"
+    },
+    {
+      "expected_blocked_by": [
+        "risk-gate"
+      ],
+      "expected_decision": "blocked",
+      "expected_risk_codes": [
+        "write"
+      ],
+      "id": "planner-blocked-write",
+      "mutate_artifact": "none",
+      "mutation": {
+        "gate_trigger": "write action",
+        "plan_id": "planner-blocked-write",
+        "risk": "write"
+      },
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "planner"
+    },
+    {
+      "expected_blocked_by": [
+        "resume-invalidated"
+      ],
+      "expected_decision": "blocked",
+      "id": "planner-stale-prompt",
+      "mutate_artifact": "prompt",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "planner"
+    },
+    {
+      "adapter": "unknown-adapter",
+      "expected_error": "ERR_PLAN_COMMAND_UNSUPPORTED_ADAPTER",
+      "id": "planner-unknown-adapter",
+      "mutate_artifact": "none",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "type": "planner"
+    },
+    {
       "expected_resume_gate_statuses": [
         "blocked"
       ],
@@ -1461,6 +1506,10 @@
     "input-duplicate-labels",
     "drift-prompt-packet",
     "resume-clean",
+    "planner-ready-readonly",
+    "planner-blocked-write",
+    "planner-stale-prompt",
+    "planner-unknown-adapter",
     "resume-blocked-stays-blocked",
     "resume-stale-source-plan",
     "resume-stale-plan-snapshot",

@@ -1433,7 +1433,7 @@ def main() -> None:
     require_terms(
         "docs/v12-to-v20-final-roadmap.md",
         [
-            "status: planning specs; not implemented.",
+            "status: v12 implemented; v13-v20 planned.",
             "dwm core",
             "dwm runner",
             "codex cli workers",
@@ -1442,12 +1442,22 @@ def main() -> None:
             "v20",
         ],
     )
-    for spec_path in [
+    require_terms(
         "docs/v12-adapter-command-planner-spec.md",
+        [
+            "status: implemented in `scripts/compile_workflow.py --plan-command`.",
+            "## research and prior art",
+            "## product position and non-goals",
+            "## workflow architecture",
+            "## execution model",
+            "## safety and verification gates",
+        ],
+    )
+    for spec_path in [
         "docs/v13-dwm-runner-mvp-spec.md",
         "docs/v14-session-worktree-runtime-spec.md",
-        "docs/v15-multi-worker-fanout-spec.md",
-        "docs/v16-runtime-review-repair-spec.md",
+        "docs/v15-runtime-review-repair-spec.md",
+        "docs/v16-multi-worker-fanout-spec.md",
         "docs/v17-dashboard-hud-spec.md",
         "docs/v18-plugin-install-packaging-spec.md",
         "docs/v19-adapter-ecosystem-spec.md",

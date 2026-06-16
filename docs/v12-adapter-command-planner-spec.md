@@ -1,6 +1,6 @@
 # V12 Adapter Command Planner Spec
 
-Status: planned; not implemented.
+Status: implemented in `scripts/compile_workflow.py --plan-command`.
 
 ## Research And Prior Art
 
@@ -24,48 +24,77 @@ Non-goals:
 
 ## Workflow Architecture
 
-Add a read-only command:
+Add a planning command:
 
 ```bash
-python scripts/dwm.py plan-command --run out/<version>/<run_id> --json
+python scripts/compile_workflow.py --plan-command --resume out/v1/<run_id>
 ```
 
-The output should include:
+The planner writes `adapter-command.json` and `adapter-command.md` inside the
+run directory. JSON includes:
 
-- `trusted`,
-- `current_status`,
-- `selected_phase_ids`,
-- `adapter_kind`,
-- `planned_command`,
-- `required_inputs`,
+- `decision`,
+- `adapter`,
+- `command`,
 - `blocked_by`,
-- `requires_user_approval`.
+- `risk_codes`,
+- `source_hashes`.
+
+`decision` is one of:
+
+- `command_ready`: a Codex command is safe to show for manual execution,
+- `blocked`: no command is produced and `blocked_by` explains why.
+
+The default adapter is Codex CLI. Claude and OMX remain optional future adapter
+targets and are not runtime dependencies for V12.
+
+The command is intentionally not executed by V12.
+
+The output does not include:
+
+- runner evidence,
+- session IDs,
+- worktree state,
+- `required_inputs`,
+- human approval mutation.
 
 ## Execution Model
 
-The command planner reads only existing artifacts. It maps trusted status
-shapes to known deterministic adapters such as `dispatch_frontier.py`,
-`review_frontier_result.py`, `ingest_frontier_review.py`, and
-`resolve_human_gate.py`.
+The command planner reads an existing V1 compiled run and first calls the
+resume trust checker. It plans only from artifacts whose packet, prompt, input,
+gate, source-plan, and compiler snapshots still match the trusted ledger.
 
-Unknown states return `blocked_by: ["adapter-not-mapped"]` instead of guessing.
+For ready read-only packets, the Codex adapter emits a deterministic command
+that points at `packets/001-first-slice.prompt.md`.
+
+Unknown adapters raise `ERR_PLAN_COMMAND_UNSUPPORTED_ADAPTER` instead of
+guessing. Unknown or stale run states return `decision: "blocked"` with no
+command.
 
 ## Safety And Verification Gates
 
 The planner must reject untrusted runs, stale hash ledgers, missing status,
-outside-`out/` paths, unknown layouts, and human gates without a tracked
+outside-`out/v1/` paths, unknown layouts, and human gates without a tracked
 approval artifact.
+
+Risky packets do not get commands. The blocked risk set includes write, delete,
+network, dependency install, database migration, production deploy, public API
+change, external message, paid API, secret access, and history rewrite.
 
 ## Evaluation Fixtures
 
-- positive: V9 dogfood returns no execution command because it is complete,
-- positive: trusted V6 frontier-ready returns a dispatch planning command,
-- negative: untrusted hash ledger returns `adapter-not-allowed`,
-- negative: human gate returns approval-required without fabricating approval.
+- positive: ready read-only V1 packet returns `decision: "command_ready"` and a
+  Codex CLI command,
+- negative: write-risk packet returns `decision: "blocked"` and no command,
+- negative: stale prompt/source hash drift returns `blocked_by:
+  ["resume-invalidated"]`,
+- negative: unknown adapter raises `ERR_PLAN_COMMAND_UNSUPPORTED_ADAPTER`.
 
 ## Release Plan
 
-1. Add `plan-command` to `scripts/dwm.py`.
-2. Add fixture probes for complete, ready, human-gated, and stale states.
-3. Bind output to `docs/v12-decision.md`.
-4. Update release checks without changing V10/V11 command counts.
+1. Keep V12 in `compile_workflow.py` until V13 introduces a runner boundary.
+2. Add fixture probes for ready, risk-blocked, stale, and unsupported adapter
+   states.
+3. Bind output to `docs/v12-decision.md` when promoting the generated evidence.
+4. Keep V12 free of live command execution, worktree creation, and session
+   attachment.
