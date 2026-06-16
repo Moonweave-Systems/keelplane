@@ -629,7 +629,9 @@ The planned roadmap splits the remaining product into versioned specs:
 - V28 live attempt planner:
   `docs/v28-live-attempt-planner-spec.md`,
 - V29 live runner preflight:
-  `docs/v29-live-runner-preflight-spec.md`.
+  `docs/v29-live-runner-preflight-spec.md`,
+- V30 live receipt ingestion:
+  `docs/v30-live-receipt-ingestion-spec.md`.
 
 These specs define the intended path to an independent DWM product that can use
 Codex CLI directly through DWM Runner while keeping OMX optional rather than a

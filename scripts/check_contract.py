@@ -1321,6 +1321,50 @@ def require_v29_runner_preflight_decision_summary_consistency() -> None:
         raise SystemExit(f"V29 decision consistency failed: {exc}") from exc
 
 
+def require_v30_receipt_decision_summary_text(summary: dict[str, object], decision_text: str) -> None:
+    normalized_decision_text = " ".join(decision_text.lower().split())
+    required_snippets = [
+        f"decision: {summary['decision']}",
+        f"`suite_id`: `{summary['suite_id']}`",
+        f"`fixture_count`: {summary['fixture_count']}",
+        f"`required_fixture_count`: {summary['required_fixture_count']}",
+        f"`required_passed`: {summary['required_passed']}",
+        f"`passed`: {summary['passed']}",
+        f"`failed`: {summary['failed']}",
+        f"`skipped`: {summary['skipped']}",
+        f"`decision`: `{summary['decision']}`",
+        "python scripts/dwm_live_receipt.py --manifest fixtures/v30/manifest.json --out out/live-receipts/v30-final",
+        "receipt.json",
+        "receipt-ledger.json",
+        "err_live_receipt_preflight_not_ready",
+        "err_live_receipt_stale_preflight",
+        "err_live_receipt_command_mismatch",
+        "err_live_receipt_artifact_missing",
+        "does not claim live model execution",
+    ]
+    missing = [snippet for snippet in required_snippets if snippet not in normalized_decision_text]
+    if missing:
+        raise SystemExit(f"docs/v30-decision.md does not match V30 summary: {missing}")
+
+
+def require_v30_receipt_decision_summary_consistency() -> None:
+    try:
+        completed = run_contract_command(
+            [
+                sys.executable,
+                "scripts/dwm_live_receipt.py",
+                "--manifest",
+                "fixtures/v30/manifest.json",
+                "--out",
+                "out/live-receipts/v30-final",
+            ],
+        )
+        summary = json.loads(completed.stdout)
+        require_v30_receipt_decision_summary_text(summary, (ROOT / "docs" / "v30-decision.md").read_text())
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"V30 decision consistency failed: {exc}") from exc
+
+
 def require_release_commands_pass() -> None:
     commands = [
         [sys.executable, "scripts/quick_validate_skill.py", "."],
@@ -1358,6 +1402,8 @@ def require_release_commands_pass() -> None:
         [sys.executable, "scripts/dwm_live_attempt_plan.py", "--manifest", "fixtures/v28/manifest.json", "--out", "out/live-attempt-plans/v28-final"],
         [sys.executable, "scripts/dwm_live_runner_preflight.py", "--self-test"],
         [sys.executable, "scripts/dwm_live_runner_preflight.py", "--manifest", "fixtures/v29/manifest.json", "--out", "out/live-runner-preflight/v29-final"],
+        [sys.executable, "scripts/dwm_live_receipt.py", "--self-test"],
+        [sys.executable, "scripts/dwm_live_receipt.py", "--manifest", "fixtures/v30/manifest.json", "--out", "out/live-receipts/v30-final"],
         [sys.executable, "scripts/run_workflow.py", "--self-test"],
         [sys.executable, "scripts/run_workflow.py", "--manifest", "fixtures/v3/manifest.json", "--out", "out/v3/final"],
         [sys.executable, "scripts/orchestrate_workflow.py", "--self-test"],
@@ -2593,6 +2639,38 @@ Overclaims execution: no
     else:
         raise SystemExit("self-test failed: stale V29 decision summary passed")
 
+    v30_summary = {
+        "suite_id": "v30-final",
+        "fixture_count": 5,
+        "required_fixture_count": 5,
+        "required_passed": 5,
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0,
+        "decision": "keep",
+    }
+    good_v30_decision = (
+        "Decision: keep\n"
+        "python scripts/dwm_live_receipt.py --manifest fixtures/v30/manifest.json --out out/live-receipts/v30-final\n"
+        "- `suite_id`: `v30-final`\n"
+        "- `fixture_count`: 5\n"
+        "- `required_fixture_count`: 5\n"
+        "- `required_passed`: 5\n"
+        "- `passed`: 5\n"
+        "- `failed`: 0\n"
+        "- `skipped`: 0\n"
+        "- `decision`: `keep`\n"
+        "The accepted suite covers receipt.json, receipt-ledger.json, ERR_LIVE_RECEIPT_PREFLIGHT_NOT_READY, ERR_LIVE_RECEIPT_STALE_PREFLIGHT, ERR_LIVE_RECEIPT_COMMAND_MISMATCH, and ERR_LIVE_RECEIPT_ARTIFACT_MISSING.\n"
+        "This decision does not claim live model execution.\n"
+    )
+    require_v30_receipt_decision_summary_text(v30_summary, good_v30_decision)
+    try:
+        require_v30_receipt_decision_summary_text(v30_summary, good_v30_decision.replace("`passed`: 5", "`passed`: 4", 1))
+    except SystemExit:
+        pass
+    else:
+        raise SystemExit("self-test failed: stale V30 decision summary passed")
+
     print("contract self-test: pass")
 
 
@@ -3152,6 +3230,18 @@ def main() -> None:
         ],
     )
     require_terms(
+        "docs/v30-live-receipt-ingestion-spec.md",
+        [
+            "status: implemented first live receipt ingestion gate in",
+            "receipt.json",
+            "receipt-ledger.json",
+            "err_live_receipt_preflight_not_ready",
+            "err_live_receipt_stale_preflight",
+            "err_live_receipt_command_mismatch",
+            "err_live_receipt_artifact_missing",
+        ],
+    )
+    require_terms(
         "docs/v7.5-decision.md",
         [
             "decision: keep",
@@ -3200,7 +3290,7 @@ def main() -> None:
             "python scripts/dwm.py commands --kind release --json",
             "`status`: `workflow-complete`",
             "`doctor_ok`: `true`",
-            "`release_command_count`: `66`",
+            "`release_command_count`: `68`",
             "does not claim workflow execution",
         ],
     )
@@ -3331,6 +3421,7 @@ def main() -> None:
     require_v27_smoke_decision_summary_consistency()
     require_v28_live_plan_decision_summary_consistency()
     require_v29_runner_preflight_decision_summary_consistency()
+    require_v30_receipt_decision_summary_consistency()
     print("contract smoke: pass")
 
 

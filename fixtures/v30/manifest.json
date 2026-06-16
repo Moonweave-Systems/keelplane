@@ -1,0 +1,51 @@
+{
+  "fixtures": [
+    {
+      "adapter_command": "python",
+      "expected_status": "receipt-accepted",
+      "id": "receipt-ingest-accepted",
+      "kind": "receipt-accepted",
+      "required": true,
+      "task_id": "failing-test-fix"
+    },
+    {
+      "adapter_command": "__dwm_missing_adapter__",
+      "expected_error": "ERR_LIVE_RECEIPT_PREFLIGHT_NOT_READY",
+      "expected_status": "blocked",
+      "id": "receipt-preflight-not-ready-blocked",
+      "kind": "preflight-not-ready",
+      "required": true,
+      "task_id": "failing-test-fix"
+    },
+    {
+      "expected_error": "ERR_LIVE_RECEIPT_STALE_PREFLIGHT",
+      "expected_status": "blocked",
+      "expected_preflight_hash": "stale-preflight-hash",
+      "id": "receipt-stale-preflight-blocked",
+      "kind": "stale-preflight",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_LIVE_RECEIPT_COMMAND_MISMATCH",
+      "expected_status": "blocked",
+      "id": "receipt-command-mismatch-blocked",
+      "kind": "command-mismatch",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_LIVE_RECEIPT_ARTIFACT_MISSING",
+      "expected_status": "blocked",
+      "id": "receipt-missing-artifact-blocked",
+      "kind": "missing-artifact",
+      "required": true
+    }
+  ],
+  "required_fixture_ids": [
+    "receipt-ingest-accepted",
+    "receipt-preflight-not-ready-blocked",
+    "receipt-stale-preflight-blocked",
+    "receipt-command-mismatch-blocked",
+    "receipt-missing-artifact-blocked"
+  ],
+  "suite_id": "v30-live-receipt-ingestion"
+}
