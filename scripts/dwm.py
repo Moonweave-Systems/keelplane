@@ -41,6 +41,8 @@ RELEASE_COMMANDS = [
     "python scripts/dwm_hud.py --manifest fixtures/v17/manifest.json --out out/hud/v17-final",
     "python scripts/dwm_install.py --self-test",
     "python scripts/dwm_install.py --manifest fixtures/v18/manifest.json --out out/install/v18-final",
+    "python scripts/dwm_adapters.py --self-test",
+    "python scripts/dwm_adapters.py --manifest fixtures/v19/manifest.json --out out/adapters/v19-final",
     "python scripts/run_workflow.py --self-test",
     "python scripts/run_workflow.py --manifest fixtures/v3/manifest.json --out out/v3/final",
     "python scripts/orchestrate_workflow.py --self-test",
@@ -91,11 +93,14 @@ BASE_REQUIRED_PATHS = [
     "docs/v16-decision.md",
     "docs/v17-decision.md",
     "docs/v18-decision.md",
+    "docs/v19-decision.md",
+    "packaging/dwm-adapters.json",
     "packaging/dwm-package.json",
     "scripts/dwm.py",
     "scripts/dwm_runner.py",
     "scripts/dwm_hud.py",
     "scripts/dwm_install.py",
+    "scripts/dwm_adapters.py",
 ]
 
 

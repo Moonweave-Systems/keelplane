@@ -1,6 +1,6 @@
 # V19 Adapter Ecosystem Spec
 
-Status: planned; not implemented.
+Status: implemented first registry slice in `scripts/dwm_adapters.py`.
 
 ## Research And Prior Art
 
@@ -10,7 +10,9 @@ their evidence can be normalized.
 
 ## Product Position And Non-Goals
 
-V19 defines adapter interfaces for execution backends.
+V19 defines adapter interfaces for execution backends. The first slice adds a
+registry, capability validation, and fixture normalized evidence. It does not
+execute live Codex, Claude, OMX, or shell adapters.
 
 Non-goals:
 
@@ -31,6 +33,10 @@ Adapter contract:
 - `cancel`,
 - `resume`.
 
+The registry lives in `packaging/dwm-adapters.json` and currently declares
+`fixture`, `codex`, `claude`, and `shell` surfaces. Only the fixture adapter
+executes in V19.
+
 Each adapter returns normalized evidence:
 
 - command,
@@ -45,6 +51,7 @@ Each adapter returns normalized evidence:
 
 DWM Runner calls adapters through an allowlisted interface. Adapters may be
 first-party or optional, but DWM Core accepts only normalized evidence ledgers.
+V19 verifies the registry and writes fixture evidence under `out/adapters/`.
 
 ## Safety And Verification Gates
 
@@ -62,6 +69,8 @@ message, or history rewrite capability requires matching gates.
 ## Release Plan
 
 1. Define adapter schema.
-2. Add first-party fixture and Codex adapters.
-3. Add optional OMX adapter only after interface stability.
-4. Add adapter compatibility tests to release gate.
+2. Add first-party fixture registry and normalized evidence.
+3. Add first-party Codex capability entry.
+4. Add optional Claude and shell capability entries.
+5. Add optional OMX adapter only after interface stability.
+6. Add adapter compatibility tests to release gate.

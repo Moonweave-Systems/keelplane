@@ -1,0 +1,38 @@
+{
+  "fixtures": [
+    {
+      "expected_status": "valid",
+      "id": "registry-valid",
+      "kind": "registry",
+      "required": true
+    },
+    {
+      "expected_adapter": "fixture",
+      "expected_status": "verified",
+      "id": "fixture-normalized-evidence",
+      "kind": "fixture-run",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_ADAPTER_CAPABILITIES_MISSING",
+      "expected_status": "blocked",
+      "id": "omx-missing-capabilities",
+      "kind": "missing-capabilities",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_ADAPTER_OPAQUE_EVIDENCE",
+      "expected_status": "blocked",
+      "id": "opaque-transcript-rejected",
+      "kind": "opaque-evidence",
+      "required": true
+    }
+  ],
+  "required_fixture_ids": [
+    "registry-valid",
+    "fixture-normalized-evidence",
+    "omx-missing-capabilities",
+    "opaque-transcript-rejected"
+  ],
+  "suite_id": "v19-adapter-ecosystem"
+}

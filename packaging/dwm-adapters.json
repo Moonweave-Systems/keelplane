@@ -1,0 +1,107 @@
+{
+  "adapters": [
+    {
+      "capabilities": {
+        "database": false,
+        "delete": false,
+        "dependency": false,
+        "external_message": false,
+        "history_rewrite": false,
+        "network": false,
+        "production": false,
+        "public_api": false,
+        "read": true,
+        "secret": false,
+        "write": false
+      },
+      "evidence_schema": "normalized-ledger-v1",
+      "id": "fixture",
+      "lifecycle": [
+        "prepare",
+        "run",
+        "collect",
+        "verify"
+      ],
+      "mode": "first-party",
+      "transcript": "normalized"
+    },
+    {
+      "capabilities": {
+        "database": false,
+        "delete": false,
+        "dependency": false,
+        "external_message": false,
+        "history_rewrite": false,
+        "network": false,
+        "production": false,
+        "public_api": false,
+        "read": true,
+        "secret": false,
+        "write": false
+      },
+      "evidence_schema": "normalized-ledger-v1",
+      "id": "codex",
+      "lifecycle": [
+        "prepare",
+        "run",
+        "collect",
+        "verify",
+        "cancel",
+        "resume"
+      ],
+      "mode": "first-party-planned",
+      "transcript": "normalized"
+    },
+    {
+      "capabilities": {
+        "database": false,
+        "delete": false,
+        "dependency": false,
+        "external_message": false,
+        "history_rewrite": false,
+        "network": false,
+        "production": false,
+        "public_api": false,
+        "read": true,
+        "secret": false,
+        "write": false
+      },
+      "evidence_schema": "normalized-ledger-v1",
+      "id": "claude",
+      "lifecycle": [
+        "prepare",
+        "run",
+        "collect",
+        "verify"
+      ],
+      "mode": "optional-planned",
+      "transcript": "normalized"
+    },
+    {
+      "capabilities": {
+        "database": false,
+        "delete": false,
+        "dependency": false,
+        "external_message": false,
+        "history_rewrite": false,
+        "network": false,
+        "production": false,
+        "public_api": false,
+        "read": true,
+        "secret": false,
+        "write": false
+      },
+      "evidence_schema": "normalized-ledger-v1",
+      "id": "shell",
+      "lifecycle": [
+        "prepare",
+        "run",
+        "collect",
+        "verify"
+      ],
+      "mode": "optional-planned",
+      "transcript": "normalized"
+    }
+  ],
+  "schema_version": "1.0"
+}

@@ -804,6 +804,47 @@ def require_v18_decision_summary_consistency() -> None:
         raise SystemExit(f"V18 decision consistency failed: {exc}") from exc
 
 
+def require_v19_decision_summary_text(summary: dict[str, object], decision_text: str) -> None:
+    normalized_decision_text = " ".join(decision_text.lower().split())
+    required_snippets = [
+        f"decision: {summary['decision']}",
+        f"`suite_id`: `{summary['suite_id']}`",
+        f"`fixture_count`: {summary['fixture_count']}",
+        f"`required_fixture_count`: {summary['required_fixture_count']}",
+        f"`required_passed`: {summary['required_passed']}",
+        f"`passed`: {summary['passed']}",
+        f"`failed`: {summary['failed']}",
+        f"`skipped`: {summary['skipped']}",
+        f"`decision`: `{summary['decision']}`",
+        "python scripts/dwm_adapters.py --manifest fixtures/v19/manifest.json --out out/adapters/v19-final",
+        "does not claim live codex execution",
+        "live claude execution",
+        "omx support",
+        "trusted opaque transcripts",
+    ]
+    missing = [snippet for snippet in required_snippets if snippet not in normalized_decision_text]
+    if missing:
+        raise SystemExit(f"docs/v19-decision.md does not match V19 summary: {missing}")
+
+
+def require_v19_decision_summary_consistency() -> None:
+    try:
+        completed = run_contract_command(
+            [
+                sys.executable,
+                "scripts/dwm_adapters.py",
+                "--manifest",
+                "fixtures/v19/manifest.json",
+                "--out",
+                "out/adapters/v19-final",
+            ],
+        )
+        summary = json.loads(completed.stdout)
+        require_v19_decision_summary_text(summary, (ROOT / "docs" / "v19-decision.md").read_text())
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"V19 decision consistency failed: {exc}") from exc
+
+
 def require_release_commands_pass() -> None:
     commands = [
         [sys.executable, "scripts/quick_validate_skill.py", "."],
@@ -818,6 +859,7 @@ def require_release_commands_pass() -> None:
         [sys.executable, "scripts/dwm_runner.py", "fanout", "--self-test"],
         [sys.executable, "scripts/dwm_hud.py", "--self-test"],
         [sys.executable, "scripts/dwm_install.py", "--self-test"],
+        [sys.executable, "scripts/dwm_adapters.py", "--self-test"],
         [sys.executable, "scripts/run_workflow.py", "--self-test"],
         [sys.executable, "scripts/run_workflow.py", "--manifest", "fixtures/v3/manifest.json", "--out", "out/v3/final"],
         [sys.executable, "scripts/orchestrate_workflow.py", "--self-test"],
@@ -1672,6 +1714,37 @@ Overclaims execution: no
     else:
         raise SystemExit("self-test failed: stale V18 decision summary passed")
 
+    v19_summary = {
+        "suite_id": "v19-final",
+        "fixture_count": 4,
+        "required_fixture_count": 4,
+        "required_passed": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0,
+        "decision": "keep",
+    }
+    good_v19_decision = (
+        "Decision: keep\n"
+        "python scripts/dwm_adapters.py --manifest fixtures/v19/manifest.json --out out/adapters/v19-final\n"
+        "- `suite_id`: `v19-final`\n"
+        "- `fixture_count`: 4\n"
+        "- `required_fixture_count`: 4\n"
+        "- `required_passed`: 4\n"
+        "- `passed`: 4\n"
+        "- `failed`: 0\n"
+        "- `skipped`: 0\n"
+        "- `decision`: `keep`\n"
+        "This decision does not claim live Codex execution, live Claude execution, OMX support, network execution, or trusted opaque transcripts.\n"
+    )
+    require_v19_decision_summary_text(v19_summary, good_v19_decision)
+    try:
+        require_v19_decision_summary_text(v19_summary, good_v19_decision.replace("`passed`: 4", "`passed`: 3", 1))
+    except SystemExit:
+        pass
+    else:
+        raise SystemExit("self-test failed: stale V19 decision summary passed")
+
     print("contract self-test: pass")
 
 
@@ -1742,6 +1815,10 @@ def main() -> None:
             "python scripts/dwm_install.py --manifest fixtures/v18/manifest.json --out out/install/v18-final",
             "python scripts/dwm_install.py validate",
             "python scripts/dwm_install.py install --home /tmp/dwm-home --out out/install/<install_id>",
+            "python scripts/dwm_adapters.py --self-test",
+            "python scripts/dwm_adapters.py --manifest fixtures/v19/manifest.json --out out/adapters/v19-final",
+            "python scripts/dwm_adapters.py registry",
+            "python scripts/dwm_adapters.py fixture-run --out out/adapters/<run_id>",
             "docs/v10-product-packaging-spec.md",
             "docs/v10-decision.md",
             "docs/v11-operator-guidance-spec.md",
@@ -1878,7 +1955,7 @@ def main() -> None:
     require_terms(
         "docs/v12-to-v20-final-roadmap.md",
         [
-            "status: v12-v18 implemented; v19-v20 planned.",
+            "status: v12-v19 implemented; v20 planned.",
             "dwm core",
             "dwm runner",
             "codex cli workers",
@@ -1983,8 +2060,26 @@ def main() -> None:
             "config overwrite requires approval",
         ],
     )
-    for spec_path in [
+    require_terms(
         "docs/v19-adapter-ecosystem-spec.md",
+        [
+            "status: implemented first registry slice in `scripts/dwm_adapters.py`.",
+            "## research and prior art",
+            "## product position and non-goals",
+            "## workflow architecture",
+            "## execution model",
+            "## safety and verification gates",
+            "## evaluation fixtures",
+            "## release plan",
+            "packaging/dwm-adapters.json",
+            "fixture",
+            "codex",
+            "claude",
+            "normalized evidence",
+            "out/adapters/",
+        ],
+    )
+    for spec_path in [
         "docs/v20-1.0-release-hardening-spec.md",
     ]:
         require_terms(
@@ -2049,7 +2144,7 @@ def main() -> None:
             "python scripts/dwm.py commands --kind release --json",
             "`status`: `workflow-complete`",
             "`doctor_ok`: `true`",
-            "`release_command_count`: `39`",
+            "`release_command_count`: `41`",
             "does not claim workflow execution",
         ],
     )
@@ -2168,6 +2263,7 @@ def main() -> None:
     require_v16_decision_summary_consistency()
     require_v17_decision_summary_consistency()
     require_v18_decision_summary_consistency()
+    require_v19_decision_summary_consistency()
     print("contract smoke: pass")
 
 

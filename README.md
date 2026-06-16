@@ -118,6 +118,7 @@ Use $dynamic-workflow-designer to plan a 500-file migration with verification ga
 ├── docs/v18-plugin-install-packaging-spec.md
 ├── docs/v18-decision.md
 ├── docs/v19-adapter-ecosystem-spec.md
+├── docs/v19-decision.md
 ├── docs/v20-1.0-release-hardening-spec.md
 ├── docs/github-research.md          # Prior-art survey and import decisions
 ├── docs/dwm-branding.md             # Product naming and compatibility rules
@@ -171,6 +172,8 @@ python scripts/dwm_hud.py --self-test
 python scripts/dwm_hud.py --manifest fixtures/v17/manifest.json --out out/hud/v17-final
 python scripts/dwm_install.py --self-test
 python scripts/dwm_install.py --manifest fixtures/v18/manifest.json --out out/install/v18-final
+python scripts/dwm_adapters.py --self-test
+python scripts/dwm_adapters.py --manifest fixtures/v19/manifest.json --out out/adapters/v19-final
 python scripts/run_workflow.py --self-test
 python scripts/run_workflow.py --manifest fixtures/v3/manifest.json --out out/v3/final
 python scripts/orchestrate_workflow.py --self-test
@@ -204,6 +207,13 @@ For repo-local install packaging checks, use:
 ```bash
 python scripts/dwm_install.py validate
 python scripts/dwm_install.py install --home /tmp/dwm-home --out out/install/<install_id>
+```
+
+For adapter registry checks, use:
+
+```bash
+python scripts/dwm_adapters.py registry
+python scripts/dwm_adapters.py fixture-run --out out/adapters/<run_id>
 ```
 
 ```bash

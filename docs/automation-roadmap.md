@@ -44,7 +44,7 @@ entrypoint remains `dynamic-workflow-designer`.
 | Multi-worker fanout | bounded parallel Codex workers and deterministic fan-in | planned V16, implemented |
 | Dashboard/HUD | local evidence browser, human gates, and next-action UI | planned V17, read-only HUD implemented |
 | Plugin/install packaging | installable CLI/plugin and migration surface | planned V18, first install packaging slice implemented |
-| Adapter ecosystem | optional Codex, OMX, Claude, shell, and fixture adapters | planned V19 |
+| Adapter ecosystem | optional Codex, OMX, Claude, shell, and fixture adapters | planned V19, first registry slice implemented |
 | 1.0 hardening | compatibility, migration, security, and acceptance gates | planned V20 |
 
 Prior art such as `oh-my-codex` already covers a broad Codex runtime layer:
