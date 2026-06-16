@@ -1,6 +1,6 @@
 # DWM V12 To V20 Final Roadmap
 
-Status: V12-V17 implemented; V18-V20 planned.
+Status: V12-V18 implemented; V19-V20 planned.
 
 Date: 2026-06-16
 

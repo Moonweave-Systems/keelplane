@@ -1,0 +1,37 @@
+{
+  "fixtures": [
+    {
+      "expected_status": "installed",
+      "id": "install-temp-home",
+      "kind": "install",
+      "required": true
+    },
+    {
+      "expected_status": "valid",
+      "id": "validate-existing-repo",
+      "kind": "validate",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_INSTALL_SCHEMA_INCOMPATIBLE",
+      "expected_status": "blocked",
+      "id": "incompatible-schema-blocks",
+      "kind": "incompatible-schema",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_INSTALL_CONFIG_EXISTS",
+      "expected_status": "blocked",
+      "id": "config-overwrite-requires-approval",
+      "kind": "config-overwrite",
+      "required": true
+    }
+  ],
+  "required_fixture_ids": [
+    "install-temp-home",
+    "validate-existing-repo",
+    "incompatible-schema-blocks",
+    "config-overwrite-requires-approval"
+  ],
+  "suite_id": "v18-plugin-install-packaging"
+}

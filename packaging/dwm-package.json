@@ -1,0 +1,21 @@
+{
+  "adapter_surfaces": [
+    "codex",
+    "claude",
+    "shell"
+  ],
+  "cli_entrypoint": "scripts/dwm.py",
+  "contract_version": "18.0.0",
+  "core_artifacts": [
+    "SKILL.md",
+    "scripts/dwm.py",
+    "scripts/dwm_runner.py",
+    "scripts/dwm_hud.py",
+    "scripts/compile_workflow.py",
+    "docs/v12-to-v20-final-roadmap.md"
+  ],
+  "install_mode": "repo-local-delegating",
+  "name": "dwm",
+  "portable_cli": true,
+  "schema_version": "1.0"
+}

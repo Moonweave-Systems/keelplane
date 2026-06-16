@@ -763,6 +763,47 @@ def require_v17_decision_summary_consistency() -> None:
         raise SystemExit(f"V17 decision consistency failed: {exc}") from exc
 
 
+def require_v18_decision_summary_text(summary: dict[str, object], decision_text: str) -> None:
+    normalized_decision_text = " ".join(decision_text.lower().split())
+    required_snippets = [
+        f"decision: {summary['decision']}",
+        f"`suite_id`: `{summary['suite_id']}`",
+        f"`fixture_count`: {summary['fixture_count']}",
+        f"`required_fixture_count`: {summary['required_fixture_count']}",
+        f"`required_passed`: {summary['required_passed']}",
+        f"`passed`: {summary['passed']}",
+        f"`failed`: {summary['failed']}",
+        f"`skipped`: {summary['skipped']}",
+        f"`decision`: `{summary['decision']}`",
+        "python scripts/dwm_install.py --manifest fixtures/v18/manifest.json --out out/install/v18-final",
+        "does not claim hosted distribution",
+        "global config mutation without approval",
+        "package registry publication",
+        "claude/codex adapter execution",
+    ]
+    missing = [snippet for snippet in required_snippets if snippet not in normalized_decision_text]
+    if missing:
+        raise SystemExit(f"docs/v18-decision.md does not match V18 summary: {missing}")
+
+
+def require_v18_decision_summary_consistency() -> None:
+    try:
+        completed = run_contract_command(
+            [
+                sys.executable,
+                "scripts/dwm_install.py",
+                "--manifest",
+                "fixtures/v18/manifest.json",
+                "--out",
+                "out/install/v18-final",
+            ],
+        )
+        summary = json.loads(completed.stdout)
+        require_v18_decision_summary_text(summary, (ROOT / "docs" / "v18-decision.md").read_text())
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"V18 decision consistency failed: {exc}") from exc
+
+
 def require_release_commands_pass() -> None:
     commands = [
         [sys.executable, "scripts/quick_validate_skill.py", "."],
@@ -776,6 +817,7 @@ def require_release_commands_pass() -> None:
         [sys.executable, "scripts/dwm_runner.py", "review", "--self-test"],
         [sys.executable, "scripts/dwm_runner.py", "fanout", "--self-test"],
         [sys.executable, "scripts/dwm_hud.py", "--self-test"],
+        [sys.executable, "scripts/dwm_install.py", "--self-test"],
         [sys.executable, "scripts/run_workflow.py", "--self-test"],
         [sys.executable, "scripts/run_workflow.py", "--manifest", "fixtures/v3/manifest.json", "--out", "out/v3/final"],
         [sys.executable, "scripts/orchestrate_workflow.py", "--self-test"],
@@ -1599,6 +1641,37 @@ Overclaims execution: no
     else:
         raise SystemExit("self-test failed: stale V17 decision summary passed")
 
+    v18_summary = {
+        "suite_id": "v18-final",
+        "fixture_count": 4,
+        "required_fixture_count": 4,
+        "required_passed": 4,
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0,
+        "decision": "keep",
+    }
+    good_v18_decision = (
+        "Decision: keep\n"
+        "python scripts/dwm_install.py --manifest fixtures/v18/manifest.json --out out/install/v18-final\n"
+        "- `suite_id`: `v18-final`\n"
+        "- `fixture_count`: 4\n"
+        "- `required_fixture_count`: 4\n"
+        "- `required_passed`: 4\n"
+        "- `passed`: 4\n"
+        "- `failed`: 0\n"
+        "- `skipped`: 0\n"
+        "- `decision`: `keep`\n"
+        "This decision does not claim hosted distribution, global config mutation without approval, package registry publication, or Claude/Codex adapter execution.\n"
+    )
+    require_v18_decision_summary_text(v18_summary, good_v18_decision)
+    try:
+        require_v18_decision_summary_text(v18_summary, good_v18_decision.replace("`passed`: 4", "`passed`: 3", 1))
+    except SystemExit:
+        pass
+    else:
+        raise SystemExit("self-test failed: stale V18 decision summary passed")
+
     print("contract self-test: pass")
 
 
@@ -1665,6 +1738,10 @@ def main() -> None:
             "python scripts/dwm_hud.py --self-test",
             "python scripts/dwm_hud.py --manifest fixtures/v17/manifest.json --out out/hud/v17-final",
             "python scripts/dwm_hud.py approve --hud out/hud/<hud_id> --out out/hud/<approval_id> --approver <name>",
+            "python scripts/dwm_install.py --self-test",
+            "python scripts/dwm_install.py --manifest fixtures/v18/manifest.json --out out/install/v18-final",
+            "python scripts/dwm_install.py validate",
+            "python scripts/dwm_install.py install --home /tmp/dwm-home --out out/install/<install_id>",
             "docs/v10-product-packaging-spec.md",
             "docs/v10-decision.md",
             "docs/v11-operator-guidance-spec.md",
@@ -1801,7 +1878,7 @@ def main() -> None:
     require_terms(
         "docs/v12-to-v20-final-roadmap.md",
         [
-            "status: v12-v17 implemented; v18-v20 planned.",
+            "status: v12-v18 implemented; v19-v20 planned.",
             "dwm core",
             "dwm runner",
             "codex cli workers",
@@ -1890,8 +1967,23 @@ def main() -> None:
             "no worker execution, merge, deployment, external message, secret access, or dependency installation is approved by this artifact",
         ],
     )
-    for spec_path in [
+    require_terms(
         "docs/v18-plugin-install-packaging-spec.md",
+        [
+            "status: implemented first install packaging slice in `scripts/dwm_install.py`.",
+            "## research and prior art",
+            "## product position and non-goals",
+            "## workflow architecture",
+            "## execution model",
+            "## safety and verification gates",
+            "## evaluation fixtures",
+            "## release plan",
+            "claude-compatible portable cli metadata",
+            "out/install/",
+            "config overwrite requires approval",
+        ],
+    )
+    for spec_path in [
         "docs/v19-adapter-ecosystem-spec.md",
         "docs/v20-1.0-release-hardening-spec.md",
     ]:
@@ -1957,7 +2049,7 @@ def main() -> None:
             "python scripts/dwm.py commands --kind release --json",
             "`status`: `workflow-complete`",
             "`doctor_ok`: `true`",
-            "`release_command_count`: `37`",
+            "`release_command_count`: `39`",
             "does not claim workflow execution",
         ],
     )
@@ -2075,6 +2167,7 @@ def main() -> None:
     require_v15_decision_summary_consistency()
     require_v16_decision_summary_consistency()
     require_v17_decision_summary_consistency()
+    require_v18_decision_summary_consistency()
     print("contract smoke: pass")
 
 

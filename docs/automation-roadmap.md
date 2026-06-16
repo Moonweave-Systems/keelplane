@@ -43,7 +43,7 @@ entrypoint remains `dynamic-workflow-designer`.
 | Runtime review/repair | runner-backed review, repair, and retry loops | planned V15, implemented |
 | Multi-worker fanout | bounded parallel Codex workers and deterministic fan-in | planned V16, implemented |
 | Dashboard/HUD | local evidence browser, human gates, and next-action UI | planned V17, read-only HUD implemented |
-| Plugin/install packaging | installable CLI/plugin and migration surface | planned V18 |
+| Plugin/install packaging | installable CLI/plugin and migration surface | planned V18, first install packaging slice implemented |
 | Adapter ecosystem | optional Codex, OMX, Claude, shell, and fixture adapters | planned V19 |
 | 1.0 hardening | compatibility, migration, security, and acceptance gates | planned V20 |
 

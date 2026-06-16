@@ -116,6 +116,7 @@ Use $dynamic-workflow-designer to plan a 500-file migration with verification ga
 ├── docs/v17-dashboard-hud-spec.md
 ├── docs/v17-decision.md
 ├── docs/v18-plugin-install-packaging-spec.md
+├── docs/v18-decision.md
 ├── docs/v19-adapter-ecosystem-spec.md
 ├── docs/v20-1.0-release-hardening-spec.md
 ├── docs/github-research.md          # Prior-art survey and import decisions
@@ -168,6 +169,8 @@ python scripts/dwm_runner.py fanout --self-test
 python scripts/dwm_runner.py --manifest fixtures/v16/manifest.json --out out/v13/v16-final
 python scripts/dwm_hud.py --self-test
 python scripts/dwm_hud.py --manifest fixtures/v17/manifest.json --out out/hud/v17-final
+python scripts/dwm_install.py --self-test
+python scripts/dwm_install.py --manifest fixtures/v18/manifest.json --out out/install/v18-final
 python scripts/run_workflow.py --self-test
 python scripts/run_workflow.py --manifest fixtures/v3/manifest.json --out out/v3/final
 python scripts/orchestrate_workflow.py --self-test
@@ -194,6 +197,13 @@ For hash-bound HUD evidence approval, use:
 
 ```bash
 python scripts/dwm_hud.py approve --hud out/hud/<hud_id> --out out/hud/<approval_id> --approver <name>
+```
+
+For repo-local install packaging checks, use:
+
+```bash
+python scripts/dwm_install.py validate
+python scripts/dwm_install.py install --home /tmp/dwm-home --out out/install/<install_id>
 ```
 
 ```bash
