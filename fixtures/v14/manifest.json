@@ -1,0 +1,58 @@
+{
+  "fixtures": [
+    {
+      "expected_status": "active",
+      "id": "session-start-readonly",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "required": true,
+      "type": "session-start"
+    },
+    {
+      "expected_resume_state": "resumable",
+      "expected_status": "active",
+      "id": "session-resume-readonly",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "required": true,
+      "type": "session-resume"
+    },
+    {
+      "expected_error": "ERR_SESSION_STALE_SOURCE",
+      "expected_status": "blocked",
+      "id": "session-stale-source",
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "required": true,
+      "stale_source_head": true,
+      "type": "session-resume"
+    },
+    {
+      "expected_error": "ERR_SESSION_BLOCKED_RISK",
+      "expected_status": "blocked",
+      "id": "session-write-risk-blocked",
+      "mutation": {
+        "gate_trigger": "write action",
+        "plan_id": "v14-write-risk-blocked",
+        "risk": "write"
+      },
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "required": true,
+      "type": "session-start"
+    },
+    {
+      "expected_error": "ERR_SESSION_PATH_SYMLINK",
+      "expected_status": "blocked",
+      "id": "session-symlink-path",
+      "make_session_symlink": true,
+      "plan": "fixtures/v1/plans/ready-readonly.workflow.plan.json",
+      "required": true,
+      "type": "session-start"
+    }
+  ],
+  "required_fixture_ids": [
+    "session-start-readonly",
+    "session-resume-readonly",
+    "session-stale-source",
+    "session-write-risk-blocked",
+    "session-symlink-path"
+  ],
+  "suite_id": "v14-session-worktree-runtime"
+}

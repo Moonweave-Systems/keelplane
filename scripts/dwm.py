@@ -31,6 +31,8 @@ RELEASE_COMMANDS = [
     "python scripts/execute_packet.py --manifest fixtures/v2.5/manifest.json --out out/v2.5/final",
     "python scripts/dwm_runner.py --self-test",
     "python scripts/dwm_runner.py --manifest fixtures/v13/manifest.json --out out/v13/final",
+    "python scripts/dwm_runner.py session --self-test",
+    "python scripts/dwm_runner.py --manifest fixtures/v14/manifest.json --out out/v13/v14-final",
     "python scripts/run_workflow.py --self-test",
     "python scripts/run_workflow.py --manifest fixtures/v3/manifest.json --out out/v3/final",
     "python scripts/orchestrate_workflow.py --self-test",
@@ -76,6 +78,7 @@ BASE_REQUIRED_PATHS = [
     "docs/v11-operator-guidance.workflow.plan.json",
     "docs/v11-decision.md",
     "docs/v13-decision.md",
+    "docs/v14-decision.md",
     "scripts/dwm.py",
     "scripts/dwm_runner.py",
 ]

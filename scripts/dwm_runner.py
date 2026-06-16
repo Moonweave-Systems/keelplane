@@ -41,6 +41,8 @@ SCHEMA_VERSION = "1.0"
 RUNNER_VERSION = "13.0.0"
 V13_OUT_ROOT = ROOT / "out" / "v13"
 V1_OUT_ROOT = ROOT / "out" / "v1"
+SESSIONS_ROOT = ROOT / "out" / "sessions"
+WORKTREES_ROOT = ROOT / "out" / "worktrees"
 SENTINEL = ".dwm_runner-owned.json"
 PROMPT_REL = "packets/001-first-slice.prompt.md"
 PACKET_REL = "packets/001-first-slice.packet.json"
@@ -136,6 +138,23 @@ def resolve_v13_out(value: str | Path) -> Path:
     return resolve_under(value, V13_OUT_ROOT, label="V13 output")
 
 
+def resolve_session_out(value: str | Path) -> Path:
+    try:
+        return resolve_under(value, SESSIONS_ROOT, label="session")
+    except RunnerError as exc:
+        if exc.code == "ERR_RUNNER_PATH_SYMLINK":
+            raise RunnerError("ERR_SESSION_PATH_SYMLINK", exc.message, path=exc.path) from exc
+        if exc.code == "ERR_RUNNER_PATH_UNSAFE":
+            raise RunnerError("ERR_SESSION_PATH_UNSAFE", exc.message, path=exc.path) from exc
+        raise
+
+
+def safe_segment(value: str, *, code: str) -> str:
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", value) or value in {".", ".."}:
+        raise RunnerError(code, "value must be one safe path segment", path=value)
+    return value
+
+
 def ensure_contained(root: Path, path: Path) -> None:
     target = path if path.is_absolute() else root / path
     reject_traversal(path, code="ERR_RUNNER_PATH_UNSAFE", message="artifact path escapes run directory")
@@ -223,6 +242,169 @@ def git_status_text(cwd: Path) -> str:
     if result.returncode != 0:
         return result.stderr or result.stdout
     return result.stdout
+
+
+def git_output(args: list[str], cwd: Path = ROOT) -> str:
+    result = subprocess.run(["git", *args], cwd=cwd, check=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if result.returncode != 0:
+        detail = result.stderr.strip() or result.stdout.strip() or f"git {' '.join(args)} failed"
+        raise RunnerError("ERR_SESSION_GIT_FAILED", detail, path=cwd)
+    return result.stdout
+
+
+def current_head() -> str:
+    return git_output(["rev-parse", "HEAD"]).strip()
+
+
+def ensure_worktree(session_id: str, source_head: str) -> Path:
+    safe_segment(session_id, code="ERR_SESSION_PATH_UNSAFE")
+    path = (WORKTREES_ROOT / session_id).resolve(strict=False)
+    try:
+        path.relative_to(WORKTREES_ROOT.resolve(strict=False))
+    except ValueError as exc:
+        raise RunnerError("ERR_SESSION_PATH_UNSAFE", "worktree path escapes worktree root", path=path) from exc
+    check_components_not_symlink(path, code="ERR_SESSION_PATH_SYMLINK")
+    WORKTREES_ROOT.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        if path.is_symlink():
+            raise RunnerError("ERR_SESSION_PATH_SYMLINK", "worktree path is a symlink", path=path)
+        if not path.is_dir():
+            raise RunnerError("ERR_SESSION_PATH_UNSAFE", "worktree path is not a directory", path=path)
+        probe = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=path, check=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if probe.returncode != 0:
+            raise RunnerError("ERR_SESSION_WORKTREE_INVALID", "existing worktree path is not a git worktree", path=path)
+        return path
+    result = subprocess.run(
+        ["git", "worktree", "add", "--detach", str(path), source_head],
+        cwd=ROOT,
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if result.returncode != 0:
+        raise RunnerError("ERR_SESSION_GIT_FAILED", result.stderr.strip() or result.stdout.strip(), path=path)
+    return path
+
+
+def append_event(session_dir: Path, event: dict[str, Any]) -> None:
+    ensure_contained(session_dir, session_dir / "events.jsonl")
+    with (session_dir / "events.jsonl").open("a", encoding="utf-8", newline="\n") as handle:
+        handle.write(canonical_json_text(event) + "\n")
+
+
+def render_session_resume(session: dict[str, Any], status: dict[str, Any]) -> str:
+    cleanup = session["cleanup_proposal"]["command"]
+    return "\n".join(
+        [
+            "# V14 Session Resume",
+            "",
+            f"Session ID: `{session['session_id']}`",
+            f"Status: `{status['status']}`",
+            f"Resume state: `{status['resume_state']}`",
+            "",
+            "V14 records session and worktree state only. It does not delete worktrees automatically.",
+            "",
+            "## Cleanup Proposal",
+            "",
+            f"```bash\n{cleanup}\n```",
+            "",
+        ]
+    )
+
+
+def session_status(session_dir: Path) -> dict[str, Any]:
+    session_dir = resolve_session_out(session_dir)
+    session = read_json_obj(session_dir / "session.json", root=session_dir, label="session.json")
+    worktree = read_json_obj(session_dir / "worktree.json", root=session_dir, label="worktree.json")
+    errors = []
+    if session.get("source_head") != current_head():
+        errors.append({"code": "ERR_SESSION_STALE_SOURCE", "message": "source HEAD changed"})
+    worktree_path = Path(str(worktree.get("path", "")))
+    if not worktree_path.is_dir() or worktree_path.is_symlink():
+        errors.append({"code": "ERR_SESSION_WORKTREE_INVALID", "message": "worktree path is missing or invalid"})
+    status = {
+        "tool": TOOL,
+        "schema_version": SCHEMA_VERSION,
+        "session_id": session.get("session_id"),
+        "status": "blocked" if errors else "active",
+        "resume_state": "blocked" if errors else "resumable",
+        "errors": errors,
+        "session_path": rel(session_dir),
+        "worktree_path": worktree.get("path"),
+    }
+    write_json(session_dir / "status.json", status, root=session_dir)
+    write_text(session_dir / "resume.md", render_session_resume(session, status), root=session_dir)
+    return status
+
+
+def session_start(v1_run: Path, session_dir: Path) -> dict[str, Any]:
+    v1_run = resolve_v1_run(v1_run)
+    session_dir = resolve_session_out(session_dir)
+    session_id = safe_segment(session_dir.name, code="ERR_SESSION_PATH_UNSAFE")
+    if session_dir.exists():
+        if session_dir.is_symlink():
+            raise RunnerError("ERR_SESSION_PATH_SYMLINK", "session path is a symlink", path=session_dir)
+        if not session_dir.is_dir():
+            raise RunnerError("ERR_SESSION_PATH_UNSAFE", "session path is not a directory", path=session_dir)
+        if read_sentinel(session_dir) is None:
+            raise RunnerError("ERR_SESSION_PATH_UNSAFE", "existing session is not runner-owned", path=session_dir)
+        shutil.rmtree(session_dir)
+    SESSIONS_ROOT.mkdir(parents=True, exist_ok=True)
+    session_dir.mkdir(parents=True)
+    write_json(session_dir / SENTINEL, sentinel_payload(session_id, v1_run, mode="session"), root=session_dir)
+    try:
+        context = load_trusted_context(v1_run)
+    except RunnerError as exc:
+        code = "ERR_SESSION_BLOCKED_RISK" if exc.code == "ERR_RUNNER_BLOCKED_RISK" else exc.code
+        raise RunnerError(code, exc.message, path=exc.path) from exc
+    source_head = current_head()
+    worktree_path = ensure_worktree(session_id, source_head)
+    session = {
+        "tool": TOOL,
+        "schema_version": SCHEMA_VERSION,
+        "runtime_version": "14.0.0",
+        "session_id": session_id,
+        "created_at": now_utc(),
+        "v1_run_path": rel(v1_run),
+        "source_head": source_head,
+        "packet_hash": context["packet_hash"],
+        "prompt_hash": context["prompt_hash"],
+        "cleanup_proposal": {
+            "command": f"git worktree remove {rel(worktree_path)}",
+            "auto_delete": False,
+        },
+    }
+    worktree = {
+        "session_id": session_id,
+        "path": rel(worktree_path),
+        "created": True,
+        "source_head": source_head,
+        "dirty_at_start": bool(git_status_text(worktree_path).strip()),
+    }
+    locks = {"session_id": session_id, "locked_paths": [], "exclusive": False}
+    write_json(session_dir / "session.json", session, root=session_dir)
+    write_json(session_dir / "worktree.json", worktree, root=session_dir)
+    write_json(session_dir / "locks.json", locks, root=session_dir)
+    append_event(session_dir, {"event": "session-started", "created_at": session["created_at"], "source_head": source_head})
+    status = session_status(session_dir)
+    return status
+
+
+def session_resume(session_dir: Path) -> dict[str, Any]:
+    session_dir = resolve_session_out(session_dir)
+    status = session_status(session_dir)
+    event = {
+        "event": "session-resume-checked",
+        "checked_at": now_utc(),
+        "status": status["status"],
+        "resume_state": status["resume_state"],
+    }
+    append_event(session_dir, event)
+    if status["resume_state"] != "resumable":
+        first = status["errors"][0] if status["errors"] else {"code": "ERR_SESSION_STALE_SOURCE", "message": "session is not resumable"}
+        raise RunnerError(first["code"], first["message"], path=session_dir)
+    return status
 
 
 def status_from_plan_error(record: dict[str, Any]) -> RunnerError:
@@ -454,6 +636,58 @@ def run_fixture(fixture: dict[str, Any], suite_dir: Path, temp_root: Path) -> di
         return {"id": fixture_id, "status": "fail", "required": fixture.get("required", True), "error": record}
 
 
+def mutate_session_fixture(session_dir: Path, fixture: dict[str, Any]) -> None:
+    if fixture.get("stale_source_head"):
+        session = read_json_obj(session_dir / "session.json", root=session_dir, label="session.json")
+        session["source_head"] = "0" * 40
+        write_json(session_dir / "session.json", session, root=session_dir)
+
+
+def run_session_fixture(fixture: dict[str, Any], suite_dir: Path, temp_root: Path) -> dict[str, Any]:
+    fixture_id = fixture["id"]
+    try:
+        plan_path = write_fixture_plan(temp_root, fixture)
+        v1_run_dir = V1_OUT_ROOT / f"v14-{suite_dir.name}" / fixture_id
+        compile_plan(plan_path, v1_run_dir, run_id=f"v14/{fixture_id}", mode="fixture")
+        session_dir = SESSIONS_ROOT / f"{suite_dir.name}-{fixture_id}"
+        if fixture.get("make_session_symlink"):
+            SESSIONS_ROOT.mkdir(parents=True, exist_ok=True)
+            target = SESSIONS_ROOT / f"{suite_dir.name}-{fixture_id}-target"
+            target.mkdir(parents=True, exist_ok=True)
+            if session_dir.exists() or session_dir.is_symlink():
+                if session_dir.is_dir() and not session_dir.is_symlink():
+                    shutil.rmtree(session_dir)
+                else:
+                    session_dir.unlink()
+            session_dir.symlink_to(target, target_is_directory=True)
+        try:
+            status = session_start(v1_run_dir, session_dir)
+            mutate_session_fixture(session_dir, fixture)
+            if fixture["type"] == "session-resume":
+                status = session_resume(session_dir)
+        except RunnerError as exc:
+            status_path = session_dir / "status.json"
+            status = json.loads(status_path.read_text()) if status_path.is_file() else {"status": "blocked", "errors": [exc.to_record()]}
+            if fixture.get("expected_error") != exc.code:
+                raise
+        expected_status = fixture.get("expected_status")
+        if expected_status is not None and status.get("status") != expected_status:
+            raise RunnerError("ERR_SESSION_FIXTURE_FAILED", f"expected status {expected_status}, got {status.get('status')}")
+        expected_resume_state = fixture.get("expected_resume_state")
+        if expected_resume_state is not None and status.get("resume_state") != expected_resume_state:
+            raise RunnerError("ERR_SESSION_FIXTURE_FAILED", f"expected resume_state {expected_resume_state}, got {status.get('resume_state')}")
+        expected_error = fixture.get("expected_error")
+        errors = status.get("errors", [])
+        actual_error = errors[0].get("code") if isinstance(errors, list) and errors and isinstance(errors[0], dict) else None
+        if expected_error is not None and actual_error != expected_error:
+            raise RunnerError("ERR_SESSION_FIXTURE_FAILED", f"expected error {expected_error}, got {actual_error}")
+        return {"id": fixture_id, "status": "pass", "required": fixture.get("required", True)}
+    except (RunnerError, CompileError) as exc:
+        record = exc.to_record() if isinstance(exc, RunnerError) else {"code": exc.code, "message": exc.message, "path": exc.path}
+        record["fixture_id"] = fixture_id
+        return {"id": fixture_id, "status": "fail", "required": fixture.get("required", True), "error": record}
+
+
 def evaluate_manifest(manifest_path: Path, out_dir: Path) -> dict[str, Any]:
     manifest = read_json(manifest_path)
     suite_id = Path(out_dir).name
@@ -469,7 +703,12 @@ def evaluate_manifest(manifest_path: Path, out_dir: Path) -> dict[str, Any]:
     temp_root.mkdir()
     fixtures = manifest["fixtures"]
     required_ids = set(manifest["required_fixture_ids"])
-    results = [run_fixture(fixture, suite_dir, temp_root) for fixture in fixtures]
+    results = [
+        run_session_fixture(fixture, suite_dir, temp_root)
+        if str(fixture.get("type", "")).startswith("session-")
+        else run_fixture(fixture, suite_dir, temp_root)
+        for fixture in fixtures
+    ]
     passed = sum(1 for item in results if item["status"] == "pass")
     failures = [item["error"] for item in results if item["status"] == "fail"]
     required_passed = sum(1 for item in results if item["id"] in required_ids and item["status"] == "pass")
@@ -501,11 +740,23 @@ def self_test() -> None:
     print("dwm_runner self-test: pass")
 
 
+def session_self_test() -> None:
+    SESSIONS_ROOT.mkdir(parents=True, exist_ok=True)
+    V13_OUT_ROOT.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="dwm-session-self-test-", dir=V13_OUT_ROOT) as tmp:
+        summary = evaluate_manifest(ROOT / "fixtures" / "v14" / "manifest.json", Path(tmp) / "session-self-test")
+    if summary["decision"] != "keep":
+        raise RunnerError("ERR_SESSION_FIXTURE_FAILED", "session self-test manifest did not keep")
+    print("dwm_runner session self-test: pass")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", nargs="?", choices=["run"])
+    parser.add_argument("command", nargs="?", choices=["run", "session"])
+    parser.add_argument("session_command", nargs="?", choices=["start", "status", "resume"])
     parser.add_argument("--run")
     parser.add_argument("--out")
+    parser.add_argument("--session")
     parser.add_argument("--mode", default="dry-run", choices=sorted(ALLOWED_MODES))
     parser.add_argument("--fixture-command-json")
     parser.add_argument("--manifest")
@@ -513,7 +764,10 @@ def main() -> int:
     args = parser.parse_args()
     try:
         if args.self_test:
-            self_test()
+            if args.command == "session":
+                session_self_test()
+            else:
+                self_test()
         elif args.manifest:
             if not args.out:
                 raise RunnerError("ERR_RUNNER_PATH_UNSAFE", "--manifest requires --out")
@@ -527,8 +781,26 @@ def main() -> int:
                 raise RunnerError("ERR_RUNNER_BACKEND_UNAVAILABLE", "--fixture-command-json must be a string list")
             status = run(Path(args.run), Path(args.out), mode=args.mode, fixture_command=fixture_command)
             print(canonical_json_text(status))
+        elif args.command == "session":
+            if args.session_command == "start":
+                if not args.run or not args.out:
+                    raise RunnerError("ERR_SESSION_PATH_UNSAFE", "session start requires --run and --out")
+                status = session_start(Path(args.run), Path(args.out))
+                print(canonical_json_text(status))
+            elif args.session_command == "status":
+                if not args.session:
+                    raise RunnerError("ERR_SESSION_PATH_UNSAFE", "session status requires --session")
+                status = session_status(Path(args.session))
+                print(canonical_json_text(status))
+            elif args.session_command == "resume":
+                if not args.session:
+                    raise RunnerError("ERR_SESSION_PATH_UNSAFE", "session resume requires --session")
+                status = session_resume(Path(args.session))
+                print(canonical_json_text(status))
+            else:
+                raise RunnerError("ERR_SESSION_PATH_UNSAFE", "expected session start, status, or resume")
         else:
-            parser.error("expected --self-test, --manifest, or run --run --out")
+            parser.error("expected --self-test, --manifest, run --run --out, or session subcommand")
     except (RunnerError, CompileError) as exc:
         record = exc.to_record() if isinstance(exc, RunnerError) else {"code": exc.code, "message": exc.message, "path": exc.path}
         print(canonical_json_text(record), file=sys.stderr)

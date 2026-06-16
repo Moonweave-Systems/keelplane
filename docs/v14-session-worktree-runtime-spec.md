@@ -1,6 +1,6 @@
 # V14 Session And Worktree Runtime Spec
 
-Status: planned; not implemented.
+Status: implemented in `scripts/dwm_runner.py session`.
 
 ## Research And Prior Art
 
@@ -24,7 +24,7 @@ Non-goals:
 Add:
 
 ```bash
-python scripts/dwm_runner.py session start --run out/<run>
+python scripts/dwm_runner.py session start --run out/v1/<run> --out out/sessions/<id>
 python scripts/dwm_runner.py session status --session out/sessions/<id>
 python scripts/dwm_runner.py session resume --session out/sessions/<id>
 ```
@@ -40,8 +40,9 @@ Session artifacts:
 
 ## Execution Model
 
-Sessions are append-only. Worktree creation is explicit, recorded, and bound to
-the source commit. Cleanup is proposed as a command, not performed silently.
+Sessions append events to `events.jsonl`. Worktree creation is explicit,
+recorded under `worktree.json`, and bound to the source commit. Cleanup is
+proposed as a command, not performed silently.
 
 ## Safety And Verification Gates
 
@@ -51,7 +52,8 @@ access unless explicitly approved by a tracked human gate.
 
 ## Evaluation Fixtures
 
-- positive: start/resume one read-only session,
+- positive: start one read-only session,
+- positive: resume one read-only session,
 - positive: detect stale source commit,
 - negative: dirty write session blocked,
 - negative: symlinked session path rejected.
@@ -60,5 +62,5 @@ access unless explicitly approved by a tracked human gate.
 
 1. Add session registry under ignored `out/sessions/`.
 2. Add session status and resume commands.
-3. Add fixtures for clean, dirty, stale, and symlink states.
+3. Add fixtures for clean, blocked-risk, stale, and symlink states.
 4. Document cleanup as a human-confirmed operation.
