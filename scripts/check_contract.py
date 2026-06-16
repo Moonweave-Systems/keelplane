@@ -988,6 +988,9 @@ def require_release_commands_pass() -> None:
         [sys.executable, "scripts/dwm_release.py", "--self-test"],
         [sys.executable, "scripts/dwm_review_gate.py", "--self-test"],
         [sys.executable, "scripts/dwm_dogfood_replay.py", "--self-test"],
+        [sys.executable, "scripts/dwm.py", "plan", "V21 shell smoke", "--out", "out/v21/release-plan-smoke", "--json"],
+        [sys.executable, "scripts/dwm.py", "run", "V21 shell smoke", "--out", "out/v21/release-run-smoke", "--json"],
+        [sys.executable, "scripts/dwm.py", "resume", "--run", "out/v21/release-run-smoke", "--json"],
         [sys.executable, "scripts/run_workflow.py", "--self-test"],
         [sys.executable, "scripts/run_workflow.py", "--manifest", "fixtures/v3/manifest.json", "--out", "out/v3/final"],
         [sys.executable, "scripts/orchestrate_workflow.py", "--self-test"],
@@ -2030,6 +2033,9 @@ def main() -> None:
             "python scripts/dwm.py status --run out/v9/v32-semantic-dogfood",
             "python scripts/dwm.py next --run out/v9/v32-semantic-dogfood",
             "python scripts/dwm.py commands --kind product",
+            "python scripts/dwm.py plan \"<objective>\" --out out/v21/<run_id>",
+            "python scripts/dwm.py run \"<objective>\" --out out/v21/<run_id>",
+            "python scripts/dwm.py resume --run out/v21/<run_id>",
             "python scripts/dwm_hud.py --self-test",
             "python scripts/dwm_hud.py --manifest fixtures/v17/manifest.json --out out/hud/v17-final",
             "python scripts/dwm_hud.py approve --hud out/hud/<hud_id> --out out/hud/<approval_id> --approver <name>",
@@ -2059,6 +2065,7 @@ def main() -> None:
             "docs/v13-dwm-runner-mvp-spec.md",
             "docs/v20-1.0-release-hardening-spec.md",
             "docs/v20.6-dogfood-replay-spec.md",
+            "docs/v21-product-shell-spec.md",
             "planning documents, not implemented runtime claims",
             "docs/v2.5-review-repair-spec.md",
             "docs/v2.5-to-v3.workflow.plan.json",
@@ -2372,6 +2379,32 @@ def main() -> None:
         ],
     )
     require_terms(
+        "docs/v21-product-shell-spec.md",
+        [
+            "status: implemented first product shell slice in `scripts/dwm.py`.",
+            "dwm plan",
+            "dwm run",
+            "dwm resume",
+            "plan-only",
+            "blocked-before-live-execution",
+            "err_dwm_shell_live_EXECUTION_BLOCKED".lower(),
+        ],
+    )
+    require_terms(
+        "docs/v21-decision.md",
+        [
+            "decision: keep",
+            "python scripts/dwm.py plan \"v21 shell smoke\" --out out/v21/release-plan-smoke --json",
+            "python scripts/dwm.py run \"v21 shell smoke\" --out out/v21/release-run-smoke --json",
+            "python scripts/dwm.py resume --run out/v21/release-run-smoke --json",
+            "`plan.status`: `planned`",
+            "`run.status`: `blocked`",
+            "`resume.trusted`: `true`",
+            "err_dwm_shell_live_execution_blocked",
+            "live model planning",
+        ],
+    )
+    require_terms(
         "docs/v7.5-decision.md",
         [
             "decision: keep",
@@ -2420,7 +2453,7 @@ def main() -> None:
             "python scripts/dwm.py commands --kind release --json",
             "`status`: `workflow-complete`",
             "`doctor_ok`: `true`",
-            "`release_command_count`: `47`",
+            "`release_command_count`: `50`",
             "does not claim workflow execution",
         ],
     )
@@ -2434,7 +2467,7 @@ def main() -> None:
             "`trusted`: `true`",
             "`verified_artifact_hashes`: `4`",
             "`recommendation.action`: `complete`",
-            "`product_command_count`: `4`",
+            "`product_command_count`: `7`",
             "does not claim workflow execution",
         ],
     )

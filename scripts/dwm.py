@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""DWM product CLI for read-only status, doctor, and command discovery."""
+"""DWM product CLI for status, product shell, doctor, and command discovery."""
 
 from __future__ import annotations
 
@@ -16,6 +16,9 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 OUT_ROOT = ROOT / "out"
 DEFAULT_RUN = OUT_ROOT / "v9" / "v32-semantic-dogfood"
+SHELL_ROOT = OUT_ROOT / "v21"
+SHELL_SENTINEL = ".dwm_shell-owned.json"
+SHELL_VERSION = "21.0.0"
 
 RELEASE_COMMANDS = [
     "python scripts/quick_validate_skill.py .",
@@ -49,6 +52,9 @@ RELEASE_COMMANDS = [
     "python scripts/dwm_review_gate.py --manifest fixtures/v20.5/manifest.json --out out/release-review/v20.5-final",
     "python scripts/dwm_dogfood_replay.py --self-test",
     "python scripts/dwm_dogfood_replay.py --manifest fixtures/v20.6/manifest.json --out out/dogfood-replay/v20.6-final",
+    "python scripts/dwm.py plan \"V21 shell smoke\" --out out/v21/release-plan-smoke --json",
+    "python scripts/dwm.py run \"V21 shell smoke\" --out out/v21/release-run-smoke --json",
+    "python scripts/dwm.py resume --run out/v21/release-run-smoke --json",
     "python scripts/run_workflow.py --self-test",
     "python scripts/run_workflow.py --manifest fixtures/v3/manifest.json --out out/v3/final",
     "python scripts/orchestrate_workflow.py --self-test",
@@ -77,6 +83,9 @@ DOGFOOD_COMMANDS = [
 ]
 
 PRODUCT_COMMANDS = [
+    "python scripts/dwm.py plan \"<objective>\" --out out/v21/<run_id> --json",
+    "python scripts/dwm.py run \"<objective>\" --out out/v21/<run_id> --json",
+    "python scripts/dwm.py resume --run out/v21/<run_id> --json",
     "python scripts/dwm.py status --run out/v9/v32-semantic-dogfood --json",
     "python scripts/dwm.py next --run out/v9/v32-semantic-dogfood --json",
     "python scripts/dwm.py doctor --json",
@@ -107,6 +116,8 @@ BASE_REQUIRED_PATHS = [
     "docs/v20.5-reviewer-gate-spec.md",
     "docs/v20.6-decision.md",
     "docs/v20.6-dogfood-replay-spec.md",
+    "docs/v21-decision.md",
+    "docs/v21-product-shell-spec.md",
     "packaging/dwm-adapters.json",
     "packaging/dwm-package.json",
     "scripts/dwm.py",
@@ -146,6 +157,12 @@ def canonical_hash(data: Any) -> str:
 
 def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def now_utc() -> str:
+    from datetime import UTC, datetime
+
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def rel(path: Path) -> str:
@@ -208,11 +225,159 @@ def read_text_file(path: Path, *, label: str) -> str:
         raise DwmError("ERR_DWM_ARTIFACT_MALFORMED", f"{label} is not UTF-8 text", path=path) from exc
 
 
+def write_text_atomic(path: Path, text: str, *, root: Path) -> None:
+    target = path if path.is_absolute() else root / path
+    target.parent.mkdir(parents=True, exist_ok=True)
+    tmp = target.with_name(f".{target.name}.tmp")
+    tmp.write_text(text)
+    tmp.replace(target)
+
+
+def write_json_atomic(path: Path, data: Any, *, root: Path) -> None:
+    write_text_atomic(path, canonical_json(data) + "\n", root=root)
+
+
 def detect_version(run_dir: Path) -> str:
     parent = run_dir.parent.name
     if re.fullmatch(r"v[0-9]+(?:\.[0-9]+)?", parent):
         return parent
     raise DwmError("ERR_DWM_UNKNOWN_RUN_LAYOUT", "run path must be under out/v<number>/", path=run_dir)
+
+
+def slugify(value: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+    return slug[:48] or "objective"
+
+
+def resolve_shell_out(value: str | Path) -> Path:
+    raw = Path(value)
+    reject_traversal(raw, "ERR_DWM_SHELL_OUTSIDE_ROOT", "shell output path must not contain parent traversal")
+    candidate = raw if raw.is_absolute() else ROOT / raw
+    resolved = candidate.resolve(strict=False)
+    root_resolved = SHELL_ROOT.resolve(strict=False)
+    try:
+        resolved.relative_to(root_resolved)
+    except ValueError as exc:
+        raise DwmError("ERR_DWM_SHELL_OUTSIDE_ROOT", "shell output must resolve under repo-local out/v21/", path=value) from exc
+    if resolved == root_resolved:
+        raise DwmError("ERR_DWM_SHELL_OUTSIDE_ROOT", "shell output must name a run directory", path=value)
+    check_components_not_symlink(candidate)
+    return resolved
+
+
+def default_shell_out(objective: str, mode: str) -> Path:
+    return SHELL_ROOT / f"{mode}-{slugify(objective)}-{now_utc().replace(':', '').replace('-', '')}"
+
+
+def read_shell_sentinel(path: Path) -> dict[str, Any] | None:
+    sentinel = path / SHELL_SENTINEL
+    if not sentinel.is_file() or sentinel.is_symlink():
+        return None
+    try:
+        data = json.loads(sentinel.read_text())
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def prepare_shell_out(path: Path, shell_id: str, *, mode: str) -> None:
+    if path.exists():
+        if path.is_symlink():
+            raise DwmError("ERR_DWM_PATH_SYMLINK", "shell output is a symlink", path=path)
+        if not path.is_dir():
+            raise DwmError("ERR_DWM_SHELL_OUTSIDE_ROOT", "shell output is not a directory", path=path)
+        sentinel = read_shell_sentinel(path)
+        if sentinel is None or sentinel.get("shell_id") != shell_id:
+            raise DwmError("ERR_DWM_SHELL_OUTSIDE_ROOT", "existing shell output is not shell-owned", path=path)
+        for child in path.iterdir():
+            if child.is_dir():
+                import shutil
+
+                shutil.rmtree(child)
+            else:
+                child.unlink()
+    SHELL_ROOT.mkdir(parents=True, exist_ok=True)
+    path.mkdir(parents=True, exist_ok=True)
+    write_json_atomic(
+        path / SHELL_SENTINEL,
+        {
+            "tool": "dwm.py",
+            "schema_version": "1.0",
+            "shell_version": SHELL_VERSION,
+            "shell_id": shell_id,
+            "mode": mode,
+            "created_at": now_utc(),
+        },
+        root=path,
+    )
+
+
+def render_shell_request(request: dict[str, Any]) -> str:
+    return "\n".join(
+        [
+            "# DWM Product Shell Request",
+            "",
+            f"Mode: `{request['mode']}`",
+            f"Decision: `{request['decision']}`",
+            f"Objective: {request['objective']}",
+            "",
+            f"Safe default: {request['safe_default']}",
+            "",
+            "This artifact records product-shell intent only. It does not claim live adapter execution.",
+            "",
+        ]
+    )
+
+
+def create_shell_request(objective: str, out_dir: Path, *, mode: str) -> dict[str, Any]:
+    objective = objective.strip()
+    if not objective:
+        raise DwmError("ERR_DWM_ARGUMENTS", "objective must not be empty")
+    out_dir = resolve_shell_out(out_dir)
+    shell_id = out_dir.name
+    prepare_shell_out(out_dir, shell_id, mode=mode)
+    live_blocked = mode == "run"
+    request = {
+        "tool": "dwm.py",
+        "schema_version": "1.0",
+        "shell_version": SHELL_VERSION,
+        "shell_id": shell_id,
+        "created_at": now_utc(),
+        "mode": mode,
+        "objective": objective,
+        "decision": "blocked-before-live-execution" if live_blocked else "plan-only",
+        "execution_path": "plan-only",
+        "safe_default": "inspect this artifact, then invoke $dynamic-workflow-designer or an approved adapter command",
+        "blocked_by": ["ERR_DWM_SHELL_LIVE_EXECUTION_BLOCKED"] if live_blocked else [],
+        "recommended_commands": [
+            f"Use $dynamic-workflow-designer to design a workflow for: {objective}",
+            f"python scripts/dwm.py resume --run {rel(out_dir)} --json",
+        ],
+    }
+    status = {
+        "tool": "dwm.py",
+        "schema_version": "1.0",
+        "shell_version": SHELL_VERSION,
+        "run_id": shell_id,
+        "run_path": rel(out_dir),
+        "version": "v21",
+        "mode": mode,
+        "status": "blocked" if live_blocked else "planned",
+        "decision": request["decision"],
+        "resume_state": "resumable",
+        "blocked_by": request["blocked_by"],
+        "request_hash": canonical_hash(request),
+        "source_paths": {
+            "request": rel(out_dir / "workflow-request.json"),
+            "status": rel(out_dir / "status.json"),
+            "resume": rel(out_dir / "resume.md"),
+        },
+    }
+    write_json_atomic(out_dir / "workflow-request.json", request, root=out_dir)
+    write_text_atomic(out_dir / "workflow-request.md", render_shell_request(request), root=out_dir)
+    write_json_atomic(out_dir / "status.json", status, root=out_dir)
+    write_text_atomic(out_dir / "resume.md", render_shell_resume(status), root=out_dir)
+    return shell_resume_summary(out_dir)
 
 
 def status_summary(run_dir: Path) -> dict[str, Any]:
@@ -242,6 +407,67 @@ def status_summary(run_dir: Path) -> dict[str, Any]:
             "resume": rel(run_dir / "resume.md") if (run_dir / "resume.md").exists() else None,
         },
         "run_created_at": run.get("created_at"),
+    }
+
+
+def render_shell_resume(status: dict[str, Any]) -> str:
+    blocked = status.get("blocked_by") or []
+    lines = [
+        "# DWM Product Shell Resume",
+        "",
+        f"Run: `{status['run_path']}`",
+        f"Status: `{status['status']}`",
+        f"Decision: `{status['decision']}`",
+        "",
+    ]
+    if blocked:
+        lines.extend(["Blocked by:", *[f"- `{item}`" for item in blocked], ""])
+    lines.extend(
+        [
+            "Safe next action: inspect the request artifact and invoke `$dynamic-workflow-designer` for a real workflow design.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def shell_resume_summary(run_dir: Path) -> dict[str, Any]:
+    run_dir = resolve_shell_out(run_dir)
+    sentinel = read_shell_sentinel(run_dir)
+    if sentinel is None:
+        raise DwmError("ERR_DWM_ARTIFACT_MISSING", "v21 shell run is missing ownership sentinel", path=run_dir / SHELL_SENTINEL)
+    status = read_json_obj(run_dir / "status.json", label="v21 status.json")
+    request = read_json_obj(run_dir / "workflow-request.json", label="workflow-request.json")
+    expected_hash = status.get("request_hash")
+    if expected_hash != canonical_hash(request):
+        raise DwmError("ERR_DWM_SHELL_STALE", "workflow request hash does not match status", path=run_dir / "status.json")
+    blocked_by = status.get("blocked_by", [])
+    if not isinstance(blocked_by, list):
+        raise DwmError("ERR_DWM_ARTIFACT_MALFORMED", "v21 status blocked_by must be a list", path=run_dir / "status.json")
+    action = "blocked" if status.get("status") == "blocked" else "manual-design-required"
+    return {
+        "schema_version": "1.0",
+        "tool": "dwm.py",
+        "shell_version": SHELL_VERSION,
+        "run_path": rel(run_dir),
+        "version": "v21",
+        "run_id": status.get("run_id", run_dir.name),
+        "mode": status.get("mode"),
+        "status": status.get("status"),
+        "decision": status.get("decision"),
+        "resume_state": status.get("resume_state"),
+        "trusted": True,
+        "verified_artifact_hashes": 1,
+        "blocked_by": blocked_by,
+        "recommendation": {
+            "action": action,
+            "requires_user_approval": False,
+            "blocked_by": blocked_by,
+            "safe_default": request.get("safe_default"),
+            "commands": request.get("recommended_commands", []),
+            "summary": "V21 product shell records intent only; live planning or execution remains gated.",
+        },
+        "source_paths": status.get("source_paths", {}),
     }
 
 
@@ -591,6 +817,21 @@ def print_text_next(summary: dict[str, Any]) -> None:
         print(f"Blocked by: {', '.join(str(item) for item in recommendation['blocked_by'])}")
 
 
+def print_text_shell(summary: dict[str, Any]) -> None:
+    print(f"DWM shell: {summary['recommendation']['action']}")
+    print(f"Run: {summary['run_path']}")
+    print(f"Status: {summary['status']}")
+    print(f"Decision: {summary['decision']}")
+    if summary["blocked_by"]:
+        print(f"Blocked by: {', '.join(str(item) for item in summary['blocked_by'])}")
+    print(f"Summary: {summary['recommendation']['summary']}")
+    commands = summary["recommendation"].get("commands", [])
+    if commands:
+        print("Commands:")
+        for command in commands:
+            print(f"  {command}")
+
+
 def self_test() -> None:
     summary = status_summary(DEFAULT_RUN)
     if summary["status"] != "workflow-complete":
@@ -659,6 +900,15 @@ def self_test() -> None:
             raise
     else:
         raise DwmError("ERR_DWM_SELF_TEST_FAILED", "malformed JSON should be rejected", path=ROOT / "README.md")
+    plan_summary = create_shell_request("V21 shell self-test", SHELL_ROOT / "self-test-plan", mode="plan")
+    if plan_summary["status"] != "planned" or plan_summary["recommendation"]["action"] != "manual-design-required":
+        raise DwmError("ERR_DWM_SELF_TEST_FAILED", "V21 plan should create a resumable plan-only artifact")
+    run_summary = create_shell_request("V21 shell self-test", SHELL_ROOT / "self-test-run", mode="run")
+    if run_summary["status"] != "blocked" or "ERR_DWM_SHELL_LIVE_EXECUTION_BLOCKED" not in run_summary["blocked_by"]:
+        raise DwmError("ERR_DWM_SELF_TEST_FAILED", "V21 run should block before live execution")
+    resumed = shell_resume_summary(SHELL_ROOT / "self-test-run")
+    if resumed["trusted"] is not True or resumed["verified_artifact_hashes"] != 1:
+        raise DwmError("ERR_DWM_SELF_TEST_FAILED", "V21 resume should verify the request hash")
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -677,6 +927,20 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     next_parser = subparsers.add_parser("next", help="recommend the next safe operator action for one run")
     next_parser.add_argument("--run", default=str(DEFAULT_RUN), help="run directory under out/")
     next_parser.add_argument("--json", action="store_true", help="emit stable JSON")
+
+    plan = subparsers.add_parser("plan", help="record a plan-only product shell request")
+    plan.add_argument("objective", help="large objective to design")
+    plan.add_argument("--out", help="output directory under out/v21/")
+    plan.add_argument("--json", action="store_true", help="emit stable JSON")
+
+    run = subparsers.add_parser("run", help="record a run request and block before live execution")
+    run.add_argument("objective", help="large objective to run through DWM")
+    run.add_argument("--out", help="output directory under out/v21/")
+    run.add_argument("--json", action="store_true", help="emit stable JSON")
+
+    resume = subparsers.add_parser("resume", help="resume a V21 shell request or inspect an existing run")
+    resume.add_argument("--run", required=True, help="run directory under out/")
+    resume.add_argument("--json", action="store_true", help="emit stable JSON")
 
     commands = subparsers.add_parser("commands", help="print release or dogfood commands")
     commands.add_argument("--kind", choices=["all", "release", "dogfood", "product"], default="all")
@@ -712,6 +976,30 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 print_text_next(summary)
             return 0 if summary["trusted"] and summary["recommendation"]["action"] != "repair-required" else 1
+        if args.command == "plan":
+            out_dir = Path(args.out) if args.out else default_shell_out(args.objective, "plan")
+            summary = create_shell_request(args.objective, out_dir, mode="plan")
+            if args.json:
+                print(canonical_json(summary))
+            else:
+                print_text_shell(summary)
+            return 0
+        if args.command == "run":
+            out_dir = Path(args.out) if args.out else default_shell_out(args.objective, "run")
+            summary = create_shell_request(args.objective, out_dir, mode="run")
+            if args.json:
+                print(canonical_json(summary))
+            else:
+                print_text_shell(summary)
+            return 0
+        if args.command == "resume":
+            run_path = Path(args.run)
+            summary = shell_resume_summary(run_path) if run_path.parts[:2] == ("out", "v21") or "out/v21" in run_path.as_posix() else next_summary(run_path)
+            if args.json:
+                print(canonical_json(summary))
+            else:
+                print_text_shell(summary) if summary.get("version") == "v21" else print_text_next(summary)
+            return 0 if summary.get("trusted") else 1
         if args.command == "commands":
             summary = command_summary(args.kind)
             if args.json:
@@ -719,7 +1007,7 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 print_text_commands(summary)
             return 0
-        raise DwmError("ERR_DWM_ARGUMENTS", "expected --self-test, status, doctor, or commands")
+        raise DwmError("ERR_DWM_ARGUMENTS", "expected --self-test, plan, run, resume, status, doctor, next, or commands")
     except DwmError as exc:
         print(canonical_json(exc.to_record()), file=sys.stderr)
         return 1

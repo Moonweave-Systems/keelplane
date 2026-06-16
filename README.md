@@ -161,6 +161,8 @@ task itself needs dynamic orchestration.
 ├── docs/v20.5-decision.md
 ├── docs/v20.6-dogfood-replay-spec.md
 ├── docs/v20.6-decision.md
+├── docs/v21-product-shell-spec.md
+├── docs/v21-decision.md
 ├── docs/github-research.md          # Prior-art survey and import decisions
 ├── docs/dwm-branding.md             # Product naming and compatibility rules
 ├── assets/dwm-hero.svg              # README hero image
@@ -221,6 +223,9 @@ python scripts/dwm_review_gate.py --self-test
 python scripts/dwm_review_gate.py --manifest fixtures/v20.5/manifest.json --out out/release-review/v20.5-final
 python scripts/dwm_dogfood_replay.py --self-test
 python scripts/dwm_dogfood_replay.py --manifest fixtures/v20.6/manifest.json --out out/dogfood-replay/v20.6-final
+python scripts/dwm.py plan "V21 shell smoke" --out out/v21/release-plan-smoke --json
+python scripts/dwm.py run "V21 shell smoke" --out out/v21/release-run-smoke --json
+python scripts/dwm.py resume --run out/v21/release-run-smoke --json
 python scripts/run_workflow.py --self-test
 python scripts/run_workflow.py --manifest fixtures/v3/manifest.json --out out/v3/final
 python scripts/orchestrate_workflow.py --self-test
@@ -244,6 +249,14 @@ python scripts/check_release_text.py --self-test
 For day-to-day product checks, use the DWM CLI surface shown in the
 Quickstart. The detailed release command corpus above is intentionally longer:
 it is the reproducible evidence set for the current release.
+
+For the V21 product shell, use:
+
+```bash
+python scripts/dwm.py plan "<objective>" --out out/v21/<run_id>
+python scripts/dwm.py run "<objective>" --out out/v21/<run_id>
+python scripts/dwm.py resume --run out/v21/<run_id>
+```
 
 For hash-bound HUD evidence approval, use:
 

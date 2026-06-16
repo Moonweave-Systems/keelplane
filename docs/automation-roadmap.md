@@ -48,6 +48,7 @@ entrypoint remains `dynamic-workflow-designer`.
 | 1.0 hardening | compatibility, migration, security, and acceptance gates | planned V20, first release-candidate gate implemented |
 | Reviewer gate | independent release-candidate review artifact | planned V20.5, first reviewer gate implemented |
 | Dogfood replay | deterministic replay evidence for canonical dogfood chain | planned V20.6, replay gate implemented |
+| Product shell | memorable `plan`, `run`, and `resume` commands over safe artifacts | planned V21, first shell slice implemented |
 
 Prior art such as `oh-my-codex` already covers a broad Codex runtime layer:
 launch UX, worktree/tmux operation, durable state, and team execution. This repo
@@ -608,7 +609,9 @@ The planned roadmap splits the remaining product into versioned specs:
 - V20.5 release reviewer gate:
   `docs/v20.5-reviewer-gate-spec.md`,
 - V20.6 dogfood replay gate:
-  `docs/v20.6-dogfood-replay-spec.md`.
+  `docs/v20.6-dogfood-replay-spec.md`,
+- V21 product shell:
+  `docs/v21-product-shell-spec.md`.
 
 These specs define the intended path to an independent DWM product that can use
 Codex CLI directly through DWM Runner while keeping OMX optional rather than a

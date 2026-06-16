@@ -25,7 +25,7 @@ Generated dogfood values:
 - `verified_artifact_hashes`: `4`
 - `recommendation.action`: `complete`
 - `recommendation.requires_user_approval`: `false`
-- `product_command_count`: `4`
+- `product_command_count`: `7`
 
 This decision covers the first read-only DWM operator guidance surface. It does not claim workflow execution, worker execution, Codex CLI execution, OMX
 execution, subagent spawning, worktree merging, commits, pushes, dependency
