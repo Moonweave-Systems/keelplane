@@ -1646,6 +1646,8 @@ def require_release_commands_pass() -> None:
         [sys.executable, "scripts/dwm_release.py", "--self-test"],
         [sys.executable, "scripts/dwm_release_candidate.py", "--self-test"],
         [sys.executable, "scripts/dwm_release_candidate.py", "--manifest", "fixtures/v50/manifest.json", "--out", "out/release-candidates/v50-final"],
+        [sys.executable, "scripts/dwm_adapter_live_matrix.py", "--self-test"],
+        [sys.executable, "scripts/dwm_adapter_live_matrix.py", "--manifest", "fixtures/v55/manifest.json", "--out", "out/adapter-live-matrix/v55-final"],
         [sys.executable, "scripts/dwm_demo.py", "--self-test"],
         [sys.executable, "scripts/dwm_demo.py", "--manifest", "fixtures/v51/manifest.json", "--out", "out/demo/v51-final"],
         [sys.executable, "scripts/dwm_demo.py", "--manifest", "fixtures/v53/manifest.json", "--out", "out/demo/v53-final"],
@@ -3230,6 +3232,7 @@ def main() -> None:
             "python scripts/dwm_install.py validate",
             "python scripts/dwm_adapters.py registry",
             "python scripts/dwm_adapters.py parity --out out/adapters/<parity_id>",
+            "python scripts/dwm_adapter_live_matrix.py matrix --out out/adapter-live-matrix/<matrix_id>",
             "python scripts/dwm_release_candidate.py cut --parity out/adapters/<parity_id> --operator out/daily-operator/<operator_id> --out out/release-candidates/<candidate_id>",
             "python scripts/dwm_release.py status --out out/release/<release_id>",
             "report.json.graph_metrics",
@@ -3258,6 +3261,8 @@ def main() -> None:
             "today.md",
             "adapter-parity.json",
             "adapter-parity.md",
+            "adapter-live-matrix.json",
+            "adapter-live-matrix.md",
             "release-candidate.json",
             "release-notes.md",
             "release-checklist.md",
@@ -3293,6 +3298,7 @@ def main() -> None:
             "docs/v52-readme-ux-spec.md",
             "docs/v53-demo-inspect-spec.md",
             "docs/v54-dogfood-attempts-spec.md",
+            "docs/v55-adapter-live-matrix-spec.md",
             "generated `out/` directories are verification evidence, not source of truth",
             "deterministic control-plane above agent clis",
             "bounded adapter surfaces",
@@ -4082,6 +4088,32 @@ def main() -> None:
         ],
     )
     require_terms(
+        "docs/v55-adapter-live-matrix-spec.md",
+        [
+            "status: implemented first adapter live availability matrix in",
+            "python scripts/dwm_adapter_live_matrix.py matrix --out out/adapter-live-matrix/<matrix_id>",
+            "adapter-live-matrix.json",
+            "adapter-live-matrix.md",
+            "err_adapter_live_matrix_unsafe_command",
+            "err_adapter_live_matrix_command_missing",
+            "err_adapter_live_matrix_not_registered",
+            "do not execute task prompts",
+            "do not read secrets or tokens",
+        ],
+    )
+    require_terms(
+        "docs/v55-decision.md",
+        [
+            "decision: keep",
+            "python scripts/dwm_adapter_live_matrix.py --manifest fixtures/v55/manifest.json --out out/adapter-live-matrix/v55-final",
+            "adapter-live-matrix.json",
+            "adapter-live-matrix.md",
+            "missing command blocking",
+            "unregistered target blocking",
+            "does not claim live task execution",
+        ],
+    )
+    require_terms(
         "docs/v7.5-decision.md",
         [
             "decision: keep",
@@ -4130,7 +4162,7 @@ def main() -> None:
             "python scripts/dwm.py commands --kind release --json",
             "`status`: `workflow-complete`",
             "`doctor_ok`: `true`",
-            "`release_command_count`: `108`",
+            "`release_command_count`: `110`",
             "does not claim workflow execution",
         ],
     )

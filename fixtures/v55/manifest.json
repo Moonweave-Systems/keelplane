@@ -1,0 +1,38 @@
+{
+  "fixtures": [
+    {
+      "expected_status": "adapter-live-matrix-recorded",
+      "id": "adapter-live-matrix-recorded",
+      "kind": "live-matrix",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_ADAPTER_LIVE_MATRIX_UNSAFE_COMMAND",
+      "expected_status": "blocked",
+      "id": "unsafe-command-blocked",
+      "kind": "unsafe-command",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_ADAPTER_LIVE_MATRIX_COMMAND_MISSING",
+      "expected_status": "blocked",
+      "id": "missing-command-blocked",
+      "kind": "missing-command",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_ADAPTER_LIVE_MATRIX_NOT_REGISTERED",
+      "expected_status": "blocked",
+      "id": "not-registered-blocked",
+      "kind": "not-registered",
+      "required": true
+    }
+  ],
+  "required_fixture_ids": [
+    "adapter-live-matrix-recorded",
+    "unsafe-command-blocked",
+    "missing-command-blocked",
+    "not-registered-blocked"
+  ],
+  "suite_id": "v55-adapter-live-matrix"
+}

@@ -175,6 +175,9 @@ checked for missing artifacts and hash drift before a user trusts the result.
 V54 records `dogfood-attempts.json` and `comparison-ledger.json` from measured
 local attempt receipts so future graphs can start from evidence instead of
 claims.
+V55 records `adapter-live-matrix.json` and `adapter-live-matrix.md` so local
+Codex, Claude, and OpenCode command availability can be inspected without task
+execution or secret access.
 
 Generate graph artifacts with:
 
@@ -234,6 +237,7 @@ python scripts/dwm_hud.py approve --hud out/hud/<hud_id> --out out/hud/<approval
 python scripts/dwm_install.py validate
 python scripts/dwm_adapters.py registry
 python scripts/dwm_adapters.py parity --out out/adapters/<parity_id>
+python scripts/dwm_adapter_live_matrix.py matrix --out out/adapter-live-matrix/<matrix_id>
 python scripts/dwm_release_candidate.py cut --parity out/adapters/<parity_id> --operator out/daily-operator/<operator_id> --out out/release-candidates/<candidate_id>
 python scripts/dwm_release.py status --out out/release/<release_id>
 ```
@@ -259,6 +263,7 @@ python scripts/dwm_release.py status --out out/release/<release_id>
 | `scripts/dwm_dogfood_attempts.py` | Measured local dogfood comparison ledger. |
 | `scripts/dwm_daily_operator.py` | Daily operator loop for ready, blocked, and freshness state. |
 | `scripts/dwm_adapters.py` | Adapter registry, normalized evidence, and parity matrix checks. |
+| `scripts/dwm_adapter_live_matrix.py` | Local adapter command availability and auth-assumption matrix. |
 | `scripts/dwm_release_candidate.py` | Release candidate cut from parity and operator evidence. |
 | `scripts/dwm_benchmark_history.py` | Benchmark history ledger and trend graph builder. |
 | `scripts/dwm_benchmark_promotion.py` | Benchmark trend promotion gate for public graph claims. |
@@ -295,6 +300,7 @@ python scripts/dwm_release.py status --out out/release/<release_id>
 - [`docs/v52-readme-ux-spec.md`](docs/v52-readme-ux-spec.md): README UX consolidation.
 - [`docs/v53-demo-inspect-spec.md`](docs/v53-demo-inspect-spec.md): demo inspect surface.
 - [`docs/v54-dogfood-attempts-spec.md`](docs/v54-dogfood-attempts-spec.md): measured dogfood comparison ledger.
+- [`docs/v55-adapter-live-matrix-spec.md`](docs/v55-adapter-live-matrix-spec.md): adapter live availability matrix.
 
 Generated `out/` directories are verification evidence, not source of truth.
 

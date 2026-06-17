@@ -110,6 +110,8 @@ RELEASE_COMMANDS = [
     "python scripts/dwm_daily_operator.py --manifest fixtures/v48/manifest.json --out out/daily-operator/v48-final",
     "python scripts/dwm_release_candidate.py --self-test",
     "python scripts/dwm_release_candidate.py --manifest fixtures/v50/manifest.json --out out/release-candidates/v50-final",
+    "python scripts/dwm_adapter_live_matrix.py --self-test",
+    "python scripts/dwm_adapter_live_matrix.py --manifest fixtures/v55/manifest.json --out out/adapter-live-matrix/v55-final",
     "python scripts/dwm_demo.py --self-test",
     "python scripts/dwm_demo.py --manifest fixtures/v51/manifest.json --out out/demo/v51-final",
     "python scripts/dwm_demo.py --manifest fixtures/v53/manifest.json --out out/demo/v53-final",
@@ -244,6 +246,8 @@ BASE_REQUIRED_PATHS = [
     "docs/v53-demo-inspect-spec.md",
     "docs/v54-decision.md",
     "docs/v54-dogfood-attempts-spec.md",
+    "docs/v55-decision.md",
+    "docs/v55-adapter-live-matrix-spec.md",
     "packaging/dwm-benchmark-attempts.json",
     "packaging/dwm-adapters.json",
     "packaging/dwm-benchmarks.json",
@@ -284,6 +288,7 @@ BASE_REQUIRED_PATHS = [
     "scripts/dwm_dogfood_corpus.py",
     "scripts/dwm_dogfood_attempts.py",
     "scripts/dwm_daily_operator.py",
+    "scripts/dwm_adapter_live_matrix.py",
     "fixtures/v49/manifest.json",
     "fixtures/v50/manifest.json",
     "scripts/dwm_release_candidate.py",
@@ -297,6 +302,9 @@ BASE_REQUIRED_PATHS = [
     "docs/v53-demo-inspect-spec.md",
     "docs/v54-decision.md",
     "docs/v54-dogfood-attempts-spec.md",
+    "fixtures/v55/manifest.json",
+    "docs/v55-decision.md",
+    "docs/v55-adapter-live-matrix-spec.md",
 ]
 
 
