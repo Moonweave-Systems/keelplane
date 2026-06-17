@@ -206,6 +206,9 @@ for the same task, it blocks graph-ready recommendation with
 V64 adds `scripts/dwm_dogfood_pair_select.py` so duplicate pair roots can be
 resolved without deleting evidence by creating a clean selected root and V58
 series.
+V65 adds `scripts/dwm_dogfood_chart_render.py` so only a human-reviewed local
+chart candidate can produce `chart-render.json`, `chart-render.svg`, and
+`chart-render.md`.
 
 Generate graph artifacts with:
 
@@ -260,6 +263,7 @@ python scripts/dwm_dogfood_chart_review.py review --candidate out/dogfood-chart-
 python scripts/dwm_dogfood_acquire.py acquire --task-id <task_id> --out out/dogfood-acquisitions/<acquisition_id>
 python scripts/dwm_dogfood_operator.py recommend --out out/dogfood-operator/<operator_id>
 python scripts/dwm_dogfood_pair_select.py select --pair-root out/dogfood-pairs --out out/dogfood-pair-selections/<selection_id>
+python scripts/dwm_dogfood_chart_render.py render --review out/dogfood-chart-reviews/<review_id> --out out/dogfood-chart-renders/<render_id>
 python scripts/dwm_daily_operator.py today --corpus out/dogfood-corpus/<corpus_id> --out out/daily-operator/<operator_id>
 python scripts/dwm_benchmark_history.py build --report out/live-reports/<report_id> --out out/benchmark-history/<history_id>
 python scripts/dwm_benchmark_promotion.py promote --history out/benchmark-history/<history_id> --out out/benchmark-promotions/<promotion_id>
@@ -305,6 +309,7 @@ python scripts/dwm_release.py status --out out/release/<release_id>
 | `scripts/dwm_dogfood_acquire.py` | One-command dogfood evidence acquisition loop. |
 | `scripts/dwm_dogfood_operator.py` | Next dogfood acquisition recommendation loop. |
 | `scripts/dwm_dogfood_pair_select.py` | Clean pair-root selector for duplicate task pairs. |
+| `scripts/dwm_dogfood_chart_render.py` | Reviewed local dogfood chart renderer. |
 | `scripts/dwm_daily_operator.py` | Daily operator loop for ready, blocked, and freshness state. |
 | `scripts/dwm_adapters.py` | Adapter registry, normalized evidence, and parity matrix checks. |
 | `scripts/dwm_adapter_live_matrix.py` | Local adapter command availability and auth-assumption matrix. |
@@ -354,6 +359,7 @@ python scripts/dwm_release.py status --out out/release/<release_id>
 - [`docs/v62-dogfood-operator-spec.md`](docs/v62-dogfood-operator-spec.md): next dogfood acquisition recommendation loop.
 - [`docs/v63-dogfood-operator-duplicate-root-spec.md`](docs/v63-dogfood-operator-duplicate-root-spec.md): duplicate pair-root blocking for graph readiness.
 - [`docs/v64-dogfood-pair-select-spec.md`](docs/v64-dogfood-pair-select-spec.md): clean pair-root selector for duplicate task pairs.
+- [`docs/v65-dogfood-chart-render-spec.md`](docs/v65-dogfood-chart-render-spec.md): reviewed local dogfood chart renderer.
 
 Generated `out/` directories are verification evidence, not source of truth.
 

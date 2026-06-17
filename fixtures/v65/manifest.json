@@ -1,0 +1,35 @@
+{
+  "fixtures": [
+    {
+      "expected_status": "dogfood-chart-render-recorded",
+      "id": "render-approved",
+      "kind": "render-approved",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_DOGFOOD_CHART_RENDER_STALE_REVIEW",
+      "id": "stale-review-blocked",
+      "kind": "stale-review",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_DOGFOOD_CHART_RENDER_OVERCLAIM",
+      "id": "overclaim-review-blocked",
+      "kind": "overclaim-review",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_DOGFOOD_CHART_RENDER_STALE_CANDIDATE",
+      "id": "stale-candidate-blocked",
+      "kind": "stale-candidate",
+      "required": true
+    }
+  ],
+  "required_fixture_ids": [
+    "render-approved",
+    "stale-review-blocked",
+    "overclaim-review-blocked",
+    "stale-candidate-blocked"
+  ],
+  "suite_id": "v65-dogfood-chart-render"
+}

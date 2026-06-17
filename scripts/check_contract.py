@@ -1716,6 +1716,8 @@ def require_release_commands_pass() -> None:
         [sys.executable, "scripts/dwm_dogfood_operator.py", "--manifest", "fixtures/v63/manifest.json", "--out", "out/dogfood-operator/v63-final"],
         [sys.executable, "scripts/dwm_dogfood_pair_select.py", "--self-test"],
         [sys.executable, "scripts/dwm_dogfood_pair_select.py", "--manifest", "fixtures/v64/manifest.json", "--out", "out/dogfood-pair-selections/v64-final"],
+        [sys.executable, "scripts/dwm_dogfood_chart_render.py", "--self-test"],
+        [sys.executable, "scripts/dwm_dogfood_chart_render.py", "--manifest", "fixtures/v65/manifest.json", "--out", "out/dogfood-chart-renders/v65-final"],
         [sys.executable, "scripts/run_workflow.py", "--self-test"],
         [sys.executable, "scripts/run_workflow.py", "--manifest", "fixtures/v3/manifest.json", "--out", "out/v3/final"],
         [sys.executable, "scripts/orchestrate_workflow.py", "--self-test"],
@@ -3250,6 +3252,7 @@ def main() -> None:
             "python scripts/dwm_dogfood_acquire.py acquire --task-id <task_id> --out out/dogfood-acquisitions/<acquisition_id>",
             "python scripts/dwm_dogfood_operator.py recommend --out out/dogfood-operator/<operator_id>",
             "python scripts/dwm_dogfood_pair_select.py select --pair-root out/dogfood-pairs --out out/dogfood-pair-selections/<selection_id>",
+            "python scripts/dwm_dogfood_chart_render.py render --review out/dogfood-chart-reviews/<review_id> --out out/dogfood-chart-renders/<render_id>",
             "python scripts/dwm_daily_operator.py today --corpus out/dogfood-corpus/<corpus_id> --out out/daily-operator/<operator_id>",
             "python scripts/dwm_benchmark_history.py build --report out/live-reports/<report_id> --out out/benchmark-history/<history_id>",
             "python scripts/dwm_benchmark_promotion.py promote --history out/benchmark-history/<history_id> --out out/benchmark-promotions/<promotion_id>",
@@ -3303,6 +3306,9 @@ def main() -> None:
             "dogfood-operator.md",
             "pair-selection.json",
             "pair-selection.md",
+            "chart-render.json",
+            "chart-render.svg",
+            "chart-render.md",
             "operator-loop.json",
             "today.md",
             "adapter-parity.json",
@@ -3354,6 +3360,7 @@ def main() -> None:
             "docs/v62-dogfood-operator-spec.md",
             "docs/v63-dogfood-operator-duplicate-root-spec.md",
             "docs/v64-dogfood-pair-select-spec.md",
+            "docs/v65-dogfood-chart-render-spec.md",
             "generated `out/` directories are verification evidence, not source of truth",
             "deterministic control-plane above agent clis",
             "bounded adapter surfaces",
@@ -4394,6 +4401,31 @@ def main() -> None:
         ],
     )
     require_terms(
+        "docs/v65-dogfood-chart-render-spec.md",
+        [
+            "status: implemented reviewed local dogfood chart rendering in",
+            "python scripts/dwm_dogfood_chart_render.py render --review out/dogfood-chart-reviews/<review_id> --out out/dogfood-chart-renders/<render_id>",
+            "chart-render.json",
+            "chart-render.svg",
+            "err_dogfood_chart_render_stale_review",
+            "err_dogfood_chart_render_overclaim",
+            "err_dogfood_chart_render_stale_candidate",
+            "do not publish readme graph assets",
+        ],
+    )
+    require_terms(
+        "docs/v65-decision.md",
+        [
+            "decision: keep",
+            "python scripts/dwm_dogfood_chart_render.py --manifest fixtures/v65/manifest.json --out out/dogfood-chart-renders/v65-final",
+            "chart-render.json",
+            "chart-render.svg",
+            "approved local render creation",
+            "stale review blocking",
+            "does not claim readme graph promotion",
+        ],
+    )
+    require_terms(
         "docs/v7.5-decision.md",
         [
             "decision: keep",
@@ -4442,7 +4474,7 @@ def main() -> None:
             "python scripts/dwm.py commands --kind release --json",
             "`status`: `workflow-complete`",
             "`doctor_ok`: `true`",
-            "`release_command_count`: `128`",
+            "`release_command_count`: `130`",
             "does not claim workflow execution",
         ],
     )
