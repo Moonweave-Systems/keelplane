@@ -296,6 +296,10 @@ BASE_REQUIRED_PATHS = [
     "docs/v66-dogfood-progress-spec.md",
     "docs/v67-decision.md",
     "docs/v67-dogfood-progress-asset-promotion-spec.md",
+    "docs/v68-decision.md",
+    "docs/v68-readme-product-page-spec.md",
+    "docs/command-reference.md",
+    "docs/release-history.md",
     "packaging/dwm-benchmark-attempts.json",
     "packaging/dwm-adapters.json",
     "packaging/dwm-benchmarks.json",
@@ -400,6 +404,8 @@ BASE_REQUIRED_PATHS = [
     "fixtures/v67/manifest.json",
     "docs/v67-decision.md",
     "docs/v67-dogfood-progress-asset-promotion-spec.md",
+    "docs/v68-decision.md",
+    "docs/v68-readme-product-page-spec.md",
 ]
 
 
