@@ -1706,6 +1706,8 @@ def require_release_commands_pass() -> None:
         [sys.executable, "scripts/dwm_dogfood_pair_series.py", "--manifest", "fixtures/v58/manifest.json", "--out", "out/dogfood-pair-series/v58-final"],
         [sys.executable, "scripts/dwm_dogfood_chart_candidate.py", "--self-test"],
         [sys.executable, "scripts/dwm_dogfood_chart_candidate.py", "--manifest", "fixtures/v59/manifest.json", "--out", "out/dogfood-chart-candidates/v59-final"],
+        [sys.executable, "scripts/dwm_dogfood_chart_review.py", "--self-test"],
+        [sys.executable, "scripts/dwm_dogfood_chart_review.py", "--manifest", "fixtures/v60/manifest.json", "--out", "out/dogfood-chart-reviews/v60-final"],
         [sys.executable, "scripts/run_workflow.py", "--self-test"],
         [sys.executable, "scripts/run_workflow.py", "--manifest", "fixtures/v3/manifest.json", "--out", "out/v3/final"],
         [sys.executable, "scripts/orchestrate_workflow.py", "--self-test"],
@@ -3236,6 +3238,7 @@ def main() -> None:
             "python scripts/dwm_dogfood_pair.py pair --dwm-measure out/dogfood-measurements/<measurement_id> --direct-receipt direct-receipt.json --out out/dogfood-pairs/<pair_id>",
             "python scripts/dwm_dogfood_pair_series.py build --pair-root out/dogfood-pairs --out out/dogfood-pair-series/<series_id>",
             "python scripts/dwm_dogfood_chart_candidate.py candidate --series out/dogfood-pair-series/<series_id> --out out/dogfood-chart-candidates/<chart_id>",
+            "python scripts/dwm_dogfood_chart_review.py review --candidate out/dogfood-chart-candidates/<chart_id> --receipt review-receipt.json --out out/dogfood-chart-reviews/<review_id>",
             "python scripts/dwm_daily_operator.py today --corpus out/dogfood-corpus/<corpus_id> --out out/daily-operator/<operator_id>",
             "python scripts/dwm_benchmark_history.py build --report out/live-reports/<report_id> --out out/benchmark-history/<history_id>",
             "python scripts/dwm_benchmark_promotion.py promote --history out/benchmark-history/<history_id> --out out/benchmark-promotions/<promotion_id>",
@@ -3280,6 +3283,8 @@ def main() -> None:
             "chart-candidate.json",
             "chart-candidate.md",
             "chart-data.csv",
+            "chart-review.json",
+            "chart-review.md",
             "operator-loop.json",
             "today.md",
             "adapter-parity.json",
@@ -3326,6 +3331,7 @@ def main() -> None:
             "docs/v57-dogfood-pair-spec.md",
             "docs/v58-dogfood-pair-series-spec.md",
             "docs/v59-dogfood-chart-candidate-spec.md",
+            "docs/v60-dogfood-chart-review-spec.md",
             "generated `out/` directories are verification evidence, not source of truth",
             "deterministic control-plane above agent clis",
             "bounded adapter surfaces",
@@ -4246,6 +4252,31 @@ def main() -> None:
         ],
     )
     require_terms(
+        "docs/v60-dogfood-chart-review-spec.md",
+        [
+            "status: implemented first local dogfood chart review gate in",
+            "python scripts/dwm_dogfood_chart_review.py review --candidate out/dogfood-chart-candidates/<chart_id> --receipt review-receipt.json --out out/dogfood-chart-reviews/<review_id>",
+            "chart-review.json",
+            "chart-review.md",
+            "err_dogfood_chart_review_receipt_missing",
+            "err_dogfood_chart_review_rejected",
+            "err_dogfood_chart_review_stale_receipt",
+            "err_dogfood_chart_review_overclaim",
+            "do not publish readme benchmark graphs",
+        ],
+    )
+    require_terms(
+        "docs/v60-decision.md",
+        [
+            "decision: keep",
+            "python scripts/dwm_dogfood_chart_review.py --manifest fixtures/v60/manifest.json --out out/dogfood-chart-reviews/v60-final",
+            "chart-review.json",
+            "chart-review.md",
+            "missing receipt blocking",
+            "does not claim readme graph promotion",
+        ],
+    )
+    require_terms(
         "docs/v7.5-decision.md",
         [
             "decision: keep",
@@ -4294,7 +4325,7 @@ def main() -> None:
             "python scripts/dwm.py commands --kind release --json",
             "`status`: `workflow-complete`",
             "`doctor_ok`: `true`",
-            "`release_command_count`: `118`",
+            "`release_command_count`: `120`",
             "does not claim workflow execution",
         ],
     )

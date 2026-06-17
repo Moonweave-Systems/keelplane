@@ -1,0 +1,47 @@
+{
+  "fixtures": [
+    {
+      "expected_decision": "local-chart-review-approved",
+      "expected_status": "dogfood-chart-review-approved",
+      "id": "review-approved",
+      "kind": "review-approved",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_DOGFOOD_CHART_REVIEW_RECEIPT_MISSING",
+      "expected_status": "blocked",
+      "id": "missing-receipt-blocked",
+      "kind": "missing-receipt",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_DOGFOOD_CHART_REVIEW_REJECTED",
+      "expected_status": "blocked",
+      "id": "rejected-blocked",
+      "kind": "rejected",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_DOGFOOD_CHART_REVIEW_STALE_RECEIPT",
+      "expected_status": "blocked",
+      "id": "stale-receipt-blocked",
+      "kind": "stale-receipt",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_DOGFOOD_CHART_REVIEW_OVERCLAIM",
+      "expected_status": "blocked",
+      "id": "overclaim-blocked",
+      "kind": "overclaim",
+      "required": true
+    }
+  ],
+  "required_fixture_ids": [
+    "review-approved",
+    "missing-receipt-blocked",
+    "rejected-blocked",
+    "stale-receipt-blocked",
+    "overclaim-blocked"
+  ],
+  "suite_id": "v60-dogfood-chart-review"
+}

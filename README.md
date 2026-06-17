@@ -190,6 +190,8 @@ enough evidence exists.
 V59 records `chart-candidate.json`, `chart-candidate.md`, and `chart-data.csv`
 only from graph-ready local pair series, while README graph promotion remains
 human-review gated.
+V60 records `chart-review.json` and `chart-review.md` only when a human review
+receipt approves the chart candidate hash without public benchmark claims.
 
 Generate graph artifacts with:
 
@@ -240,6 +242,7 @@ python scripts/dwm_dogfood_measure.py sample --out out/dogfood-measurements/<mea
 python scripts/dwm_dogfood_pair.py pair --dwm-measure out/dogfood-measurements/<measurement_id> --direct-receipt direct-receipt.json --out out/dogfood-pairs/<pair_id>
 python scripts/dwm_dogfood_pair_series.py build --pair-root out/dogfood-pairs --out out/dogfood-pair-series/<series_id>
 python scripts/dwm_dogfood_chart_candidate.py candidate --series out/dogfood-pair-series/<series_id> --out out/dogfood-chart-candidates/<chart_id>
+python scripts/dwm_dogfood_chart_review.py review --candidate out/dogfood-chart-candidates/<chart_id> --receipt review-receipt.json --out out/dogfood-chart-reviews/<review_id>
 python scripts/dwm_daily_operator.py today --corpus out/dogfood-corpus/<corpus_id> --out out/daily-operator/<operator_id>
 python scripts/dwm_benchmark_history.py build --report out/live-reports/<report_id> --out out/benchmark-history/<history_id>
 python scripts/dwm_benchmark_promotion.py promote --history out/benchmark-history/<history_id> --out out/benchmark-promotions/<promotion_id>
@@ -281,6 +284,7 @@ python scripts/dwm_release.py status --out out/release/<release_id>
 | `scripts/dwm_dogfood_pair.py` | Human-gated direct Codex versus DWM comparison pair. |
 | `scripts/dwm_dogfood_pair_series.py` | Dogfood pair series and graph-readiness gate. |
 | `scripts/dwm_dogfood_chart_candidate.py` | Local dogfood chart candidate gate. |
+| `scripts/dwm_dogfood_chart_review.py` | Human-reviewed local dogfood chart gate. |
 | `scripts/dwm_daily_operator.py` | Daily operator loop for ready, blocked, and freshness state. |
 | `scripts/dwm_adapters.py` | Adapter registry, normalized evidence, and parity matrix checks. |
 | `scripts/dwm_adapter_live_matrix.py` | Local adapter command availability and auth-assumption matrix. |
@@ -325,6 +329,7 @@ python scripts/dwm_release.py status --out out/release/<release_id>
 - [`docs/v57-dogfood-pair-spec.md`](docs/v57-dogfood-pair-spec.md): human-gated dogfood comparison pair.
 - [`docs/v58-dogfood-pair-series-spec.md`](docs/v58-dogfood-pair-series-spec.md): dogfood pair series and graph-readiness gate.
 - [`docs/v59-dogfood-chart-candidate-spec.md`](docs/v59-dogfood-chart-candidate-spec.md): local dogfood chart candidate gate.
+- [`docs/v60-dogfood-chart-review-spec.md`](docs/v60-dogfood-chart-review-spec.md): human-reviewed local dogfood chart gate.
 
 Generated `out/` directories are verification evidence, not source of truth.
 
