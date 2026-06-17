@@ -1,0 +1,49 @@
+{
+  "fixtures": [
+    {
+      "expected_status": "process-asset-promotion-ready",
+      "id": "progress-asset-promotion-ready",
+      "kind": "promotion-ready",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_DOGFOOD_PROGRESS_ASSET_PROMOTION_STALE_PROGRESS",
+      "id": "progress-asset-promotion-stale-progress-blocked",
+      "kind": "stale-progress",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_DOGFOOD_PROGRESS_ASSET_PROMOTION_ASSET_MISSING",
+      "id": "progress-asset-promotion-missing-svg-blocked",
+      "kind": "missing-svg",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_DOGFOOD_PROGRESS_ASSET_PROMOTION_HASH_MISMATCH",
+      "id": "progress-asset-promotion-hash-drift-blocked",
+      "kind": "hash-drift",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_DOGFOOD_PROGRESS_ASSET_PROMOTION_OVERCLAIM",
+      "id": "progress-asset-promotion-overclaim-blocked",
+      "kind": "overclaim",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_DOGFOOD_PROGRESS_ASSET_PROMOTION_PROGRESS_NOT_READY",
+      "id": "progress-asset-promotion-not-ready-blocked",
+      "kind": "not-ready",
+      "required": true
+    }
+  ],
+  "required_fixture_ids": [
+    "progress-asset-promotion-ready",
+    "progress-asset-promotion-stale-progress-blocked",
+    "progress-asset-promotion-missing-svg-blocked",
+    "progress-asset-promotion-hash-drift-blocked",
+    "progress-asset-promotion-overclaim-blocked",
+    "progress-asset-promotion-not-ready-blocked"
+  ],
+  "suite_id": "v67-dogfood-progress-asset-promotion"
+}

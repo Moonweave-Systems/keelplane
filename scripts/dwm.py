@@ -128,6 +128,8 @@ RELEASE_COMMANDS = [
     "python scripts/dwm_dogfood_chart_render.py --manifest fixtures/v65/manifest.json --out out/dogfood-chart-renders/v65-final",
     "python scripts/dwm_dogfood_progress.py --self-test",
     "python scripts/dwm_dogfood_progress.py --manifest fixtures/v66/manifest.json --out out/dogfood-progress/v66-final",
+    "python scripts/dwm_dogfood_progress_asset_promotion.py --self-test",
+    "python scripts/dwm_dogfood_progress_asset_promotion.py --manifest fixtures/v67/manifest.json --out out/dogfood-progress-asset-promotions/v67-final",
     "python scripts/dwm_daily_operator.py --self-test",
     "python scripts/dwm_daily_operator.py --manifest fixtures/v48/manifest.json --out out/daily-operator/v48-final",
     "python scripts/dwm_release_candidate.py --self-test",
@@ -292,6 +294,8 @@ BASE_REQUIRED_PATHS = [
     "docs/v65-dogfood-chart-render-spec.md",
     "docs/v66-decision.md",
     "docs/v66-dogfood-progress-spec.md",
+    "docs/v67-decision.md",
+    "docs/v67-dogfood-progress-asset-promotion-spec.md",
     "packaging/dwm-benchmark-attempts.json",
     "packaging/dwm-adapters.json",
     "packaging/dwm-benchmarks.json",
@@ -341,6 +345,7 @@ BASE_REQUIRED_PATHS = [
     "scripts/dwm_dogfood_pair_select.py",
     "scripts/dwm_dogfood_chart_render.py",
     "scripts/dwm_dogfood_progress.py",
+    "scripts/dwm_dogfood_progress_asset_promotion.py",
     "scripts/dwm_daily_operator.py",
     "scripts/dwm_adapter_live_matrix.py",
     "fixtures/v49/manifest.json",
@@ -392,6 +397,9 @@ BASE_REQUIRED_PATHS = [
     "fixtures/v66/manifest.json",
     "docs/v66-decision.md",
     "docs/v66-dogfood-progress-spec.md",
+    "fixtures/v67/manifest.json",
+    "docs/v67-decision.md",
+    "docs/v67-dogfood-progress-asset-promotion-spec.md",
 ]
 
 
