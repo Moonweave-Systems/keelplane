@@ -26,6 +26,6 @@ Generated dogfood values:
 - `human_approved_phase_ids`: `human_gate`
 - `selected_phase_ids`: ``
 - `doctor_ok`: `true`
-- `release_command_count`: `126`
+- `release_command_count`: `128`
 
 This decision covers the first read-only DWM product CLI surface. It does not claim workflow execution, worker execution, Codex CLI execution, OMX execution, subagent spawning, worktree merging, commits, pushes, dependency installation, production deployment, external messaging, secret access, network access, or autonomous execution beyond reporting existing deterministic artifacts.

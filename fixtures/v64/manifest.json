@@ -1,0 +1,37 @@
+{
+  "fixtures": [
+    {
+      "expected_decision": "clean-pair-root-ready",
+      "expected_graph_ready": true,
+      "id": "select-duplicates",
+      "kind": "select-duplicates",
+      "required": true
+    },
+    {
+      "expected_decision": "clean-pair-root-blocked",
+      "expected_graph_ready": false,
+      "id": "insufficient-unique",
+      "kind": "insufficient-unique",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_DOGFOOD_PAIR_SELECT_STALE_PAIR",
+      "id": "stale-pair-blocked",
+      "kind": "stale-pair",
+      "required": true
+    },
+    {
+      "expected_error": "ERR_DOGFOOD_PAIR_SELECT_CLEAN_ROOT_UNSAFE",
+      "id": "unsafe-clean-root-blocked",
+      "kind": "unsafe-clean-root",
+      "required": true
+    }
+  ],
+  "required_fixture_ids": [
+    "select-duplicates",
+    "insufficient-unique",
+    "stale-pair-blocked",
+    "unsafe-clean-root-blocked"
+  ],
+  "suite_id": "v64-dogfood-pair-select"
+}
