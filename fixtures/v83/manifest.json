@@ -1,0 +1,91 @@
+{
+  "suite_id": "v83-runner-receipt-dry-run",
+  "fixtures": [
+    {
+      "id": "ready-dry-run",
+      "required": true,
+      "schema": {
+        "decision": "schema_ready",
+        "required_fields": [
+          "schema_version",
+          "receipt_id",
+          "status",
+          "execution_mode",
+          "adapter",
+          "command",
+          "executed",
+          "started_at",
+          "finished_at",
+          "exit_code",
+          "artifacts",
+          "verification",
+          "risk_codes",
+          "blocked_by",
+          "source_hashes"
+        ],
+        "allowed_status": [
+          "receipt-dry-run",
+          "receipt-recorded",
+          "receipt-blocked"
+        ],
+        "allowed_execution_mode": [
+          "dry-run",
+          "fixture-only",
+          "read-only",
+          "pre-isolated"
+        ],
+        "forbidden_claims": []
+      },
+      "batch": {
+        "decision": "batch_ready",
+        "slices": [
+          {
+            "id": "V83",
+            "command": "python scripts/dwm_runner_receipt_dry_run.py --self-test"
+          }
+        ]
+      },
+      "expected_status": "receipt-dry-run"
+    },
+    {
+      "id": "blocked-schema",
+      "required": true,
+      "schema": {
+        "decision": "blocked",
+        "required_fields": [],
+        "allowed_status": [
+          "receipt-dry-run",
+          "receipt-blocked"
+        ],
+        "allowed_execution_mode": [
+          "dry-run"
+        ],
+        "forbidden_claims": []
+      },
+      "batch": {
+        "decision": "batch_ready"
+      },
+      "expected_status": "receipt-blocked"
+    },
+    {
+      "id": "blocked-batch",
+      "required": true,
+      "schema": {
+        "decision": "schema_ready",
+        "required_fields": [],
+        "allowed_status": [
+          "receipt-dry-run",
+          "receipt-blocked"
+        ],
+        "allowed_execution_mode": [
+          "dry-run"
+        ],
+        "forbidden_claims": []
+      },
+      "batch": {
+        "decision": "blocked"
+      },
+      "expected_status": "receipt-blocked"
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "suite_id": "v82-execution-receipt-schema",
+  "fixtures": [
+    {
+      "id": "ready-schema",
+      "required": true,
+      "batch": {
+        "decision": "batch_ready"
+      },
+      "receipt": {
+        "schema_version": "1.0",
+        "receipt_id": "ready-schema",
+        "status": "receipt-dry-run",
+        "execution_mode": "dry-run",
+        "adapter": "fixture",
+        "command": "python scripts/dwm_runner_receipt_dry_run.py --self-test",
+        "executed": false,
+        "started_at": null,
+        "finished_at": null,
+        "exit_code": null,
+        "artifacts": [],
+        "verification": {
+          "status": "not-run"
+        },
+        "risk_codes": [],
+        "blocked_by": [],
+        "source_hashes": {
+          "command": "fixture"
+        }
+      },
+      "expected_decision": "schema_ready"
+    },
+    {
+      "id": "missing-field-blocked",
+      "required": true,
+      "batch": {
+        "decision": "batch_ready"
+      },
+      "receipt": {
+        "schema_version": "1.0",
+        "receipt_id": "missing-field",
+        "status": "receipt-dry-run",
+        "execution_mode": "dry-run",
+        "adapter": "fixture",
+        "command": "python scripts/dwm_runner_receipt_dry_run.py --self-test",
+        "executed": false,
+        "started_at": null,
+        "finished_at": null,
+        "exit_code": null,
+        "artifacts": [],
+        "verification": {
+          "status": "not-run"
+        },
+        "risk_codes": [],
+        "blocked_by": []
+      },
+      "expected_decision": "blocked"
+    },
+    {
+      "id": "dry-run-executed-blocked",
+      "required": true,
+      "batch": {
+        "decision": "batch_ready"
+      },
+      "receipt": {
+        "schema_version": "1.0",
+        "receipt_id": "executed",
+        "status": "receipt-dry-run",
+        "execution_mode": "dry-run",
+        "adapter": "fixture",
+        "command": "python scripts/dwm_runner_receipt_dry_run.py --self-test",
+        "executed": true,
+        "started_at": null,
+        "finished_at": null,
+        "exit_code": 0,
+        "artifacts": [],
+        "verification": {
+          "status": "not-run"
+        },
+        "risk_codes": [],
+        "blocked_by": [],
+        "source_hashes": {
+          "command": "fixture"
+        }
+      },
+      "expected_decision": "blocked"
+    },
+    {
+      "id": "blocked-batch-blocked",
+      "required": true,
+      "batch": {
+        "decision": "blocked"
+      },
+      "expected_decision": "blocked"
+    }
+  ]
+}

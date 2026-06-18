@@ -1797,6 +1797,12 @@ def require_release_commands_pass() -> None:
         [sys.executable, "scripts/dwm_multi_slice_batch.py", "--self-test"],
         [sys.executable, "scripts/dwm_multi_slice_batch.py", "--manifest", "fixtures/v81/manifest.json", "--out", "out/multi-slice-batches/v81-final"],
         [sys.executable, "scripts/dwm_multi_slice_batch.py", "plan", "--boundary", "out/continuation-boundaries/v80-canonical/continuation-boundary.json", "--out", "out/multi-slice-batches/v81-canonical"],
+        [sys.executable, "scripts/dwm_execution_receipt_schema.py", "--self-test"],
+        [sys.executable, "scripts/dwm_execution_receipt_schema.py", "--manifest", "fixtures/v82/manifest.json", "--out", "out/execution-receipt-schemas/v82-final"],
+        [sys.executable, "scripts/dwm_execution_receipt_schema.py", "preflight", "--batch", "out/multi-slice-batches/v81-canonical/multi-slice-batch.json", "--out", "out/execution-receipt-schemas/v82-canonical"],
+        [sys.executable, "scripts/dwm_runner_receipt_dry_run.py", "--self-test"],
+        [sys.executable, "scripts/dwm_runner_receipt_dry_run.py", "--manifest", "fixtures/v83/manifest.json", "--out", "out/runner-receipt-dry-runs/v83-final"],
+        [sys.executable, "scripts/dwm_runner_receipt_dry_run.py", "dry-run", "--schema", "out/execution-receipt-schemas/v82-canonical/execution-receipt-schema.json", "--batch", "out/multi-slice-batches/v81-canonical/multi-slice-batch.json", "--out", "out/runner-receipt-dry-runs/v83-canonical"],
         [sys.executable, "scripts/run_workflow.py", "--self-test"],
         [sys.executable, "scripts/run_workflow.py", "--manifest", "fixtures/v3/manifest.json", "--out", "out/v3/final"],
         [sys.executable, "scripts/orchestrate_workflow.py", "--self-test"],
@@ -3390,6 +3396,8 @@ def main() -> None:
             "python scripts/dwm_readme_graph_visibility.py audit --readme readme.md --timing out/graph-timing/v78-canonical/graph-timing.json --out out/readme-graph-visibility/<visibility_id>",
             "python scripts/dwm_continuation_boundary.py assess --preflight out/large-workflow-queue-preflight/v77-canonical/queue-preflight.json --timing out/graph-timing/v78-canonical/graph-timing.json --visibility out/readme-graph-visibility/v79-canonical/readme-graph-visibility.json --out out/continuation-boundaries/<boundary_id>",
             "python scripts/dwm_multi_slice_batch.py plan --boundary out/continuation-boundaries/v80-canonical/continuation-boundary.json --out out/multi-slice-batches/<batch_id>",
+            "python scripts/dwm_execution_receipt_schema.py preflight --batch out/multi-slice-batches/v81-canonical/multi-slice-batch.json --out out/execution-receipt-schemas/<schema_id>",
+            "python scripts/dwm_runner_receipt_dry_run.py dry-run --schema out/execution-receipt-schemas/v82-canonical/execution-receipt-schema.json --batch out/multi-slice-batches/v81-canonical/multi-slice-batch.json --out out/runner-receipt-dry-runs/<dry_run_id>",
             "report.json.graph_metrics",
             "benchmark-graph.json",
             "dogfood-progress.json",
@@ -3408,6 +3416,11 @@ def main() -> None:
             "continuation-boundary.md",
             "multi-slice-batch.json",
             "multi-slice-batch.md",
+            "execution-receipt-schema.json",
+            "execution-receipt-schema.md",
+            "sample-receipt.json",
+            "runner-receipt.json",
+            "runner-receipt.md",
             "dwm-dogfood-progress.svg",
             "assets/dwm-hero.svg",
             "assets/dwm-live-benchmark.svg",
@@ -3440,10 +3453,13 @@ def main() -> None:
             "docs/v79-readme-graph-visibility-spec.md",
             "docs/v80-continuation-boundary-spec.md",
             "docs/v81-multi-slice-batch-spec.md",
+            "docs/v82-execution-receipt-schema-spec.md",
+            "docs/v83-runner-receipt-dry-run-spec.md",
             "generated `out/` directories are verification evidence, not source of truth",
             "direct-agent superiority is not claimed",
             "process progress is not an upward benchmark claim",
             "multi-slice continuation is allowed only for source-only or fixture-only",
+            "receipt work is allowed through dry-run evidence only",
         ],
     )
     require_terms("docs/v0.5-plan-schema-evaluator-spec.md", V05_REQUIRED_TERMS)
@@ -4931,6 +4947,56 @@ def main() -> None:
         ],
     )
     require_terms(
+        "docs/v82-execution-receipt-schema-spec.md",
+        [
+            "status: implemented execution receipt schema preflight in",
+            "`scripts/dwm_execution_receipt_schema.py`",
+            "`execution-receipt-schema.json`",
+            "`sample-receipt.json`",
+            "schema-only",
+            "dry-run receipts must use `executed: false`",
+            "actual execution remains behind the v84 human gate",
+        ],
+    )
+    require_terms(
+        "docs/v82-decision.md",
+        [
+            "decision: keep",
+            "python scripts/dwm_execution_receipt_schema.py --manifest fixtures/v82/manifest.json --out out/execution-receipt-schemas/v82-final",
+            "`suite_id`: `v82-execution-receipt-schema`",
+            "`fixture_count`: 4",
+            "`required_passed`: 4",
+            "`decision`: `keep`",
+            "schema-only",
+            "v84 human gate",
+        ],
+    )
+    require_terms(
+        "docs/v83-runner-receipt-dry-run-spec.md",
+        [
+            "status: implemented runner receipt dry-run gate in",
+            "`scripts/dwm_runner_receipt_dry_run.py`",
+            "`runner-receipt.json`",
+            "`runner-receipt.md`",
+            "`executed: false`",
+            "does not execute commands",
+            "actual execution remains behind the v84 human gate",
+        ],
+    )
+    require_terms(
+        "docs/v83-decision.md",
+        [
+            "decision: keep",
+            "python scripts/dwm_runner_receipt_dry_run.py --manifest fixtures/v83/manifest.json --out out/runner-receipt-dry-runs/v83-final",
+            "`suite_id`: `v83-runner-receipt-dry-run`",
+            "`fixture_count`: 3",
+            "`required_passed`: 3",
+            "`decision`: `keep`",
+            "`executed: false`",
+            "v84 remains the first human gate",
+        ],
+    )
+    require_terms(
         "docs/v7.5-decision.md",
         [
             "decision: keep",
@@ -4979,7 +5045,7 @@ def main() -> None:
             "python scripts/dwm.py commands --kind release --json",
             "`status`: `workflow-complete`",
             "`doctor_ok`: `true`",
-            "`release_command_count`: `167`",
+            "`release_command_count`: `173`",
             "does not claim workflow execution",
         ],
     )

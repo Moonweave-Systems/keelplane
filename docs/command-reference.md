@@ -111,6 +111,8 @@ python scripts/dwm_graph_timing_gate.py check --progress out/dogfood-progress/lo
 python scripts/dwm_readme_graph_visibility.py audit --readme README.md --timing out/graph-timing/v78-canonical/graph-timing.json --out out/readme-graph-visibility/<visibility_id>
 python scripts/dwm_continuation_boundary.py assess --preflight out/large-workflow-queue-preflight/v77-canonical/queue-preflight.json --timing out/graph-timing/v78-canonical/graph-timing.json --visibility out/readme-graph-visibility/v79-canonical/readme-graph-visibility.json --out out/continuation-boundaries/<boundary_id>
 python scripts/dwm_multi_slice_batch.py plan --boundary out/continuation-boundaries/v80-canonical/continuation-boundary.json --out out/multi-slice-batches/<batch_id>
+python scripts/dwm_execution_receipt_schema.py preflight --batch out/multi-slice-batches/v81-canonical/multi-slice-batch.json --out out/execution-receipt-schemas/<schema_id>
+python scripts/dwm_runner_receipt_dry_run.py dry-run --schema out/execution-receipt-schemas/v82-canonical/execution-receipt-schema.json --batch out/multi-slice-batches/v81-canonical/multi-slice-batch.json --out out/runner-receipt-dry-runs/<dry_run_id>
 ```
 
 Release artifacts include `operator-loop.json`, `today.md`,
@@ -124,7 +126,10 @@ Release artifacts include `operator-loop.json`, `today.md`,
 `queue-preflight.md`, `graph-timing.json`, `graph-timing.md`, and
 `readme-graph-visibility.json`, `readme-graph-visibility.md`, and
 `continuation-boundary.json`, `continuation-boundary.md`,
-`multi-slice-batch.json`, `multi-slice-batch.md`, and `status.json`.
+`multi-slice-batch.json`, `multi-slice-batch.md`,
+`execution-receipt-schema.json`, `execution-receipt-schema.md`,
+`sample-receipt.json`, `runner-receipt.json`, `runner-receipt.md`, and
+`status.json`.
 
 ## Repository Map
 
@@ -160,6 +165,8 @@ Release artifacts include `operator-loop.json`, `today.md`,
 | `scripts/dwm_readme_graph_visibility.py` | README graph visibility audit aligned with V78 graph timing. |
 | `scripts/dwm_continuation_boundary.py` | Continuation boundary gate for source-only multi-slice work. |
 | `scripts/dwm_multi_slice_batch.py` | Plan-only multi-slice batch planner before the V84 human gate. |
+| `scripts/dwm_execution_receipt_schema.py` | Execution receipt schema preflight before actual queued execution. |
+| `scripts/dwm_runner_receipt_dry_run.py` | Fixture-only runner receipt dry-run gate with `executed: false`. |
 | `scripts/dwm_daily_operator.py` | Daily operator loop for ready, blocked, and freshness state. |
 | `scripts/dwm_adapters.py` | Adapter registry, normalized evidence, and parity matrix checks. |
 | `scripts/dwm_adapter_live_matrix.py` | Local adapter command availability and auth-assumption matrix. |

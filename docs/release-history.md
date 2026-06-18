@@ -122,6 +122,11 @@ promotion requires real release history.
 - V81: `docs/v81-multi-slice-batch-spec.md` added `multi-slice-batch.json`
   and `multi-slice-batch.md` to plan several safe slices before the V84 human
   gate.
+- V82: `docs/v82-execution-receipt-schema-spec.md` added
+  `execution-receipt-schema.json`, `execution-receipt-schema.md`, and
+  `sample-receipt.json`.
+- V83: `docs/v83-runner-receipt-dry-run-spec.md` added
+  `runner-receipt.json` and `runner-receipt.md` with `executed: false`.
 
 ## Current Public Boundaries
 
@@ -135,3 +140,5 @@ promotion requires real release history.
   blockers.
 - Multi-slice continuation is allowed only for source-only or fixture-only
   work before actual queued command execution.
+- Receipt work is allowed through dry-run evidence only; actual execution stays
+  behind the V84 human gate.
