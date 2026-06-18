@@ -127,6 +127,9 @@ promotion requires real release history.
   `sample-receipt.json`.
 - V83: `docs/v83-runner-receipt-dry-run-spec.md` added
   `runner-receipt.json` and `runner-receipt.md` with `executed: false`.
+- V84: `docs/v84-installed-surface-audit-spec.md` added
+  `installed-surface-audit.json` and `installed-surface-audit.md` to verify
+  the active local skill path before execution.
 
 ## Current Public Boundaries
 

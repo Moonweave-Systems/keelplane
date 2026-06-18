@@ -169,6 +169,9 @@ RELEASE_COMMANDS = [
     "python scripts/dwm_runner_receipt_dry_run.py --self-test",
     "python scripts/dwm_runner_receipt_dry_run.py --manifest fixtures/v83/manifest.json --out out/runner-receipt-dry-runs/v83-final",
     "python scripts/dwm_runner_receipt_dry_run.py dry-run --schema out/execution-receipt-schemas/v82-canonical/execution-receipt-schema.json --batch out/multi-slice-batches/v81-canonical/multi-slice-batch.json --out out/runner-receipt-dry-runs/v83-canonical",
+    "python scripts/dwm_installed_surface_audit.py --self-test",
+    "python scripts/dwm_installed_surface_audit.py --manifest fixtures/v84/manifest.json --out out/installed-surface-audits/v84-final",
+    "python scripts/dwm_installed_surface_audit.py audit --active-skill SKILL.md --out out/installed-surface-audits/v84-canonical",
     "python scripts/dwm_daily_operator.py --self-test",
     "python scripts/dwm_daily_operator.py --manifest fixtures/v48/manifest.json --out out/daily-operator/v48-final",
     "python scripts/dwm_release_candidate.py --self-test",
@@ -369,6 +372,8 @@ BASE_REQUIRED_PATHS = [
     "docs/v82-execution-receipt-schema-spec.md",
     "docs/v83-decision.md",
     "docs/v83-runner-receipt-dry-run-spec.md",
+    "docs/v84-decision.md",
+    "docs/v84-installed-surface-audit-spec.md",
     "docs/command-reference.md",
     "docs/release-history.md",
     "packaging/dwm-benchmark-attempts.json",
@@ -435,6 +440,7 @@ BASE_REQUIRED_PATHS = [
     "scripts/dwm_multi_slice_batch.py",
     "scripts/dwm_execution_receipt_schema.py",
     "scripts/dwm_runner_receipt_dry_run.py",
+    "scripts/dwm_installed_surface_audit.py",
     "scripts/dwm_daily_operator.py",
     "scripts/dwm_adapter_live_matrix.py",
     "fixtures/v49/manifest.json",
@@ -536,6 +542,9 @@ BASE_REQUIRED_PATHS = [
     "fixtures/v83/manifest.json",
     "docs/v83-decision.md",
     "docs/v83-runner-receipt-dry-run-spec.md",
+    "fixtures/v84/manifest.json",
+    "docs/v84-decision.md",
+    "docs/v84-installed-surface-audit-spec.md",
 ]
 
 

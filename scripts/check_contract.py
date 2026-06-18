@@ -1803,6 +1803,9 @@ def require_release_commands_pass() -> None:
         [sys.executable, "scripts/dwm_runner_receipt_dry_run.py", "--self-test"],
         [sys.executable, "scripts/dwm_runner_receipt_dry_run.py", "--manifest", "fixtures/v83/manifest.json", "--out", "out/runner-receipt-dry-runs/v83-final"],
         [sys.executable, "scripts/dwm_runner_receipt_dry_run.py", "dry-run", "--schema", "out/execution-receipt-schemas/v82-canonical/execution-receipt-schema.json", "--batch", "out/multi-slice-batches/v81-canonical/multi-slice-batch.json", "--out", "out/runner-receipt-dry-runs/v83-canonical"],
+        [sys.executable, "scripts/dwm_installed_surface_audit.py", "--self-test"],
+        [sys.executable, "scripts/dwm_installed_surface_audit.py", "--manifest", "fixtures/v84/manifest.json", "--out", "out/installed-surface-audits/v84-final"],
+        [sys.executable, "scripts/dwm_installed_surface_audit.py", "audit", "--active-skill", "SKILL.md", "--out", "out/installed-surface-audits/v84-canonical"],
         [sys.executable, "scripts/run_workflow.py", "--self-test"],
         [sys.executable, "scripts/run_workflow.py", "--manifest", "fixtures/v3/manifest.json", "--out", "out/v3/final"],
         [sys.executable, "scripts/orchestrate_workflow.py", "--self-test"],
@@ -3398,6 +3401,7 @@ def main() -> None:
             "python scripts/dwm_multi_slice_batch.py plan --boundary out/continuation-boundaries/v80-canonical/continuation-boundary.json --out out/multi-slice-batches/<batch_id>",
             "python scripts/dwm_execution_receipt_schema.py preflight --batch out/multi-slice-batches/v81-canonical/multi-slice-batch.json --out out/execution-receipt-schemas/<schema_id>",
             "python scripts/dwm_runner_receipt_dry_run.py dry-run --schema out/execution-receipt-schemas/v82-canonical/execution-receipt-schema.json --batch out/multi-slice-batches/v81-canonical/multi-slice-batch.json --out out/runner-receipt-dry-runs/<dry_run_id>",
+            "python scripts/dwm_installed_surface_audit.py audit --active-skill skill.md --out out/installed-surface-audits/<audit_id>",
             "report.json.graph_metrics",
             "benchmark-graph.json",
             "dogfood-progress.json",
@@ -3421,6 +3425,8 @@ def main() -> None:
             "sample-receipt.json",
             "runner-receipt.json",
             "runner-receipt.md",
+            "installed-surface-audit.json",
+            "installed-surface-audit.md",
             "dwm-dogfood-progress.svg",
             "assets/dwm-hero.svg",
             "assets/dwm-live-benchmark.svg",
@@ -3455,11 +3461,13 @@ def main() -> None:
             "docs/v81-multi-slice-batch-spec.md",
             "docs/v82-execution-receipt-schema-spec.md",
             "docs/v83-runner-receipt-dry-run-spec.md",
+            "docs/v84-installed-surface-audit-spec.md",
             "generated `out/` directories are verification evidence, not source of truth",
             "direct-agent superiority is not claimed",
             "process progress is not an upward benchmark claim",
             "multi-slice continuation is allowed only for source-only or fixture-only",
             "receipt work is allowed through dry-run evidence only",
+            "active local skill path",
         ],
     )
     require_terms("docs/v0.5-plan-schema-evaluator-spec.md", V05_REQUIRED_TERMS)
@@ -4997,6 +5005,34 @@ def main() -> None:
         ],
     )
     require_terms(
+        "docs/v84-installed-surface-audit-spec.md",
+        [
+            "status: implemented installed surface audit gate in",
+            "`scripts/dwm_installed_surface_audit.py`",
+            "`installed-surface-audit.json`",
+            "`installed-surface-audit.md`",
+            "`repo_backed_active_surface`",
+            "`installed_copy_synced`",
+            "symlinked install surfaces",
+            "stale copied install",
+            "v84 is audit-only",
+        ],
+    )
+    require_terms(
+        "docs/v84-decision.md",
+        [
+            "decision: keep",
+            "python scripts/dwm_installed_surface_audit.py --manifest fixtures/v84/manifest.json --out out/installed-surface-audits/v84-final",
+            "`suite_id`: `v84-installed-surface-audit`",
+            "`fixture_count`: 4",
+            "`required_passed`: 4",
+            "`decision`: `keep`",
+            "`decision`: `installed_copy_synced`",
+            "resolves through a symlink to the repo `skill.md`",
+            "does not claim automatic package update behavior",
+        ],
+    )
+    require_terms(
         "docs/v7.5-decision.md",
         [
             "decision: keep",
@@ -5045,7 +5081,7 @@ def main() -> None:
             "python scripts/dwm.py commands --kind release --json",
             "`status`: `workflow-complete`",
             "`doctor_ok`: `true`",
-            "`release_command_count`: `173`",
+            "`release_command_count`: `176`",
             "does not claim workflow execution",
         ],
     )

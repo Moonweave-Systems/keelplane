@@ -1,0 +1,73 @@
+{
+  "suite_id": "v84-installed-surface-audit",
+  "fixtures": [
+    {
+      "id": "repo-backed-active",
+      "required": true,
+      "active_surface": {
+        "label": "active",
+        "path": "SKILL.md",
+        "exists": true,
+        "content_hash": "835ad8fef13ecc473ea88de6d8820bc6e6b3dd2287522ab49bb811dd5f38dbda",
+        "is_repo_skill": true
+      },
+      "installed_surfaces": [],
+      "expected_decision": "repo_backed_active_surface"
+    },
+    {
+      "id": "installed-copy-synced",
+      "required": true,
+      "active_surface": {
+        "label": "active",
+        "path": "SKILL.md",
+        "exists": true,
+        "content_hash": "835ad8fef13ecc473ea88de6d8820bc6e6b3dd2287522ab49bb811dd5f38dbda",
+        "is_repo_skill": true
+      },
+      "installed_surfaces": [
+        {
+          "label": "installed-copy",
+          "path": "~/.codex/skills/dynamic-workflow-designer/SKILL.md",
+          "exists": true,
+          "content_hash": "835ad8fef13ecc473ea88de6d8820bc6e6b3dd2287522ab49bb811dd5f38dbda",
+          "is_repo_skill": false
+        }
+      ],
+      "expected_decision": "installed_copy_synced"
+    },
+    {
+      "id": "installed-copy-stale",
+      "required": true,
+      "active_surface": {
+        "label": "active",
+        "path": "SKILL.md",
+        "exists": true,
+        "content_hash": "835ad8fef13ecc473ea88de6d8820bc6e6b3dd2287522ab49bb811dd5f38dbda",
+        "is_repo_skill": true
+      },
+      "installed_surfaces": [
+        {
+          "label": "installed-copy",
+          "path": "~/.codex/skills/dynamic-workflow-designer/SKILL.md",
+          "exists": true,
+          "content_hash": "stale-copy-hash",
+          "is_repo_skill": false
+        }
+      ],
+      "expected_decision": "blocked"
+    },
+    {
+      "id": "active-skill-missing",
+      "required": true,
+      "active_surface": {
+        "label": "active",
+        "path": "missing/SKILL.md",
+        "exists": false,
+        "content_hash": null,
+        "is_repo_skill": false
+      },
+      "installed_surfaces": [],
+      "expected_decision": "blocked"
+    }
+  ]
+}
