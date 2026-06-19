@@ -127,6 +127,8 @@ python scripts/dwm_evidence_oracle.py verify --claims fixtures/v92/canonical-cla
 python scripts/dwm_workflow_narrative.py render --roadmap out/roadmap-reconciliations/v88-canonical/roadmap-reconciliation.json --command-safety out/command-safety/v89-final/summary.json --activation out/workflow-activations/v90-canonical/workflow-activation.json --oracle out/evidence-oracles/v92-canonical/evidence-oracle.json --out out/workflow-narratives/<narrative_id>
 # control deck score
 python scripts/dwm_control_deck_score.py score --narrative out/workflow-narratives/v93-canonical/workflow-narrative.json --roadmap out/roadmap-reconciliations/v88-canonical/roadmap-reconciliation.json --command-safety out/command-safety/v89-final/summary.json --activation out/workflow-activations/v90-canonical/workflow-activation.json --oracle out/evidence-oracles/v92-canonical/evidence-oracle.json --out out/control-deck-scores/<score_id>
+# control deck score history
+python scripts/dwm_control_deck_score_history.py build --score out/control-deck-scores/<score_id> --out out/control-deck-score-history/<history_id>
 # contract tiers
 python scripts/check_contract.py --tier smoke
 python scripts/check_contract.py --tier changed
@@ -153,7 +155,9 @@ Release artifacts include `operator-loop.json`, `today.md`,
 `roadmap-reconciliation.json`, `roadmap-reconciliation.md`, and
 `evidence-oracle.json`, `evidence-oracle.md`,
 `workflow-narrative.json`, `workflow-narrative.md`,
-`control-deck-score.json`, `control-deck-score.md`, and `status.json`.
+`control-deck-score.json`, `control-deck-score.md`,
+`control-deck-score-history.json`, `control-deck-score-history.md`,
+`control-deck-score-history.svg`, and `status.json`.
 
 ## Repository Map
 
@@ -198,6 +202,7 @@ Release artifacts include `operator-loop.json`, `today.md`,
 | `scripts/dwm_evidence_oracle.py` | Read-only artifact assertion oracle for claim-level evidence. |
 | `scripts/dwm_workflow_narrative.py` | Artifact-backed Keelplane Control Deck and workflow narrative renderer. |
 | `scripts/dwm_control_deck_score.py` | Operator-readiness scoring for Control Deck completeness. |
+| `scripts/dwm_control_deck_score_history.py` | Internal operator-readiness history and SVG rendering for Control Deck scores. |
 | `scripts/dwm_daily_operator.py` | Daily operator loop for ready, blocked, and freshness state. |
 | `scripts/dwm_adapters.py` | Adapter registry, normalized evidence, and parity matrix checks. |
 | `scripts/dwm_adapter_live_matrix.py` | Local adapter command availability and auth-assumption matrix. |

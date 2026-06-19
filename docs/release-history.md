@@ -158,6 +158,9 @@ promotion requires real release history.
   status.
 - V94: `docs/v94-control-deck-score-spec.md` added operator-readiness scoring
   for Control Deck signals without claiming benchmark or upward trend progress.
+- V95: `docs/v95-control-deck-score-history-spec.md` added internal readiness
+  history and SVG rendering for Control Deck scores without creating a public
+  benchmark graph.
 
 ## Current Public Boundaries
 
@@ -169,6 +172,8 @@ promotion requires real release history.
   benchmark graph.
 - README graph visibility must stay aligned with graph timing and overclaim
   blockers.
+- Control Deck score history is internal operator readiness history, not public
+  benchmark evidence.
 - Multi-slice continuation is allowed only for source-only or fixture-only
   work before actual queued command execution.
 - Receipt work is allowed through dry-run evidence only; actual execution stays

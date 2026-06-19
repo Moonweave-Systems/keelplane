@@ -37,6 +37,7 @@ SAFE_SCRIPT_PATHS = {
     "scripts/dwm.py",
     "scripts/dwm_brand_boundary_audit.py",
     "scripts/dwm_control_deck_score.py",
+    "scripts/dwm_control_deck_score_history.py",
     "scripts/dwm_evidence_oracle.py",
     "scripts/dwm_large_workflow_dogfood.py",
     "scripts/dwm_large_workflow_next.py",

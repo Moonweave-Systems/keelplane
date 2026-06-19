@@ -1,6 +1,6 @@
 # Keelplane Automation Roadmap
 
-Status: V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented; V10 product CLI implemented; V11 operator guidance implemented; V12-V20 product roadmap implemented; V52-V87 product evidence, graph timing, activation, and brand boundary gates implemented; V88 roadmap reconciliation audit implemented; V89 command safety gate implemented; V90 activation v2 implemented; V91 contract tiering implemented; V92 evidence oracle implemented; V93 workflow narrative implemented; V94 control deck score implemented
+Status: V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented; V10 product CLI implemented; V11 operator guidance implemented; V12-V20 product roadmap implemented; V52-V87 product evidence, graph timing, activation, and brand boundary gates implemented; V88 roadmap reconciliation audit implemented; V89 command safety gate implemented; V90 activation v2 implemented; V91 contract tiering implemented; V92 evidence oracle implemented; V93 workflow narrative implemented; V94 control deck score implemented; V95 score history implemented
 Date: 2026-06-19
 
 ## Purpose
@@ -849,9 +849,9 @@ First canonical demo done means:
 - unsafe and non-owned output paths are blocked;
 - `fixtures/v51/manifest.json` passes with `decision: "keep"`.
 
-### V52-V94: Product Evidence And Control Deck
+### V52-V95: Product Evidence And Control Deck
 
-Status: implemented through V94.
+Status: implemented through V95.
 
 Purpose: move from a runnable demo into a product that can explain its current
 state, measure real dogfood evidence, gate graph claims, continue safely across
@@ -888,6 +888,9 @@ Implemented continuation:
 - V94 control deck score derives an operator-readiness score from the Control
   Deck and source hashes without creating a public benchmark or upward trend
   claim.
+- V95 control deck score history records score movement as internal operator
+  readiness history and can render a local SVG without creating a public
+  benchmark graph.
 
 Next roadmap direction:
 

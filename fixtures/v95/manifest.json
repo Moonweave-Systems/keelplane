@@ -1,0 +1,144 @@
+{
+  "fixtures": [
+    {
+      "expected_decision": "history_ready",
+      "expected_entry_count": 2,
+      "id": "ready-history",
+      "required": true,
+      "scores": [
+        {
+          "blocked_by": [
+            {
+              "code": "ERR_SAMPLE_BLOCKED"
+            }
+          ],
+          "claim_policy": {
+            "is_public_benchmark": false,
+            "is_upward_trend_claim": false,
+            "may_feed_operator_status": true,
+            "requires_more_history_for_public_graph": true
+          },
+          "decision": "blocked",
+          "schema_version": "94.0.0",
+          "score": {
+            "axes": [],
+            "max": 12,
+            "readiness_percent": 83,
+            "total": 10
+          },
+          "score_id": "v94-blocked-sample",
+          "tool": "dwm_control_deck_score.py"
+        },
+        {
+          "blocked_by": [],
+          "claim_policy": {
+            "is_public_benchmark": false,
+            "is_upward_trend_claim": false,
+            "may_feed_operator_status": true,
+            "requires_more_history_for_public_graph": true
+          },
+          "decision": "score_ready",
+          "schema_version": "94.0.0",
+          "score": {
+            "axes": [],
+            "max": 12,
+            "readiness_percent": 100,
+            "total": 12
+          },
+          "score_id": "v94-ready-sample",
+          "tool": "dwm_control_deck_score.py"
+        }
+      ]
+    },
+    {
+      "expected_error": "ERR_CONTROL_DECK_SCORE_HISTORY_UNSAFE_CLAIM_POLICY",
+      "id": "unsafe-public-claim-blocked",
+      "required": true,
+      "scores": [
+        {
+          "blocked_by": [],
+          "claim_policy": {
+            "is_public_benchmark": true,
+            "is_upward_trend_claim": false
+          },
+          "decision": "score_ready",
+          "schema_version": "94.0.0",
+          "score": {
+            "axes": [],
+            "max": 12,
+            "readiness_percent": 100,
+            "total": 12
+          },
+          "score_id": "unsafe-public",
+          "tool": "dwm_control_deck_score.py"
+        }
+      ]
+    },
+    {
+      "expected_error": "ERR_CONTROL_DECK_SCORE_HISTORY_UNSAFE_CLAIM_POLICY",
+      "id": "unsafe-upward-claim-blocked",
+      "required": true,
+      "scores": [
+        {
+          "blocked_by": [],
+          "claim_policy": {
+            "is_public_benchmark": false,
+            "is_upward_trend_claim": true
+          },
+          "decision": "score_ready",
+          "schema_version": "94.0.0",
+          "score": {
+            "axes": [],
+            "max": 12,
+            "readiness_percent": 100,
+            "total": 12
+          },
+          "score_id": "unsafe-upward",
+          "tool": "dwm_control_deck_score.py"
+        }
+      ]
+    },
+    {
+      "expected_error": "ERR_CONTROL_DECK_SCORE_HISTORY_DUPLICATE_LABEL",
+      "id": "duplicate-label-blocked",
+      "required": true,
+      "scores": [
+        {
+          "blocked_by": [],
+          "claim_policy": {
+            "is_public_benchmark": false,
+            "is_upward_trend_claim": false
+          },
+          "decision": "score_ready",
+          "schema_version": "94.0.0",
+          "score": {
+            "axes": [],
+            "max": 12,
+            "readiness_percent": 100,
+            "total": 12
+          },
+          "score_id": "duplicate",
+          "tool": "dwm_control_deck_score.py"
+        },
+        {
+          "blocked_by": [],
+          "claim_policy": {
+            "is_public_benchmark": false,
+            "is_upward_trend_claim": false
+          },
+          "decision": "score_ready",
+          "schema_version": "94.0.0",
+          "score": {
+            "axes": [],
+            "max": 12,
+            "readiness_percent": 100,
+            "total": 12
+          },
+          "score_id": "duplicate",
+          "tool": "dwm_control_deck_score.py"
+        }
+      ]
+    }
+  ],
+  "suite_id": "v95-control-deck-score-history"
+}

@@ -196,6 +196,9 @@ RELEASE_COMMANDS = [
     "python scripts/dwm_control_deck_score.py --self-test",
     "python scripts/dwm_control_deck_score.py --manifest fixtures/v94/manifest.json --out out/control-deck-scores/v94-final",
     "python scripts/dwm_control_deck_score.py score --narrative out/workflow-narratives/v93-canonical/workflow-narrative.json --roadmap out/roadmap-reconciliations/v88-canonical/roadmap-reconciliation.json --command-safety out/command-safety/v89-final/summary.json --activation out/workflow-activations/v90-canonical/workflow-activation.json --oracle out/evidence-oracles/v92-canonical/evidence-oracle.json --out out/control-deck-scores/v94-canonical",
+    "python scripts/dwm_control_deck_score_history.py --self-test",
+    "python scripts/dwm_control_deck_score_history.py --manifest fixtures/v95/manifest.json --out out/control-deck-score-history/v95-final",
+    "python scripts/dwm_control_deck_score_history.py build --score out/control-deck-scores/v94-canonical --out out/control-deck-score-history/v95-canonical",
     "python scripts/dwm_daily_operator.py --self-test",
     "python scripts/dwm_daily_operator.py --manifest fixtures/v48/manifest.json --out out/daily-operator/v48-final",
     "python scripts/dwm_release_candidate.py --self-test",
@@ -492,6 +495,7 @@ BASE_REQUIRED_PATHS = [
     "scripts/dwm_evidence_oracle.py",
     "scripts/dwm_workflow_narrative.py",
     "scripts/dwm_control_deck_score.py",
+    "scripts/dwm_control_deck_score_history.py",
     "scripts/dwm_daily_operator.py",
     "scripts/dwm_adapter_live_matrix.py",
     "fixtures/v49/manifest.json",
@@ -625,6 +629,9 @@ BASE_REQUIRED_PATHS = [
     "fixtures/v94/manifest.json",
     "docs/v94-decision.md",
     "docs/v94-control-deck-score-spec.md",
+    "fixtures/v95/manifest.json",
+    "docs/v95-decision.md",
+    "docs/v95-control-deck-score-history-spec.md",
 ]
 
 
