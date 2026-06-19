@@ -367,12 +367,12 @@ def run_manifest(manifest_path: Path, out_dir: Path) -> dict[str, Any]:
 
 
 def ready_records() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
-    roadmap = {"decision": "roadmap_reconciled", "blocked_by": [], "policy": {"latest_version": "V98"}}
+    roadmap = {"decision": "roadmap_reconciled", "blocked_by": [], "policy": {"latest_version": "V99"}}
     command_safety = {"decision": "keep", "failed": 0, "required_fixture_count": 4, "required_passed": 4}
     activation = {
         "decision": "ready_for_next_workflow_design",
         "blocked_by": [],
-        "inputs": {"roadmap_latest_version": "V98"},
+        "inputs": {"roadmap_latest_version": "V99"},
         "next_safe_action": "design_next_workflow",
         "source_hashes": {"roadmap_reconciliation": canonical_hash(roadmap), "command_safety": canonical_hash(command_safety)},
     }

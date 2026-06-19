@@ -168,6 +168,8 @@ promotion requires real release history.
   evidence and human review.
 - V98: `docs/v98-wave-operator-spec.md` added source-only next-wave selection
   from benchmark readiness and activation evidence.
+- V99: `docs/v99-wave-receipt-spec.md` added source-only receipt validation
+  for the selected dogfood evidence wave.
 
 ## Current Public Boundaries
 
@@ -181,6 +183,8 @@ promotion requires real release history.
   publication approval.
 - Wave selection is source-only and does not execute commands or publish
   benchmark claims.
+- Wave receipts are source-only evidence links and do not publish benchmark
+  claims.
 - README graph visibility must stay aligned with graph timing and overclaim
   blockers.
 - Control Deck score history is internal operator readiness history, not public

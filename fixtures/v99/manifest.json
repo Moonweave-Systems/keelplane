@@ -1,0 +1,77 @@
+{
+  "suite_id": "v99-wave-receipt",
+  "fixtures": [
+    {
+      "id": "ready-wave-receipt",
+      "required": true,
+      "wave": {
+        "tool": "dwm_wave_operator.py",
+        "decision": "wave_ready",
+        "selected_wave": {
+          "id": "dogfood-evidence-wave"
+        }
+      },
+      "acquisition": {
+        "suite_id": "v61-final",
+        "decision": "keep",
+        "fixture_count": 5,
+        "required_passed": 5
+      },
+      "expected_decision": "wave_receipt_ready"
+    },
+    {
+      "id": "blocked-wave",
+      "required": true,
+      "wave": {
+        "tool": "dwm_wave_operator.py",
+        "decision": "blocked",
+        "selected_wave": {
+          "id": "dogfood-evidence-wave"
+        }
+      },
+      "acquisition": {
+        "suite_id": "v61-final",
+        "decision": "keep",
+        "fixture_count": 5,
+        "required_passed": 5
+      },
+      "expected_decision": "blocked"
+    },
+    {
+      "id": "wrong-wave",
+      "required": true,
+      "wave": {
+        "tool": "dwm_wave_operator.py",
+        "decision": "wave_ready",
+        "selected_wave": {
+          "id": "benchmark-promotion-human-gate"
+        }
+      },
+      "acquisition": {
+        "suite_id": "v61-final",
+        "decision": "keep",
+        "fixture_count": 5,
+        "required_passed": 5
+      },
+      "expected_decision": "blocked"
+    },
+    {
+      "id": "blocked-acquisition",
+      "required": true,
+      "wave": {
+        "tool": "dwm_wave_operator.py",
+        "decision": "wave_ready",
+        "selected_wave": {
+          "id": "dogfood-evidence-wave"
+        }
+      },
+      "acquisition": {
+        "suite_id": "v61-final",
+        "decision": "kill",
+        "fixture_count": 5,
+        "required_passed": 2
+      },
+      "expected_decision": "blocked"
+    }
+  ]
+}

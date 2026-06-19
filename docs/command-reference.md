@@ -135,6 +135,8 @@ python scripts/dwm_metric_ladder.py assess --history out/control-deck-score-hist
 python scripts/dwm_benchmark_readiness.py assess --ladder out/metric-ladders/<ladder_id>/metric-ladder.json --out out/benchmark-readiness/<readiness_id>
 # wave operator
 python scripts/dwm_wave_operator.py select --readiness out/benchmark-readiness/<readiness_id>/benchmark-readiness.json --activation out/workflow-activations/<activation_id>/workflow-activation.json --out out/wave-operators/<wave_id>
+# wave receipt
+python scripts/dwm_wave_receipt.py record --wave out/wave-operators/<wave_id>/wave-operator.json --acquisition out/dogfood-acquisitions/<acquisition_id>/summary.json --out out/wave-receipts/<receipt_id>
 # contract tiers
 python scripts/check_contract.py --tier smoke
 python scripts/check_contract.py --tier changed
@@ -165,7 +167,8 @@ Release artifacts include `operator-loop.json`, `today.md`,
 `control-deck-score-history.json`, `control-deck-score-history.md`,
 `control-deck-score-history.svg`, `metric-ladder.json`,
 `metric-ladder.md`, `benchmark-readiness.json`, `benchmark-readiness.md`, and
-`wave-operator.json`, `wave-operator.md`, and `status.json`.
+`wave-operator.json`, `wave-operator.md`, `wave-receipt.json`,
+`wave-receipt.md`, and `status.json`.
 
 ## Repository Map
 

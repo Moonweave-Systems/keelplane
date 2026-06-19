@@ -75,6 +75,7 @@ python scripts/dwm_control_deck_score_history.py build --score out/control-deck-
 python scripts/dwm_metric_ladder.py assess --history out/control-deck-score-history/local/control-deck-score-history.json --out out/metric-ladders/local
 python scripts/dwm_benchmark_readiness.py assess --ladder out/metric-ladders/local/metric-ladder.json --out out/benchmark-readiness/local
 python scripts/dwm_wave_operator.py select --readiness out/benchmark-readiness/local/benchmark-readiness.json --activation out/workflow-activations/v90-canonical/workflow-activation.json --out out/wave-operators/local
+python scripts/dwm_wave_receipt.py record --wave out/wave-operators/local/wave-operator.json --acquisition out/dogfood-acquisitions/v61-final/summary.json --out out/wave-receipts/local
 ```
 
 The Control Deck may say things like `Chart: roadmap reconciled`, `Gate:
@@ -86,7 +87,8 @@ still not a public benchmark graph. The Metric Ladder states which graph level
 is currently supported before any benchmark claim is made. Benchmark Readiness
 records the current internal score and keeps README benchmark publication
 blocked until promotion evidence exists. The Wave Operator selects the next
-source-only product wave from readiness and activation evidence.
+source-only product wave from readiness and activation evidence. Wave Receipt
+checks that the selected dogfood evidence wave has usable acquisition evidence.
 
 Run the release contract before publishing changes:
 
@@ -119,6 +121,7 @@ python scripts/dwm.py commands --kind release
 | Metric Ladder | Separates process, operator-readiness, and public-benchmark graph levels so metrics can grow without overclaiming. |
 | Benchmark readiness | Reports internal readiness and public benchmark publication state without granting README publication approval. |
 | Wave Operator | Selects the next source-only product wave and keeps public benchmark publication behind human review. |
+| Wave Receipt | Verifies the selected dogfood evidence wave against acquisition evidence without publishing benchmark claims. |
 | Packaging | Validates repo-local install metadata, adapter registries, compatibility, and release evidence. |
 
 ## What Is Still Honest

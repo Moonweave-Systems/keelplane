@@ -849,9 +849,9 @@ First canonical demo done means:
 - unsafe and non-owned output paths are blocked;
 - `fixtures/v51/manifest.json` passes with `decision: "keep"`.
 
-### V52-V98: Product Evidence And Control Deck
+### V52-V99: Product Evidence And Control Deck
 
-Status: implemented through V98.
+Status: implemented through V99.
 
 Purpose: move from a runnable demo into a product that can explain its current
 state, measure real dogfood evidence, gate graph claims, continue safely across
@@ -897,10 +897,12 @@ Implemented continuation:
   keeps README benchmark publication blocked until promotion evidence exists.
 - V98 wave operator selects the next large product wave from readiness and
   activation evidence without executing commands.
+- V99 wave receipt verifies the selected dogfood evidence wave against
+  acquisition evidence without publishing benchmark claims.
 
 Next roadmap direction:
 
-1. Run the V98-selected dogfood evidence wave to increase measured local evidence before public graph promotion.
+1. Use the V99 wave receipt to continue dogfood evidence acquisition until promotion evidence can support a public graph.
 2. Increase real dogfood acquisition so future graphs show measured process
    history rather than decorative upward motion.
 3. Improve public install and quickstart flow without renaming packages until a
