@@ -1,0 +1,163 @@
+{
+  "fixtures": [
+    {
+      "audit": {
+        "blocked_by": [],
+        "decision": "installed_copy_synced"
+      },
+      "brand_audit": {
+        "blocked_by": [],
+        "decision": "brand_boundary_ready"
+      },
+      "command_safety": {
+        "decision": "keep",
+        "failed": 0,
+        "required_fixture_count": 4,
+        "required_passed": 4
+      },
+      "expected_decision": "ready_for_next_workflow_design",
+      "id": "ready-with-product-evidence",
+      "receipt": {
+        "blocked_by": [],
+        "executed": false,
+        "status": "receipt-dry-run"
+      },
+      "required": true,
+      "roadmap_reconciliation": {
+        "blocked_by": [],
+        "decision": "roadmap_reconciled",
+        "policy": {
+          "latest_version": "V90"
+        }
+      },
+      "run_status": {
+        "human_approved_phase_ids": [
+          "human_gate"
+        ],
+        "status": "workflow-complete"
+      }
+    },
+    {
+      "audit": {
+        "blocked_by": [],
+        "decision": "installed_copy_synced"
+      },
+      "brand_audit": {
+        "blocked_by": [
+          {
+            "code": "ERR_BRAND_BOUNDARY_PUBLIC_NAME_STALE"
+          }
+        ],
+        "decision": "blocked"
+      },
+      "command_safety": {
+        "decision": "keep",
+        "failed": 0,
+        "required_fixture_count": 4,
+        "required_passed": 4
+      },
+      "expected_decision": "blocked",
+      "id": "blocked-brand-boundary",
+      "receipt": {
+        "blocked_by": [],
+        "executed": false,
+        "status": "receipt-dry-run"
+      },
+      "required": true,
+      "roadmap_reconciliation": {
+        "blocked_by": [],
+        "decision": "roadmap_reconciled",
+        "policy": {
+          "latest_version": "V90"
+        }
+      },
+      "run_status": {
+        "human_approved_phase_ids": [
+          "human_gate"
+        ],
+        "status": "workflow-complete"
+      }
+    },
+    {
+      "audit": {
+        "blocked_by": [],
+        "decision": "installed_copy_synced"
+      },
+      "brand_audit": {
+        "blocked_by": [],
+        "decision": "brand_boundary_ready"
+      },
+      "command_safety": {
+        "decision": "keep",
+        "failed": 0,
+        "required_fixture_count": 4,
+        "required_passed": 4
+      },
+      "expected_decision": "blocked",
+      "id": "blocked-stale-roadmap-version",
+      "receipt": {
+        "blocked_by": [],
+        "executed": false,
+        "status": "receipt-dry-run"
+      },
+      "required": true,
+      "roadmap_reconciliation": {
+        "blocked_by": [],
+        "decision": "roadmap_reconciled",
+        "policy": {
+          "latest_version": "V89"
+        }
+      },
+      "run_status": {
+        "human_approved_phase_ids": [
+          "human_gate"
+        ],
+        "status": "workflow-complete"
+      }
+    },
+    {
+      "audit": {
+        "blocked_by": [],
+        "decision": "installed_copy_synced"
+      },
+      "brand_audit": {
+        "blocked_by": [],
+        "decision": "brand_boundary_ready"
+      },
+      "command_safety": {
+        "decision": "kill",
+        "failed": 1,
+        "required_fixture_count": 4,
+        "required_passed": 3
+      },
+      "expected_decision": "blocked",
+      "id": "blocked-command-safety-failed",
+      "receipt": {
+        "blocked_by": [],
+        "executed": false,
+        "status": "receipt-dry-run"
+      },
+      "required": true,
+      "roadmap_reconciliation": {
+        "blocked_by": [],
+        "decision": "roadmap_reconciled",
+        "policy": {
+          "latest_version": "V90"
+        }
+      },
+      "run_status": {
+        "human_approved_phase_ids": [
+          "human_gate"
+        ],
+        "status": "workflow-complete"
+      }
+    }
+  ],
+  "required_fixture_ids": [
+    "ready-with-product-evidence",
+    "blocked-brand-boundary",
+    "blocked-stale-roadmap-version",
+    "blocked-command-safety-failed"
+  ],
+  "suite_id": "v90-workflow-activation-v2"
+}

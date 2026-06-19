@@ -119,6 +119,7 @@ python scripts/dwm_brand_boundary_audit.py audit --out out/brand-boundary-audits
 python scripts/dwm_roadmap_reconciliation.py audit --out out/roadmap-reconciliations/<audit_id>
 # command safety
 python scripts/dwm_command_safety.py --manifest fixtures/v89/manifest.json --out out/command-safety/<safety_id>
+python scripts/dwm_workflow_activation.py activate --audit out/installed-surface-audits/v84-canonical/installed-surface-audit.json --receipt out/runner-receipt-dry-runs/v83-canonical/runner-receipt.json --status out/v9/v32-semantic-dogfood/status.json --brand-audit out/brand-boundary-audits/v87-canonical/brand-boundary-audit.json --roadmap-reconciliation out/roadmap-reconciliations/v88-canonical/roadmap-reconciliation.json --command-safety out/command-safety/v89-final/summary.json --out out/workflow-activations/<activation_id>
 ```
 
 Release artifacts include `operator-loop.json`, `today.md`,

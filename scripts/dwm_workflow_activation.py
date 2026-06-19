@@ -20,13 +20,17 @@ from compile_workflow import canonical_hash, read_json, write_json_atomic, write
 
 
 TOOL = "dwm_workflow_activation.py"
-ACTIVATION_VERSION = "85.0.0"
+ACTIVATION_VERSION = "90.0.0"
 ACTIVATION_ROOT = ROOT / "out" / "workflow-activations"
 DEFAULT_AUDIT = ROOT / "out" / "installed-surface-audits" / "v84-canonical" / "installed-surface-audit.json"
 DEFAULT_RECEIPT = ROOT / "out" / "runner-receipt-dry-runs" / "v83-canonical" / "runner-receipt.json"
 DEFAULT_STATUS = ROOT / "out" / "v9" / "v32-semantic-dogfood" / "status.json"
+DEFAULT_BRAND_AUDIT = ROOT / "out" / "brand-boundary-audits" / "v87-canonical" / "brand-boundary-audit.json"
+DEFAULT_ROADMAP_RECONCILIATION = ROOT / "out" / "roadmap-reconciliations" / "v88-canonical" / "roadmap-reconciliation.json"
+DEFAULT_COMMAND_SAFETY = ROOT / "out" / "command-safety" / "v89-final" / "summary.json"
 SENTINEL = ".dwm_workflow_activation-owned.json"
 READY_INSTALL_DECISIONS = {"installed_copy_synced", "repo_backed_active_surface"}
+READY_BRAND_DECISIONS = {"brand_boundary_ready"}
 
 
 class WorkflowActivationError(ValueError):
@@ -144,7 +148,15 @@ def prepare_out_dir(path: Path, activation_id: str, *, source: Path | str) -> No
     )
 
 
-def collect_blockers(audit: dict[str, Any], receipt: dict[str, Any], run_status: dict[str, Any]) -> list[dict[str, Any]]:
+def collect_blockers(
+    audit: dict[str, Any],
+    receipt: dict[str, Any],
+    run_status: dict[str, Any],
+    *,
+    brand_audit: dict[str, Any] | None = None,
+    roadmap_reconciliation: dict[str, Any] | None = None,
+    command_safety: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
     blockers: list[dict[str, Any]] = []
     audit_decision = audit.get("decision")
     if audit_decision not in READY_INSTALL_DECISIONS:
@@ -163,12 +175,65 @@ def collect_blockers(audit: dict[str, Any], receipt: dict[str, Any], run_status:
         blockers.append({"code": "ERR_WORKFLOW_ACTIVATION_RUN_INCOMPLETE", "message": "current workflow run is not complete", "status": run_status.get("status")})
     if "human_gate" not in set(run_status.get("human_approved_phase_ids", [])):
         blockers.append({"code": "ERR_WORKFLOW_ACTIVATION_RUN_GATE_MISSING", "message": "current workflow run lacks the recorded human gate"})
+    if brand_audit is not None:
+        if brand_audit.get("decision") not in READY_BRAND_DECISIONS:
+            blockers.append({"code": "ERR_WORKFLOW_ACTIVATION_BRAND_BOUNDARY_NOT_READY", "message": "brand boundary audit is not clean", "decision": brand_audit.get("decision")})
+        if brand_audit.get("blocked_by"):
+            blockers.append({"code": "ERR_WORKFLOW_ACTIVATION_BRAND_BOUNDARY_BLOCKED", "message": "brand boundary audit contains blockers"})
+    if roadmap_reconciliation is not None:
+        if roadmap_reconciliation.get("decision") != "roadmap_reconciled":
+            blockers.append({"code": "ERR_WORKFLOW_ACTIVATION_ROADMAP_NOT_RECONCILED", "message": "roadmap reconciliation is not ready", "decision": roadmap_reconciliation.get("decision")})
+        if roadmap_reconciliation.get("blocked_by"):
+            blockers.append({"code": "ERR_WORKFLOW_ACTIVATION_ROADMAP_BLOCKED", "message": "roadmap reconciliation contains blockers"})
+        latest_version = (roadmap_reconciliation.get("policy") or {}).get("latest_version")
+        if latest_version != "V90":
+            blockers.append({"code": "ERR_WORKFLOW_ACTIVATION_ROADMAP_VERSION_STALE", "message": "roadmap reconciliation latest version is stale", "latest_version": latest_version})
+    if command_safety is not None:
+        if command_safety.get("decision") != "keep":
+            blockers.append({"code": "ERR_WORKFLOW_ACTIVATION_COMMAND_SAFETY_NOT_READY", "message": "command safety gate did not keep", "decision": command_safety.get("decision")})
+        if command_safety.get("failed") not in (0, None):
+            blockers.append({"code": "ERR_WORKFLOW_ACTIVATION_COMMAND_SAFETY_FAILED", "message": "command safety fixtures failed", "failed": command_safety.get("failed")})
+        required_passed = command_safety.get("required_passed")
+        required_count = command_safety.get("required_fixture_count")
+        if required_count is not None and required_passed != required_count:
+            blockers.append({"code": "ERR_WORKFLOW_ACTIVATION_COMMAND_SAFETY_INCOMPLETE", "message": "command safety required fixture coverage is incomplete", "required_passed": required_passed, "required_fixture_count": required_count})
     return blockers
 
 
-def make_activation(activation_id: str, audit: dict[str, Any], receipt: dict[str, Any], run_status: dict[str, Any], *, source_paths: dict[str, str] | None = None) -> dict[str, Any]:
-    blockers = collect_blockers(audit, receipt, run_status)
+def make_activation(
+    activation_id: str,
+    audit: dict[str, Any],
+    receipt: dict[str, Any],
+    run_status: dict[str, Any],
+    *,
+    brand_audit: dict[str, Any] | None = None,
+    roadmap_reconciliation: dict[str, Any] | None = None,
+    command_safety: dict[str, Any] | None = None,
+    source_paths: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    blockers = collect_blockers(
+        audit,
+        receipt,
+        run_status,
+        brand_audit=brand_audit,
+        roadmap_reconciliation=roadmap_reconciliation,
+        command_safety=command_safety,
+    )
     decision = "ready_for_next_workflow_design" if not blockers else "blocked"
+    evidence_inputs = {
+        "install_decision": audit.get("decision"),
+        "receipt_status": receipt.get("status"),
+        "receipt_executed": receipt.get("executed"),
+        "run_status": run_status.get("status"),
+    }
+    if brand_audit is not None:
+        evidence_inputs["brand_boundary_decision"] = brand_audit.get("decision")
+    if roadmap_reconciliation is not None:
+        evidence_inputs["roadmap_decision"] = roadmap_reconciliation.get("decision")
+        evidence_inputs["roadmap_latest_version"] = (roadmap_reconciliation.get("policy") or {}).get("latest_version")
+    if command_safety is not None:
+        evidence_inputs["command_safety_decision"] = command_safety.get("decision")
+        evidence_inputs["command_safety_required_passed"] = command_safety.get("required_passed")
     return {
         "schema_version": ACTIVATION_VERSION,
         "tool": TOOL,
@@ -182,17 +247,15 @@ def make_activation(activation_id: str, audit: dict[str, Any], receipt: dict[str
             "uses_network": False,
             "requires_human_gate_for_live_execution": True,
         },
-        "inputs": {
-            "install_decision": audit.get("decision"),
-            "receipt_status": receipt.get("status"),
-            "receipt_executed": receipt.get("executed"),
-            "run_status": run_status.get("status"),
-        },
+        "inputs": evidence_inputs,
         "source_paths": source_paths or {},
         "source_hashes": {
             "audit": canonical_hash(audit),
             "receipt": canonical_hash(receipt),
             "run_status": canonical_hash(run_status),
+            "brand_audit": canonical_hash(brand_audit) if brand_audit is not None else None,
+            "roadmap_reconciliation": canonical_hash(roadmap_reconciliation) if roadmap_reconciliation is not None else None,
+            "command_safety": canonical_hash(command_safety) if command_safety is not None else None,
         },
     }
 
@@ -227,21 +290,46 @@ def write_activation(out_dir: Path, activation: dict[str, Any]) -> None:
     write_text_atomic(out_dir / "workflow-activation.md", render_markdown(activation), root=out_dir)
 
 
-def run_activation(audit_path: Path, receipt_path: Path, status_path: Path, out_dir: Path) -> dict[str, Any]:
+def run_activation(
+    audit_path: Path,
+    receipt_path: Path,
+    status_path: Path,
+    out_dir: Path,
+    *,
+    brand_audit_path: Path | None = None,
+    roadmap_reconciliation_path: Path | None = None,
+    command_safety_path: Path | None = None,
+) -> dict[str, Any]:
     audit_path = resolve_out_input(audit_path, code="ERR_WORKFLOW_ACTIVATION_AUDIT_UNSAFE")
     receipt_path = resolve_out_input(receipt_path, code="ERR_WORKFLOW_ACTIVATION_RECEIPT_UNSAFE")
     status_path = resolve_out_input(status_path, code="ERR_WORKFLOW_ACTIVATION_STATUS_UNSAFE")
+    brand_audit_resolved = resolve_out_input(brand_audit_path, code="ERR_WORKFLOW_ACTIVATION_BRAND_AUDIT_UNSAFE") if brand_audit_path is not None else None
+    roadmap_resolved = resolve_out_input(roadmap_reconciliation_path, code="ERR_WORKFLOW_ACTIVATION_ROADMAP_UNSAFE") if roadmap_reconciliation_path is not None else None
+    command_safety_resolved = resolve_out_input(command_safety_path, code="ERR_WORKFLOW_ACTIVATION_COMMAND_SAFETY_UNSAFE") if command_safety_path is not None else None
     out_dir = resolve_out(out_dir)
     prepare_out_dir(out_dir, out_dir.name, source=audit_path)
     audit = read_json(audit_path)
     receipt = read_json(receipt_path)
     run_status = read_json(status_path)
+    brand_audit = read_json(brand_audit_resolved) if brand_audit_resolved is not None else None
+    roadmap_reconciliation = read_json(roadmap_resolved) if roadmap_resolved is not None else None
+    command_safety = read_json(command_safety_resolved) if command_safety_resolved is not None else None
+    source_paths = {"audit": rel(audit_path), "receipt": rel(receipt_path), "run_status": rel(status_path)}
+    if brand_audit_resolved is not None:
+        source_paths["brand_audit"] = rel(brand_audit_resolved)
+    if roadmap_resolved is not None:
+        source_paths["roadmap_reconciliation"] = rel(roadmap_resolved)
+    if command_safety_resolved is not None:
+        source_paths["command_safety"] = rel(command_safety_resolved)
     activation = make_activation(
         out_dir.name,
         audit,
         receipt,
         run_status,
-        source_paths={"audit": rel(audit_path), "receipt": rel(receipt_path), "run_status": rel(status_path)},
+        brand_audit=brand_audit,
+        roadmap_reconciliation=roadmap_reconciliation,
+        command_safety=command_safety,
+        source_paths=source_paths,
     )
     write_activation(out_dir, activation)
     return activation
@@ -267,6 +355,9 @@ def run_manifest(manifest_path: Path, out_dir: Path) -> dict[str, Any]:
             fixture.get("audit") if isinstance(fixture.get("audit"), dict) else {},
             fixture.get("receipt") if isinstance(fixture.get("receipt"), dict) else {},
             fixture.get("run_status") if isinstance(fixture.get("run_status"), dict) else {},
+            brand_audit=fixture.get("brand_audit") if isinstance(fixture.get("brand_audit"), dict) else None,
+            roadmap_reconciliation=fixture.get("roadmap_reconciliation") if isinstance(fixture.get("roadmap_reconciliation"), dict) else None,
+            command_safety=fixture.get("command_safety") if isinstance(fixture.get("command_safety"), dict) else None,
         )
         write_activation(fixture_out, activation)
         expected_decision = fixture.get("expected_decision")
@@ -304,13 +395,31 @@ def ready_run_status() -> dict[str, Any]:
     return {"status": "workflow-complete", "human_approved_phase_ids": ["human_gate"]}
 
 
+def ready_brand_audit() -> dict[str, Any]:
+    return {"decision": "brand_boundary_ready", "blocked_by": []}
+
+
+def ready_roadmap_reconciliation() -> dict[str, Any]:
+    return {"decision": "roadmap_reconciled", "blocked_by": [], "policy": {"latest_version": "V90"}}
+
+
+def ready_command_safety() -> dict[str, Any]:
+    return {"decision": "keep", "failed": 0, "required_passed": 4, "required_fixture_count": 4}
+
+
 def self_test() -> None:
     activation = make_activation("self-test", ready_audit(), ready_receipt(), ready_run_status())
     if activation["decision"] != "ready_for_next_workflow_design":
         raise WorkflowActivationError("ERR_WORKFLOW_ACTIVATION_SELF_TEST_FAILED", "ready inputs should allow next workflow design")
+    activation_v2 = make_activation("self-test-v2", ready_audit(), ready_receipt(), ready_run_status(), brand_audit=ready_brand_audit(), roadmap_reconciliation=ready_roadmap_reconciliation(), command_safety=ready_command_safety())
+    if activation_v2["decision"] != "ready_for_next_workflow_design":
+        raise WorkflowActivationError("ERR_WORKFLOW_ACTIVATION_SELF_TEST_FAILED", "ready v2 inputs should allow next workflow design")
     blocked = make_activation("self-test-blocked", {"decision": "blocked", "blocked_by": [{"code": "stale"}]}, ready_receipt(), ready_run_status())
     if blocked["decision"] != "blocked":
         raise WorkflowActivationError("ERR_WORKFLOW_ACTIVATION_SELF_TEST_FAILED", "blocked install audit should block activation")
+    stale_roadmap = make_activation("self-test-stale-roadmap", ready_audit(), ready_receipt(), ready_run_status(), brand_audit=ready_brand_audit(), roadmap_reconciliation={"decision": "roadmap_reconciled", "blocked_by": [], "policy": {"latest_version": "V89"}}, command_safety=ready_command_safety())
+    if stale_roadmap["decision"] != "blocked":
+        raise WorkflowActivationError("ERR_WORKFLOW_ACTIVATION_SELF_TEST_FAILED", "stale roadmap version should block v2 activation")
 
 
 def parse_args() -> argparse.Namespace:
@@ -323,6 +432,9 @@ def parse_args() -> argparse.Namespace:
     activate_parser.add_argument("--audit", type=Path, default=DEFAULT_AUDIT)
     activate_parser.add_argument("--receipt", type=Path, default=DEFAULT_RECEIPT)
     activate_parser.add_argument("--status", type=Path, default=DEFAULT_STATUS)
+    activate_parser.add_argument("--brand-audit", type=Path)
+    activate_parser.add_argument("--roadmap-reconciliation", type=Path)
+    activate_parser.add_argument("--command-safety", type=Path)
     activate_parser.add_argument("--out", type=Path, required=True)
     return parser.parse_args()
 
@@ -340,7 +452,15 @@ def main() -> None:
             print(json.dumps(run_manifest(args.manifest, args.out), sort_keys=True))
             return
         if args.command == "activate":
-            activation = run_activation(args.audit, args.receipt, args.status, args.out)
+            activation = run_activation(
+                args.audit,
+                args.receipt,
+                args.status,
+                args.out,
+                brand_audit_path=args.brand_audit,
+                roadmap_reconciliation_path=args.roadmap_reconciliation,
+                command_safety_path=args.command_safety,
+            )
             print(json.dumps({"activation_id": activation["activation_id"], "decision": activation["decision"], "blocked_by": activation["blocked_by"]}, sort_keys=True))
             return
         raise WorkflowActivationError("ERR_WORKFLOW_ACTIVATION_ARGS_INVALID", "choose --self-test, --manifest, or activate")

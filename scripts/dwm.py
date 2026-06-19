@@ -183,6 +183,8 @@ RELEASE_COMMANDS = [
     "python scripts/dwm_roadmap_reconciliation.py audit --out out/roadmap-reconciliations/v88-canonical",
     "python scripts/dwm_command_safety.py --self-test",
     "python scripts/dwm_command_safety.py --manifest fixtures/v89/manifest.json --out out/command-safety/v89-final",
+    "python scripts/dwm_workflow_activation.py --manifest fixtures/v90/manifest.json --out out/workflow-activations/v90-final",
+    "python scripts/dwm_workflow_activation.py activate --audit out/installed-surface-audits/v84-canonical/installed-surface-audit.json --receipt out/runner-receipt-dry-runs/v83-canonical/runner-receipt.json --status out/v9/v32-semantic-dogfood/status.json --brand-audit out/brand-boundary-audits/v87-canonical/brand-boundary-audit.json --roadmap-reconciliation out/roadmap-reconciliations/v88-canonical/roadmap-reconciliation.json --command-safety out/command-safety/v89-final/summary.json --out out/workflow-activations/v90-canonical",
     "python scripts/dwm_daily_operator.py --self-test",
     "python scripts/dwm_daily_operator.py --manifest fixtures/v48/manifest.json --out out/daily-operator/v48-final",
     "python scripts/dwm_release_candidate.py --self-test",
@@ -395,6 +397,8 @@ BASE_REQUIRED_PATHS = [
     "docs/v88-roadmap-reconciliation-spec.md",
     "docs/v89-decision.md",
     "docs/v89-command-safety-spec.md",
+    "docs/v90-decision.md",
+    "docs/v90-workflow-activation-v2-spec.md",
     "docs/command-reference.md",
     "docs/release-history.md",
     "packaging/dwm-benchmark-attempts.json",
@@ -584,6 +588,9 @@ BASE_REQUIRED_PATHS = [
     "fixtures/v89/manifest.json",
     "docs/v89-decision.md",
     "docs/v89-command-safety-spec.md",
+    "fixtures/v90/manifest.json",
+    "docs/v90-decision.md",
+    "docs/v90-workflow-activation-v2-spec.md",
 ]
 
 
