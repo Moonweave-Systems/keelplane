@@ -205,6 +205,9 @@ RELEASE_COMMANDS = [
     "python scripts/dwm_benchmark_readiness.py --self-test",
     "python scripts/dwm_benchmark_readiness.py --manifest fixtures/v97/manifest.json --out out/benchmark-readiness/v97-final",
     "python scripts/dwm_benchmark_readiness.py assess --ladder out/metric-ladders/v96-canonical/metric-ladder.json --out out/benchmark-readiness/v97-canonical",
+    "python scripts/dwm_wave_operator.py --self-test",
+    "python scripts/dwm_wave_operator.py --manifest fixtures/v98/manifest.json --out out/wave-operators/v98-final",
+    "python scripts/dwm_wave_operator.py select --readiness out/benchmark-readiness/v97-canonical/benchmark-readiness.json --activation out/workflow-activations/v90-canonical/workflow-activation.json --out out/wave-operators/v98-canonical",
     "python scripts/dwm_daily_operator.py --self-test",
     "python scripts/dwm_daily_operator.py --manifest fixtures/v48/manifest.json --out out/daily-operator/v48-final",
     "python scripts/dwm_release_candidate.py --self-test",
@@ -646,6 +649,10 @@ BASE_REQUIRED_PATHS = [
     "fixtures/v97/manifest.json",
     "docs/v97-decision.md",
     "docs/v97-benchmark-readiness-spec.md",
+    "scripts/dwm_wave_operator.py",
+    "fixtures/v98/manifest.json",
+    "docs/v98-decision.md",
+    "docs/v98-wave-operator-spec.md",
 ]
 
 

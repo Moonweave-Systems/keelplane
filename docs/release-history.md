@@ -166,6 +166,8 @@ promotion requires real release history.
 - V97: `docs/v97-benchmark-readiness-spec.md` added an internal benchmark
   readiness report while keeping README benchmark publication behind promotion
   evidence and human review.
+- V98: `docs/v98-wave-operator-spec.md` added source-only next-wave selection
+  from benchmark readiness and activation evidence.
 
 ## Current Public Boundaries
 
@@ -177,6 +179,8 @@ promotion requires real release history.
   benchmark graph.
 - Benchmark readiness is an internal indicator, not public benchmark
   publication approval.
+- Wave selection is source-only and does not execute commands or publish
+  benchmark claims.
 - README graph visibility must stay aligned with graph timing and overclaim
   blockers.
 - Control Deck score history is internal operator readiness history, not public

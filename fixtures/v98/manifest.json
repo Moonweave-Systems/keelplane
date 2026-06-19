@@ -1,0 +1,93 @@
+{
+  "suite_id": "v98-wave-operator",
+  "fixtures": [
+    {
+      "id": "ready-selects-dogfood-wave",
+      "required": true,
+      "readiness": {
+        "tool": "dwm_benchmark_readiness.py",
+        "decision": "benchmark_readiness_recorded",
+        "readiness_score": 70,
+        "public_benchmark_publish_allowed": false,
+        "claim_policy": {
+          "readiness_score_is_public_benchmark": false,
+          "requires_promotion_for_public_graph": true,
+          "requires_human_review_for_readme_publication": true
+        }
+      },
+      "activation": {
+        "decision": "ready_for_next_workflow_design",
+        "blocked_by": []
+      },
+      "expected_decision": "wave_ready",
+      "expected_wave_id": "dogfood-evidence-wave"
+    },
+    {
+      "id": "public-benchmark-stops-at-human-gate",
+      "required": true,
+      "readiness": {
+        "tool": "dwm_benchmark_readiness.py",
+        "decision": "benchmark_readiness_recorded",
+        "readiness_score": 100,
+        "public_benchmark_publish_allowed": true,
+        "claim_policy": {
+          "readiness_score_is_public_benchmark": false,
+          "requires_promotion_for_public_graph": true,
+          "requires_human_review_for_readme_publication": true
+        }
+      },
+      "activation": {
+        "decision": "ready_for_next_workflow_design",
+        "blocked_by": []
+      },
+      "expected_decision": "human_gate_required",
+      "expected_wave_id": "benchmark-promotion-human-gate"
+    },
+    {
+      "id": "blocked-readiness-blocks-wave",
+      "required": true,
+      "readiness": {
+        "tool": "dwm_benchmark_readiness.py",
+        "decision": "blocked",
+        "readiness_score": 30,
+        "public_benchmark_publish_allowed": false,
+        "claim_policy": {
+          "readiness_score_is_public_benchmark": false,
+          "requires_promotion_for_public_graph": true,
+          "requires_human_review_for_readme_publication": true
+        }
+      },
+      "activation": {
+        "decision": "ready_for_next_workflow_design",
+        "blocked_by": []
+      },
+      "expected_decision": "blocked",
+      "expected_wave_id": "dogfood-evidence-wave"
+    },
+    {
+      "id": "blocked-activation-blocks-wave",
+      "required": true,
+      "readiness": {
+        "tool": "dwm_benchmark_readiness.py",
+        "decision": "benchmark_readiness_recorded",
+        "readiness_score": 70,
+        "public_benchmark_publish_allowed": false,
+        "claim_policy": {
+          "readiness_score_is_public_benchmark": false,
+          "requires_promotion_for_public_graph": true,
+          "requires_human_review_for_readme_publication": true
+        }
+      },
+      "activation": {
+        "decision": "blocked",
+        "blocked_by": [
+          {
+            "code": "ERR_SAMPLE_BLOCKED"
+          }
+        ]
+      },
+      "expected_decision": "blocked",
+      "expected_wave_id": "dogfood-evidence-wave"
+    }
+  ]
+}

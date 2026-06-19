@@ -133,6 +133,8 @@ python scripts/dwm_control_deck_score_history.py build --score out/control-deck-
 python scripts/dwm_metric_ladder.py assess --history out/control-deck-score-history/<history_id>/control-deck-score-history.json --graph-timing out/graph-timing/<timing_id>/graph-timing.json --out out/metric-ladders/<ladder_id>
 # benchmark readiness
 python scripts/dwm_benchmark_readiness.py assess --ladder out/metric-ladders/<ladder_id>/metric-ladder.json --out out/benchmark-readiness/<readiness_id>
+# wave operator
+python scripts/dwm_wave_operator.py select --readiness out/benchmark-readiness/<readiness_id>/benchmark-readiness.json --activation out/workflow-activations/<activation_id>/workflow-activation.json --out out/wave-operators/<wave_id>
 # contract tiers
 python scripts/check_contract.py --tier smoke
 python scripts/check_contract.py --tier changed
@@ -163,7 +165,7 @@ Release artifacts include `operator-loop.json`, `today.md`,
 `control-deck-score-history.json`, `control-deck-score-history.md`,
 `control-deck-score-history.svg`, `metric-ladder.json`,
 `metric-ladder.md`, `benchmark-readiness.json`, `benchmark-readiness.md`, and
-`status.json`.
+`wave-operator.json`, `wave-operator.md`, and `status.json`.
 
 ## Repository Map
 

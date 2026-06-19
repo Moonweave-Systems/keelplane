@@ -1,6 +1,6 @@
 # Keelplane / DWM Core Spec
 
-Status: V1 implemented, V2 release candidate, V2.5 first loop implemented, V3 entry runtime implemented, V12-V20 product slices implemented, V87 brand boundary audit implemented, V88 roadmap reconciliation, V89 command safety, V90 activation v2, V91 contract tiering, V92 evidence oracle, V93 workflow narrative, V94 control deck score, V95 score history, V96 metric ladder, V97 benchmark readiness, Last updated: 2026-06-19
+Status: V1 implemented, V2 release candidate, V2.5 first loop implemented, V3 entry runtime implemented, V12-V20 product slices implemented, V87 brand boundary audit implemented, V88 roadmap reconciliation, V89 command safety, V90 activation v2, V91 contract tiering, V92 evidence oracle, V93 workflow narrative, V94 control deck score, V95 score history, V96 metric ladder, V97 benchmark readiness, V98 wave operator, Last updated: 2026-06-19
 
 ## Purpose
 
@@ -54,7 +54,7 @@ Positioning:
   planning, runner execution, session/worktree durability, review/repair,
   bounded fanout, HUD, install packaging, adapter registry, and release
   hardening.
-- V86-V97 brand, roadmap, command safety, activation, contract tier, evidence oracle, narrative, score, history, and metric gates:
+- V86-V98 brand, roadmap, command safety, activation, contract tier, evidence oracle, narrative, score, history, and metric gates:
   make Keelplane the public product brand, preserve DWM Core and
   `dynamic-workflow-designer` compatibility, keep the spec, roadmap, and
   release history aligned through audit artifacts, prevent command planning from
@@ -214,9 +214,9 @@ destructive, networked, dependency-installing, secret-reading, external-message,
 database, production, or history-rewrite action occurs without a matching DWM
 gate and a safe default.
 
-### V86-V97: Brand, Roadmap, Command Safety, Activation, Contract Tiers, Evidence Oracle, Narrative, Score, History, And Metrics
+### V86-V98: Brand, Roadmap, Command Safety, Activation, Contract Tiers, Evidence Oracle, Narrative, Score, History, And Metrics
 
-V86-V97 align the product surface after the control-plane became broader than a
+V86-V98 align the product surface after the control-plane became broader than a
 single skill, harden the command boundary that follows next-action selection,
 make next-workflow activation consume those later evidence gates, and split
 verification into practical tiers. V92 adds a read-only evidence oracle so later
@@ -229,7 +229,9 @@ trend claims. V95 records those scores as internal readiness history and can
 render a local SVG without treating it as a public benchmark graph. V96 adds a
 Metric Ladder so process, operator-readiness, and public-benchmark graph levels
 stay separate. V97 adds a Benchmark Readiness report so internal readiness
-can be scored without becoming a public benchmark graph. The public product brand is Keelplane. DWM Core remains the internal
+can be scored without becoming a public benchmark graph. V98 adds a Wave
+Operator that selects the next source-only product wave from readiness and
+activation evidence. The public product brand is Keelplane. DWM Core remains the internal
 deterministic engine. The compatibility skill name remains
 `dynamic-workflow-designer`, and the repository slug remains `dwm` until a
 separate migration gate proves a rename will not break install surfaces.
@@ -287,6 +289,12 @@ V97 benchmark readiness renders `benchmark-readiness.json` and
 readiness score and the current public benchmark publication gate. The score is
 not a public benchmark graph, and README benchmark publication still requires
 promotion evidence plus human review.
+
+V98 wave operator renders `wave-operator.json` and `wave-operator.md` from
+benchmark readiness and workflow activation evidence. It chooses the next
+source-only product wave, currently dogfood evidence acquisition while public
+benchmark publication remains blocked. It does not execute commands, create
+worktrees, use the network, or publish benchmark claims.
 
 ### Harness Strategy
 
