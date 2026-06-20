@@ -17,7 +17,7 @@ then delegates execution back to the repo-local scripts.
 Non-goals:
 
 - do not require global mutable state for core correctness,
-- do not break existing `dynamic-workflow-designer` skill compatibility,
+- preserve the `keelplane` skill identity,
 - do not force users onto OMX,
 - do not hide release checks.
 
@@ -26,7 +26,7 @@ Non-goals:
 Packaging surfaces:
 
 - local CLI entrypoint,
-- Codex skill compatibility,
+- Codex skill identity,
 - Claude-compatible portable CLI metadata,
 - optional Codex plugin,
 - shell completion,

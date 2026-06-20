@@ -3717,7 +3717,7 @@ def main() -> None:
         [
             "# keelplane",
             "dwm core",
-            "dynamic-workflow-designer",
+            "keelplane",
             "python scripts/dwm_demo.py run --out out/demo/quickstart",
             "python scripts/dwm_demo.py inspect --demo out/demo/quickstart",
             "python scripts/dwm.py status --run out/v9/v32-semantic-dogfood",
@@ -3944,8 +3944,9 @@ def main() -> None:
         [
             "keelplane is the public product brand",
             "dwm core stands for",
-            "dynamic-workflow-designer",
+            "codex skill name is `keelplane`",
             "repository slug remains `dwm`",
+            "`dwm_*.py` file prefix",
             "do not claim autonomous execution",
         ],
     )
@@ -3955,7 +3956,8 @@ def main() -> None:
             "status: implemented first keelplane brand decision",
             "public product brand: `keelplane`",
             "internal engine name: `dwm core`",
-            "compatibility skill name: `dynamic-workflow-designer`",
+            "skill name: `keelplane`",
+            "`dwm_*.py` file prefix",
             "do not rename cli commands",
             "do not claim autonomous execution",
         ],
@@ -3979,7 +3981,7 @@ def main() -> None:
             "`brand-boundary-audit.md`",
             "public product brand: `keelplane`",
             "internal engine name: `dwm core`",
-            "compatibility skill name: `dynamic-workflow-designer`",
+            "skill name: `keelplane`",
             "repository slug remains `dwm`",
             "does not claim autonomous execution",
         ],
@@ -3995,7 +3997,7 @@ def main() -> None:
             "`decision`: `keep`",
             "`decision`: `brand_boundary_ready`",
             "`public_product_brand`: `keelplane`",
-            "`compatibility_skill_name`: `dynamic-workflow-designer`",
+            "`skill_name`: `keelplane`",
             "does not claim autonomous execution",
         ],
     )

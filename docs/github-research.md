@@ -138,6 +138,6 @@ Decision:
 ## Product Implication
 
 The correct first repo is not a fork of any GitHub runtime. It should start as
-a Codex skill package named `dynamic-workflow-designer` with a clear spec and
+a Codex skill package named `keelplane` with a clear spec and
 evaluation fixtures. A plugin or runtime can be added after the skill proves it
 can consistently produce useful workflow designs.

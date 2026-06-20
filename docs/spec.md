@@ -7,7 +7,7 @@ Status: V1 implemented, V2 release candidate, V2.5 first loop implemented, V3 en
 Keelplane is the public product brand. DWM Core, the Deterministic Workflow
 Machine, helps Codex design and operate large, situation-aware workflows for
 work that is too broad for a single normal agent turn. The installed skill
-entrypoint remains `dynamic-workflow-designer` for compatibility. Keelplane
+entrypoint is `keelplane`. Keelplane
 fills the gap between a thin route selector and a full workflow runtime.
 
 The skill entrypoint should produce a concrete workflow architecture: phases,
@@ -24,7 +24,7 @@ workflow itself for a very large task.
 Positioning:
 
 - `workflow-router`: classify and route ordinary broad work.
-- DWM / `dynamic-workflow-designer`: design an ultracode-style workflow for
+- DWM / `keelplane`: design an ultracode-style workflow for
   major work before execution, then move through deterministic control-plane
   artifacts.
 - DWM Runner: execute approved packets through bounded adapters while returning
@@ -56,7 +56,7 @@ Positioning:
   hardening.
 - V86-V100 brand, roadmap, command safety, activation, contract tier, evidence oracle, narrative, score, history, and metric gates:
   make Keelplane the public product brand, preserve DWM Core and
-  `dynamic-workflow-designer` compatibility, keep the spec, roadmap, and
+  the `keelplane` skill name, keep the spec, roadmap, and
   release history aligned through audit artifacts, prevent command planning from
   trusting declared `risk_codes` alone, require that evidence before
   next-workflow activation, and keep iterative verification fast enough to use.
@@ -244,9 +244,10 @@ deterministic two-arm comparison schema for direct-codex versus dwm-controlled
 evidence richness; the live comparison remains opt-in and makes no pass-rate,
 speed, cost, or direct-agent superiority claim. The public
 product brand is Keelplane. DWM Core remains the internal
-deterministic engine. The compatibility skill name remains
-`dynamic-workflow-designer`, and the repository slug remains `dwm` until a
-separate migration gate proves a rename will not break install surfaces.
+deterministic engine. The skill name is now `keelplane`. The `dwm_*.py`
+file prefix and GitHub repository slug remain legacy/internal and
+intentionally deferred until a separate migration gate proves a rename will
+not break install surfaces.
 
 V87 added a brand boundary audit so README, command reference, release history,
 and hero surfaces do not drift back to ambiguous public DWM naming or overclaim
@@ -402,7 +403,7 @@ verification.
 
 The skill activates when:
 
-- the user names `$dynamic-workflow-designer`
+- the user names `$keelplane`
 - the user asks for dynamic workflows, ultracode-style orchestration, or a
   workflow that can handle a very large task
 - the task clearly requires multi-phase, multi-agent design before execution

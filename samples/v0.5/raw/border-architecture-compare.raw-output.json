@@ -1,14 +1,14 @@
 {
   "fixture_id": "border-architecture-compare",
   "packet_sha256": {
-    "blueprint.md": "6e4f3cf6d9f1b5d9cf9fd275f4cd680c0e434ce1c9847df55ba341be4229cb69",
-    "original prompt": "bea821b09bee16bea384f1f72b1a208ee0bad17c9ae5091a354accef4ab54723",
-    "workflow.plan.json": "78a194bf7fad357d5f2a65aec142df4a7b254f2e7c0ff45456659da1285e9713"
+    "workflow.plan.json": "757df1c4641037a25bf8d6625a32d5f1026d53cd7ee777524fb53193627dd03b",
+    "blueprint.md": "7cf2bfe6e2b0260fd7cec0ad8d2243a36db07735f14f09b00a573fe6d7617796",
+    "original prompt": "bea821b09bee16bea384f1f72b1a208ee0bad17c9ae5091a354accef4ab54723"
   },
-  "producer": "dynamic-workflow-designer",
+  "producer": "keelplane",
   "raw_kind": "workflow-output",
-  "rendered_blueprint": "# border-architecture-compare\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (No downstream consumer or resumable execution is expected; use the router or a compact comparison.)\nPatterns: none\n\n## First Slice\n\nUse workflow-router instead of dynamic-workflow-designer for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- implementation decision: stop before implementation decisions and ask for approval\n",
-  "skill_sha256": "835ad8fef13ecc473ea88de6d8820bc6e6b3dd2287522ab49bb811dd5f38dbda",
+  "rendered_blueprint": "# border-architecture-compare\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (No downstream consumer or resumable execution is expected; use the router or a compact comparison.)\nPatterns: none\n\n## First Slice\n\nUse workflow-router instead of keelplane for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- implementation decision: stop before implementation decisions and ask for approval\n",
+  "skill_sha256": "27261b50e6811ad03073544983f5e4b4905a9c9035f2d1b8f044a4ee24b49798",
   "source_prompt": "Compare two architecture options without downstream execution.",
   "workflow_plan": {
     "activation": {
@@ -30,7 +30,7 @@
       "max_rounds": 1,
       "time_box": "one direct response or routed workflow"
     },
-    "created_by": "dynamic-workflow-designer",
+    "created_by": "keelplane",
     "execution_path": {
       "consumer": "human",
       "first_slice": {
@@ -44,7 +44,7 @@
         "inputs": [
           "original prompt"
         ],
-        "instruction": "Use workflow-router instead of dynamic-workflow-designer for this request."
+        "instruction": "Use workflow-router instead of keelplane for this request."
       },
       "mode": "direct-codex"
     },

@@ -1,14 +1,14 @@
 {
   "fixture_id": "border-small-migration",
   "packet_sha256": {
-    "blueprint.md": "4f7f494a8d2c1387b8eb5287e82021146f76a9cc02b6e47bd41a2a93b3ab0d9e",
-    "original prompt": "81f143c5966be05f7034dd156236fd0d7fb90c9b362395bb5df00fce1b038899",
-    "workflow.plan.json": "df9a1e4e593f9047d84b762811c738b1c6987f50d7f4848ef1b45ab96966eff5"
+    "workflow.plan.json": "268fe0caa77b275a6f5b6671f1a3af09c199fbdc35592987fd4675d197c06615",
+    "blueprint.md": "8e452aa84be5ed15d284499e937499cdb02f9f05b29a55da56aeff2c1d2f5a2e",
+    "original prompt": "81f143c5966be05f7034dd156236fd0d7fb90c9b362395bb5df00fce1b038899"
   },
-  "producer": "dynamic-workflow-designer",
+  "producer": "keelplane",
   "raw_kind": "workflow-output",
-  "rendered_blueprint": "# border-small-migration\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (Twelve call sites in one package need bounded implementation routing, not dynamic workflow design.)\nPatterns: none\n\n## First Slice\n\nUse workflow-router instead of dynamic-workflow-designer for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- migration source edit: stop before migration source edits and ask for approval\n",
-  "skill_sha256": "835ad8fef13ecc473ea88de6d8820bc6e6b3dd2287522ab49bb811dd5f38dbda",
+  "rendered_blueprint": "# border-small-migration\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (Twelve call sites in one package need bounded implementation routing, not dynamic workflow design.)\nPatterns: none\n\n## First Slice\n\nUse workflow-router instead of keelplane for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- migration source edit: stop before migration source edits and ask for approval\n",
+  "skill_sha256": "27261b50e6811ad03073544983f5e4b4905a9c9035f2d1b8f044a4ee24b49798",
   "source_prompt": "Create a migration plan for 12 call sites in one package.",
   "workflow_plan": {
     "activation": {
@@ -30,7 +30,7 @@
       "max_rounds": 1,
       "time_box": "one direct response or routed workflow"
     },
-    "created_by": "dynamic-workflow-designer",
+    "created_by": "keelplane",
     "execution_path": {
       "consumer": "human",
       "first_slice": {
@@ -44,7 +44,7 @@
         "inputs": [
           "original prompt"
         ],
-        "instruction": "Use workflow-router instead of dynamic-workflow-designer for this request."
+        "instruction": "Use workflow-router instead of keelplane for this request."
       },
       "mode": "direct-codex"
     },

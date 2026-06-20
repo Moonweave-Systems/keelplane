@@ -21,7 +21,7 @@
     "max_rounds": 2,
     "time_box": "one planning session"
   },
-  "created_by": "dynamic-workflow-designer",
+  "created_by": "keelplane",
   "execution_path": {
     "consumer": "codex-agent",
     "first_slice": {

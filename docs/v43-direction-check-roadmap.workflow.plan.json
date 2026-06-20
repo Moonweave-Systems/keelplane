@@ -1,7 +1,7 @@
 {
   "schema_version": "0.5",
   "plan_id": "v43-direction-check-roadmap",
-  "created_by": "dynamic-workflow-designer",
+  "created_by": "keelplane",
   "source_prompt": "Check whether the current DWM direction is meaningful, then write the next roadmap and docs.",
   "activation": {
     "decision": "activate",

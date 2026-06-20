@@ -1,7 +1,7 @@
 {
   "schema_version": "0.5",
   "plan_id": "v73-large-workflow-control",
-  "created_by": "dynamic-workflow-designer",
+  "created_by": "keelplane",
   "source_prompt": "Write the large spec for direction fidelity, large-work decomposition, execution quality, efficiency, recovery ability, and evidence quality, then carry the workflow through unless a real human gate is reached.",
   "activation": {
     "decision": "activate",

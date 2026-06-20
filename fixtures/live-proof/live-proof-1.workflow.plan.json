@@ -21,7 +21,7 @@
     "max_rounds": 1,
     "time_box": "120 seconds"
   },
-  "created_by": "dynamic-workflow-designer",
+  "created_by": "keelplane",
   "execution_path": {
     "consumer": "codex-agent",
     "first_slice": {

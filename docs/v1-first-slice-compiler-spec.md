@@ -5,7 +5,7 @@ Date: 2026-06-14
 
 ## Purpose
 
-V0.5 proved that `dynamic-workflow-designer` can emit deterministic,
+V0.5 proved that `keelplane` can emit deterministic,
 schema-valid workflow plans and evaluate them against a tracked fixture corpus.
 V1 should close the next practical gap without pretending to be a full workflow
 runtime: compile an activated `workflow.plan.json` into one inspectable
@@ -21,7 +21,7 @@ belong to V2 after the file contract is proven.
 | Layer | Responsibility | V1 stance |
 | --- | --- | --- |
 | `workflow-router` | choose the smallest suitable workflow | unchanged |
-| `dynamic-workflow-designer` | design phases, workers, gates, handoffs | source of `workflow.plan.json` |
+| `keelplane` | design phases, workers, gates, handoffs | source of `workflow.plan.json` |
 | V1 first-slice compiler | materialize the first inspectable packet and safety files | implement now |
 | Future runtime | durable orchestration, packet advancement, monitoring, subagent scheduling | defer |
 

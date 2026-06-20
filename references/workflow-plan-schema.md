@@ -5,7 +5,7 @@ Canonical artifact: `workflow.plan.json`
 Schema version: `0.5`
 
 This reference defines the file contract emitted by substantial
-`dynamic-workflow-designer` outputs and consumed by
+`keelplane` outputs and consumed by
 `scripts/evaluate_plan.py`. JSON is the source of truth. A rendered blueprint is
 derived from the same data and must not add requirements that are absent from
 the JSON.
@@ -16,7 +16,7 @@ Required top-level fields:
 
 - `schema_version`: must be `"0.5"`.
 - `plan_id`: stable fixture or run identifier.
-- `created_by`: must be `"dynamic-workflow-designer"` for candidate plans.
+- `created_by`: must be `"keelplane"` for candidate plans.
 - `source_prompt`: original user prompt.
 - `activation`: activation or downgrade decision.
 - `objective`: desired outcome.
@@ -62,7 +62,7 @@ Downgrade artifacts must name a downgrade target, keep `parallelism.shape` as
 `"none"`, use empty `workers`, `phases`, `handoffs`, and
 `resume.restart_points` lists, set `execution_path.mode` to `direct-codex`, set
 `execution_path.consumer` to `human`, and use this exact first-slice instruction:
-`Use <downgrade_target> instead of dynamic-workflow-designer for this request.`
+`Use <downgrade_target> instead of keelplane for this request.`
 
 ## Surfaces
 

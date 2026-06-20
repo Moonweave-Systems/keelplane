@@ -13,7 +13,7 @@
     "max_rounds": 1,
     "time_box": "one small task"
   },
-  "created_by": "dynamic-workflow-designer",
+  "created_by": "keelplane",
   "execution_path": {
     "consumer": "human",
     "first_slice": {
@@ -25,12 +25,12 @@
       "inputs": [
         "workflow.plan.json"
       ],
-      "instruction": "Use direct-codex instead of dynamic-workflow-designer for this request."
+      "instruction": "Use direct-codex instead of keelplane for this request."
     },
     "mode": "direct-codex"
   },
   "handoffs": [],
-  "objective": "Route a small task away from dynamic-workflow-designer.",
+  "objective": "Route a small task away from keelplane.",
   "parallelism": {
     "barriers": [],
     "concurrency_cap": 1,

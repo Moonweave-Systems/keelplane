@@ -8,7 +8,7 @@
   "completion_check": "no dynamic workflow artifact is needed",
   "consumer_verdict": "pass",
   "expected_output": "bounded response or routed workflow decision",
-  "first_slice": "Use direct-codex instead of dynamic-workflow-designer for this request.",
+  "first_slice": "Use direct-codex instead of keelplane for this request.",
   "fixture_id": "neg-review-small-diff",
   "forbidden_actions_identified": [
     "spawning agents",
@@ -23,16 +23,16 @@
       "completion_check": "completion_check: no dynamic workflow artifact is needed",
       "downgrade_target": "downgrade_target: direct-codex",
       "expected_output": "expected_output: bounded response or routed workflow decision",
-      "first_slice": "first_slice: Use direct-codex instead of dynamic-workflow-designer for this request.",
+      "first_slice": "first_slice: Use direct-codex instead of keelplane for this request.",
       "forbidden_actions": "forbidden_actions: spawning agents; editing files; external messages",
       "inputs_needed": "inputs_needed: original prompt",
       "risk_gates": "risk_gates: external review publication",
       "safe_defaults": "safe_defaults: external review publication -> stop before external review publication and ask for approval"
     },
     "packet_sha256": {
-      "blueprint.md": "8d67f1e018e9fa760b3cd345399b07fd6c63a76d374e995d52d5886884cd6d62",
-      "original prompt": "d1189e985fe1ce7caa2c8f129563dc60e63173d064922860f812eb9a424a1e66",
-      "workflow.plan.json": "2f94620c6214a52cf65edeb287eabeee08c0f8d35b0f0a3ce47eb416643b7686"
+      "workflow.plan.json": "69229e4b6f4ddf34f299b72108f586006f5975854c3952b3b8b3c84a5888cce6",
+      "blueprint.md": "77cdee48375b3491daf01302a94eabba554e1695919f991a9d048ca5f7251766",
+      "original prompt": "d1189e985fe1ce7caa2c8f129563dc60e63173d064922860f812eb9a424a1e66"
     },
     "reviewer_note": "Blinded sample reviewer identified the first slice, required inputs, forbidden actions, gates, and safe defaults from the supplied packet only.",
     "run_kind": "blinded-sample-review",
@@ -41,7 +41,7 @@
       "blueprint.md",
       "original prompt"
     ],
-    "transcript_excerpt": "Consumer selected first slice: Use direct-codex instead of dynamic-workflow-designer for this request."
+    "transcript_excerpt": "Consumer selected first slice: Use direct-codex instead of keelplane for this request."
   },
   "received_spec_or_expected_answer": false,
   "risk_gates_identified": [

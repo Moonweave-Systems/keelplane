@@ -3,16 +3,16 @@
 Status: implemented first Keelplane brand decision in `README.md`,
 `docs/dwm-branding.md`, and `assets/dwm-hero.svg`.
 
-V86 sets the public product brand to **Keelplane** while preserving DWM Core as
-the internal deterministic engine name and `dynamic-workflow-designer` as the
-installed Codex skill compatibility name.
+V86 set the public product brand to **Keelplane** while preserving DWM Core as
+the internal deterministic engine name. The deliberate migration gate has now
+made `keelplane` the installed Codex skill name.
 
 ## Decision
 
 - Public product brand: `Keelplane`.
 - Internal engine name: `DWM Core`.
 - Expanded internal name: `Deterministic Workflow Machine`.
-- Compatibility skill name: `dynamic-workflow-designer`.
+- Skill name: `keelplane`.
 - Repository slug: `dwm` until a dedicated migration gate changes it.
 
 ## Rationale
@@ -27,7 +27,7 @@ less collision risk for `keelplane` than for `keel`, `helm`, `vector`,
 
 - Do not rename CLI commands, fixture IDs, schema fields, or generated artifact
   names in this slice.
-- Do not rename the installed skill entrypoint.
+- Do not rename the `dwm_*.py` file prefix in this slice.
 - Do not move the GitHub repository or package slugs.
 - Do not claim autonomous execution, agent superiority, or benchmark uplift
   from a branding change.

@@ -5,13 +5,13 @@ Status: implemented brand boundary audit in `scripts/dwm_brand_boundary_audit.py
 ## Objective
 
 Protect the V86 Keelplane brand decision from drifting back into ambiguous
-public DWM naming while preserving compatibility names that are still true.
+public DWM naming while enforcing the single current skill identity.
 
 ## Product Boundary
 
 - Public product brand: `Keelplane`.
 - Internal engine name: `DWM Core`.
-- Compatibility skill name: `dynamic-workflow-designer`.
+- Skill name: `keelplane`.
 - Repository slug remains `dwm`.
 - Existing CLI commands and artifact paths are not renamed in V87.
 
@@ -24,7 +24,7 @@ It blocks when:
 
 - README does not lead with `# Keelplane`.
 - Public docs regress to `# DWM` or `# DWM Branding` headings.
-- The compatibility skill name is dropped from the brand boundary.
+- The skill name is dropped from the brand boundary.
 - The internal `DWM Core` engine name is dropped.
 - The copy claims autonomous execution or live command execution.
 
@@ -38,4 +38,3 @@ commands, does not create worktrees, and does not claim autonomous execution.
 - `python scripts/dwm_brand_boundary_audit.py --self-test`
 - `python scripts/dwm_brand_boundary_audit.py --manifest fixtures/v87/manifest.json --out out/brand-boundary-audits/v87-final`
 - `python scripts/dwm_brand_boundary_audit.py audit --out out/brand-boundary-audits/v87-canonical`
-

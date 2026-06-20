@@ -17,8 +17,9 @@ packets are explicit, hashed, reviewable, resumable, and falsifiable.
 ## Product Position
 
 Keelplane should become the control-plane for large Codex workflows. DWM Core
-remains the internal deterministic engine, and the legacy skill entrypoint
-remains `dynamic-workflow-designer`.
+remains the internal deterministic engine, and the skill name is now
+`keelplane`. The `dwm_*.py` file prefix and GitHub repository slug remain
+legacy/internal and intentionally deferred.
 
 | Layer | Responsibility | Repo stance |
 | --- | --- | --- |

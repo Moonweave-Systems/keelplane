@@ -23,7 +23,7 @@ Manifest result:
 Canonical result:
 
 - `decision`: `installed_copy_synced`
-- `~/.codex/skills/dynamic-workflow-designer/SKILL.md` resolves through a symlink to the repo `SKILL.md`
+- `~/.codex/skills/keelplane/SKILL.md` resolves through a symlink to the repo `SKILL.md`
 - stale copied installs would be `blocked`
 
 This does not claim automatic package update behavior. It only proves the

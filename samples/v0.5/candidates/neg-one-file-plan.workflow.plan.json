@@ -18,7 +18,7 @@
     "max_rounds": 1,
     "time_box": "one direct response or routed workflow"
   },
-  "created_by": "dynamic-workflow-designer",
+  "created_by": "keelplane",
   "execution_path": {
     "consumer": "human",
     "first_slice": {
@@ -32,7 +32,7 @@
       "inputs": [
         "original prompt"
       ],
-      "instruction": "Use simple-plan instead of dynamic-workflow-designer for this request."
+      "instruction": "Use simple-plan instead of keelplane for this request."
     },
     "mode": "direct-codex"
   },

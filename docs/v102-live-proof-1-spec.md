@@ -25,7 +25,7 @@ The meta layer (V94-V101) is frozen for this slice. V102 must not extend it.
 ## Product Position
 
 - `workflow-router`: route ordinary broad work.
-- `dynamic-workflow-designer` / DWM Core: design and compile bounded workflow
+- `keelplane` / DWM Core: design and compile bounded workflow
   slices into inspectable packets.
 - V0.5-V3: schema, compiler, one-packet execution, review/repair, runtime entry,
   proven only against fixture and local-shell backends.

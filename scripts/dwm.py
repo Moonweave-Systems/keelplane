@@ -906,10 +906,10 @@ def create_shell_request(objective: str, out_dir: Path, *, mode: str) -> dict[st
         "objective": objective,
         "decision": "blocked-before-live-execution" if live_blocked else "plan-only",
         "execution_path": "plan-only",
-        "safe_default": "inspect this artifact, then invoke $dynamic-workflow-designer or an approved adapter command",
+        "safe_default": "inspect this artifact, then invoke $keelplane or an approved adapter command",
         "blocked_by": ["ERR_DWM_SHELL_LIVE_EXECUTION_BLOCKED"] if live_blocked else [],
         "recommended_commands": [
-            f"Use $dynamic-workflow-designer to design a workflow for: {objective}",
+            f"Use $keelplane to design a workflow for: {objective}",
             f"python scripts/dwm.py resume --run {rel(out_dir)} --json",
         ],
     }
@@ -983,7 +983,7 @@ def render_shell_resume(status: dict[str, Any]) -> str:
         lines.extend(["Blocked by:", *[f"- `{item}`" for item in blocked], ""])
     lines.extend(
         [
-            "Safe next action: inspect the request artifact and invoke `$dynamic-workflow-designer` for a real workflow design.",
+            "Safe next action: inspect the request artifact and invoke `$keelplane` for a real workflow design.",
             "",
         ]
     )

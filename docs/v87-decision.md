@@ -15,6 +15,6 @@ Canonical audit:
 - `decision`: `brand_boundary_ready`
 - `public_product_brand`: `Keelplane`
 - `internal_engine_name`: `DWM Core`
-- `compatibility_skill_name`: `dynamic-workflow-designer`
+- `skill_name`: `keelplane`
 
 This does not rename CLI commands, does not rename repository paths, and does not claim autonomous execution.

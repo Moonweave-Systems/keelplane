@@ -8,7 +8,7 @@
         "label": "active",
         "path": "SKILL.md",
         "exists": true,
-        "content_hash": "835ad8fef13ecc473ea88de6d8820bc6e6b3dd2287522ab49bb811dd5f38dbda",
+        "content_hash": "27261b50e6811ad03073544983f5e4b4905a9c9035f2d1b8f044a4ee24b49798",
         "is_repo_skill": true
       },
       "installed_surfaces": [],
@@ -21,15 +21,15 @@
         "label": "active",
         "path": "SKILL.md",
         "exists": true,
-        "content_hash": "835ad8fef13ecc473ea88de6d8820bc6e6b3dd2287522ab49bb811dd5f38dbda",
+        "content_hash": "27261b50e6811ad03073544983f5e4b4905a9c9035f2d1b8f044a4ee24b49798",
         "is_repo_skill": true
       },
       "installed_surfaces": [
         {
           "label": "installed-copy",
-          "path": "~/.codex/skills/dynamic-workflow-designer/SKILL.md",
+          "path": "~/.codex/skills/keelplane/SKILL.md",
           "exists": true,
-          "content_hash": "835ad8fef13ecc473ea88de6d8820bc6e6b3dd2287522ab49bb811dd5f38dbda",
+          "content_hash": "27261b50e6811ad03073544983f5e4b4905a9c9035f2d1b8f044a4ee24b49798",
           "is_repo_skill": false
         }
       ],
@@ -42,13 +42,13 @@
         "label": "active",
         "path": "SKILL.md",
         "exists": true,
-        "content_hash": "835ad8fef13ecc473ea88de6d8820bc6e6b3dd2287522ab49bb811dd5f38dbda",
+        "content_hash": "27261b50e6811ad03073544983f5e4b4905a9c9035f2d1b8f044a4ee24b49798",
         "is_repo_skill": true
       },
       "installed_surfaces": [
         {
           "label": "installed-copy",
-          "path": "~/.codex/skills/dynamic-workflow-designer/SKILL.md",
+          "path": "~/.codex/skills/keelplane/SKILL.md",
           "exists": true,
           "content_hash": "stale-copy-hash",
           "is_repo_skill": false

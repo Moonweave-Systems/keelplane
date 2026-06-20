@@ -134,12 +134,12 @@ promotion requires real release history.
   `workflow-activation.json` and `workflow-activation.md` to decide whether the
   next safe action is workflow design.
 - V86: `docs/v86-keelplane-brand-spec.md` set **Keelplane** as the public
-  product brand while preserving DWM Core and `dynamic-workflow-designer`
-  compatibility.
+  product brand while preserving DWM Core and preparing the later `keelplane`
+  skill-name migration.
 - V87: `docs/v87-brand-boundary-audit-spec.md` added
   `brand-boundary-audit.json` and `brand-boundary-audit.md` to keep public
-  Keelplane naming, DWM Core internals, and `dynamic-workflow-designer`
-  compatibility from drifting.
+  Keelplane naming, DWM Core internals, and the skill-name boundary from
+  drifting.
 - V88: `docs/v88-roadmap-reconciliation-spec.md` added
   `roadmap-reconciliation.json` and `roadmap-reconciliation.md` to keep
   `docs/spec.md`, `docs/automation-roadmap.md`, and this release history

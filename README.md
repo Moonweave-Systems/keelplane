@@ -13,8 +13,8 @@
 records every important decision as an artifact and refuses to blur planned
 work with executed work.
 
-The installed skill remains named `dynamic-workflow-designer` for compatibility,
-and the internal engine remains **DWM Core**: the Deterministic Workflow
+The installed skill is named `keelplane`, and the internal engine remains
+**DWM Core**: the Deterministic Workflow
 Machine. The product surface is broader than one skill: workflow design, packet
 compilation, bounded runner gates, review/repair evidence, live scoring
 artifacts, adapter parity checks, daily operator state, and release candidate
@@ -44,7 +44,7 @@ or incomplete demo artifacts instead of silently refreshing them.
 Then use the skill when a task is too large or risky for one normal agent turn:
 
 ```text
-Use $dynamic-workflow-designer to design a workflow for auditing every route for missing authorization.
+Use $keelplane to design a workflow for auditing every route for missing authorization.
 ```
 
 ## Normal Loop

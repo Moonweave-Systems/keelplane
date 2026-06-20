@@ -12,8 +12,7 @@ artifact contracts.
 - `docs/dwm-branding.md` defines `Keelplane` as the product brand and `DWM Core`
   as the internal deterministic engine.
 - `assets/dwm-hero.svg` names `Keelplane` and `Powered by DWM Core`.
-- Compatibility remains explicit: `dynamic-workflow-designer` is still the
-  installed Codex skill name.
+- The installed Codex skill name is `keelplane`.
 
 This does not claim autonomous execution, benchmark improvement, or agent
 superiority. It is a branding alignment slice only.

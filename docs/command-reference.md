@@ -222,7 +222,7 @@ Release artifacts include `operator-loop.json`, `today.md`,
 | `scripts/dwm_runner_receipt_dry_run.py` | Fixture-only runner receipt dry-run gate with `executed: false`. |
 | `scripts/dwm_installed_surface_audit.py` | Active local skill path and copied install drift audit. |
 | `scripts/dwm_workflow_activation.py` | Next workflow activation gate from install, receipt, and completed-run evidence. |
-| `scripts/dwm_brand_boundary_audit.py` | Public Keelplane, DWM Core, and compatibility name boundary audit. |
+| `scripts/dwm_brand_boundary_audit.py` | Public Keelplane, DWM Core, and skill-name boundary audit. |
 | `scripts/dwm_roadmap_reconciliation.py` | Spec, roadmap, and release history alignment audit. |
 | `scripts/dwm_evidence_oracle.py` | Read-only artifact assertion oracle for claim-level evidence. |
 | `scripts/dwm_workflow_narrative.py` | Artifact-backed Keelplane Control Deck and workflow narrative renderer. |

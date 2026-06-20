@@ -25,6 +25,8 @@ AUDIT_VERSION = "87.0.0"
 AUDIT_ROOT = ROOT / "out" / "brand-boundary-audits"
 SENTINEL = ".dwm_brand_boundary_audit-owned.json"
 DEFAULT_SURFACES = {
+    "SKILL.md": ROOT / "SKILL.md",
+    "agents/openai.yaml": ROOT / "agents" / "openai.yaml",
     "README.md": ROOT / "README.md",
     "docs/dwm-branding.md": ROOT / "docs" / "dwm-branding.md",
     "docs/command-reference.md": ROOT / "docs" / "command-reference.md",
@@ -173,15 +175,25 @@ def audit_surfaces(surfaces: dict[str, str]) -> dict[str, Any]:
     readme = surfaces.get("README.md", "")
     if first_nonempty_line(readme).lower() != "# keelplane":
         add_missing(blockers, "README.md", "# Keelplane", code="ERR_BRAND_BOUNDARY_PUBLIC_HEADING_INVALID")
-    for term in ("DWM Core", "dynamic-workflow-designer"):
+    for term in ("DWM Core", "skill is named `keelplane`"):
         if term.lower() not in lower(readme):
             add_missing(blockers, "README.md", term)
+
+    skill = surfaces.get("SKILL.md", "")
+    for term in ("name: keelplane", "Keelplane skill entrypoint", "dynamic workflows"):
+        if term.lower() not in lower(skill):
+            add_missing(blockers, "SKILL.md", term)
+
+    agent_config = surfaces.get("agents/openai.yaml", "")
+    for term in ('display_name: "Keelplane"', "$keelplane"):
+        if term.lower() not in lower(agent_config):
+            add_missing(blockers, "agents/openai.yaml", term)
 
     branding = surfaces.get("docs/dwm-branding.md", "")
     for term in (
         "Keelplane is the public product brand",
         "DWM Core stands for",
-        "dynamic-workflow-designer",
+        "Codex skill name is `keelplane`",
         "repository slug remains `dwm`",
         "Do not claim autonomous execution",
     ):
@@ -212,7 +224,7 @@ def audit_surfaces(surfaces: dict[str, str]) -> dict[str, Any]:
         "policy": {
             "public_product_brand": "Keelplane",
             "internal_engine_name": "DWM Core",
-            "compatibility_skill_name": "dynamic-workflow-designer",
+            "skill_name": "keelplane",
             "repository_slug": "dwm",
             "executes_commands": False,
         },
@@ -227,7 +239,7 @@ def render_markdown(audit: dict[str, Any]) -> str:
         f"- Decision: `{audit['decision']}`",
         "- Public product brand: `Keelplane`",
         "- Internal engine name: `DWM Core`",
-        "- Compatibility skill name: `dynamic-workflow-designer`",
+        "- Skill name: `keelplane`",
         f"- Executes commands: `{audit['policy']['executes_commands']}`",
         "",
         "## Surfaces",
@@ -315,8 +327,10 @@ def run_manifest(manifest_path: Path, out_dir: Path) -> dict[str, Any]:
 
 def good_surfaces() -> dict[str, str]:
     return {
-        "README.md": "# Keelplane\n\nKeelplane uses DWM Core and the dynamic-workflow-designer skill.\n",
-        "docs/dwm-branding.md": "# Keelplane Branding\n\nKeelplane is the public product brand.\nDWM Core stands for Deterministic Workflow Machine.\nThe compatibility skill name remains dynamic-workflow-designer.\nThe repository slug remains `dwm`.\nDo not claim autonomous execution.\n",
+        "SKILL.md": "---\nname: keelplane\ndescription: Keelplane skill entrypoint. Use when a user asks for dynamic workflows.\n---\n# Keelplane Skill Entrypoint\n",
+        "agents/openai.yaml": 'interface:\n  display_name: "Keelplane"\n  default_prompt: "Use $keelplane to design a workflow."\n',
+        "README.md": "# Keelplane\n\nKeelplane uses DWM Core and the skill is named `keelplane`.\n",
+        "docs/dwm-branding.md": "# Keelplane Branding\n\nKeelplane is the public product brand.\nDWM Core stands for Deterministic Workflow Machine.\nThe Codex skill name is `keelplane`.\nThe repository slug remains `dwm`.\nDo not claim autonomous execution.\n",
         "docs/command-reference.md": "# Keelplane Command Reference\n",
         "docs/release-history.md": "# Keelplane Release History\n\n- V86: docs/v86-keelplane-brand-spec.md\n",
         "assets/dwm-hero.svg": "<svg><title>Keelplane</title><text>Powered by DWM Core</text></svg>\n",
