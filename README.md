@@ -111,6 +111,7 @@ python scripts/dwm.py commands --kind release
 | Release candidate | Implemented from daily operator and adapter parity evidence. |
 | Benchmark graph | Source-bound graph artifacts exist; public trend promotion requires real release history. |
 | Live n=1 execution | live execution n=1 passed; V103 comparison live run remains opt-in. |
+| Autonomous loop n=1 | autonomous multi-phase loop live-verified (clean run `verified-complete`, fault run `failed`); see `docs/releases/keelplane-autonomous-loop-1.md`. Proves loop control, not codex reliability; no superiority/autonomy claim. |
 | Direct-agent superiority | Not claimed. V103 records evidence richness only, not pass-rate, speed, or cost superiority. |
 | Unrestricted autonomy | Not claimed. Risky work remains gate-bound by default. |
 
