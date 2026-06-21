@@ -308,6 +308,41 @@ def has_required(obj: Any, required_keys: list[str] | None) -> bool:
     return all(key in obj for key in (required_keys or []))
 
 
+# OpenAI strict structured-outputs (what `codex exec --output-schema` enforces) rejects
+# a schema unless every object sets additionalProperties:false AND lists every property
+# in `required`, and it does not accept validation keywords like minItems. The .mjs-parity
+# schemas above are intentionally permissive (Workflow's schema layer is laxer); strictify
+# them only when handing the file to codex, so the source schemas stay readable.
+_STRICT_DROP_KEYS = {
+    "minItems",
+    "maxItems",
+    "minLength",
+    "maxLength",
+    "minimum",
+    "maximum",
+    "pattern",
+    "format",
+    "default",
+    "uniqueItems",
+}
+
+
+def strictify_schema(node: Any) -> Any:
+    if isinstance(node, dict):
+        out: dict[str, Any] = {
+            key: strictify_schema(value)
+            for key, value in node.items()
+            if key not in _STRICT_DROP_KEYS
+        }
+        if out.get("type") == "object" and isinstance(out.get("properties"), dict):
+            out["additionalProperties"] = False
+            out["required"] = list(out["properties"].keys())
+        return out
+    if isinstance(node, list):
+        return [strictify_schema(item) for item in node]
+    return node
+
+
 def _codex_phase(
     prompt: str,
     schema: dict[str, Any] | None,
@@ -326,7 +361,7 @@ def _codex_phase(
     config: dict[str, Any] = {"mode": "installed-codex", "sandbox": "read-only"}
     if schema is not None:
         schema_path = phase_dir / "schema.json"
-        schema_path.write_text(json.dumps(schema))
+        schema_path.write_text(json.dumps(strictify_schema(schema)))
         config["output_schema"] = str(schema_path)
     argv, expected_exit, _mode, timeout = parse_codex_cli(
         config, attempt_dir=phase_dir, wt_path=wt_path
@@ -543,9 +578,40 @@ def orchestrate(
 # ---- self-test (fixture-backed end-to-end) ----------------------------------
 
 
+def _strict_violations(node: Any, path: str = "$") -> list[str]:
+    """Every object node a codex --output-schema sees must set additionalProperties:false
+    and list all properties in `required`, with no unsupported validation keywords left.
+    A live codex run 400s on any violation (slice 4 finding), so guard it without codex."""
+    issues: list[str] = []
+    if isinstance(node, dict):
+        leftover = set(node) & _STRICT_DROP_KEYS
+        if leftover:
+            issues.append(f"{path}: unsupported keyword(s) {sorted(leftover)}")
+        if node.get("type") == "object" and isinstance(node.get("properties"), dict):
+            if node.get("additionalProperties") is not False:
+                issues.append(f"{path}: additionalProperties must be false")
+            if sorted(node.get("required", [])) != sorted(node["properties"]):
+                issues.append(f"{path}: required must list every property")
+        for key, value in node.items():
+            issues += _strict_violations(value, f"{path}.{key}")
+    elif isinstance(node, list):
+        for index, item in enumerate(node):
+            issues += _strict_violations(item, f"{path}[{index}]")
+    return issues
+
+
 def self_test() -> None:
-    cases = json.loads(CASES_PATH.read_text())["cases"]
     failures: list[str] = []
+    for name, schema in (
+        ("angles", ANGLES_SCHEMA),
+        ("findings", FINDINGS_SCHEMA),
+        ("draft", DRAFT_SCHEMA),
+        ("verdict_batch", VERDICT_BATCH_SCHEMA),
+    ):
+        for issue in _strict_violations(strictify_schema(schema)):
+            failures.append(f"strictify[{name}]: {issue}")
+
+    cases = json.loads(CASES_PATH.read_text())["cases"]
     for case in cases:
         result = orchestrate(
             case["question"],
@@ -604,7 +670,9 @@ def self_test() -> None:
         for line in failures:
             print(f"FAIL: {line}", file=sys.stderr)
         raise SystemExit(f"research-codex self-test: {len(failures)} failure(s)")
-    print(f"research-codex self-test: pass ({len(cases)} case(s))")
+    print(
+        f"research-codex self-test: pass (4 schemas strict, {len(cases)} e2e case(s))"
+    )
 
 
 # ---- CLI --------------------------------------------------------------------
