@@ -248,9 +248,11 @@ ${JSON.stringify(ledger, null, 2)}
 Write the final document in Markdown:
 - Build the argument on CONFIRMED claims (cite their evidence locator inline).
 - REMOVE or rewrite any section that depended on a refuted claim; do not silently keep it.
-- Add a short "Unverified / open" section listing unverified claims and open questions
-  so the reader knows the limits of what was checked.
-- End with a "Verification summary" line: counts of confirmed / refuted / unverified.
+- Add a short "Unverified / open" section listing (i) unverified claims, (ii) any
+  UNCOVERED claims (ledger.uncovered -- no verdict because a verifier batch failed
+  or skipped them; name their ids/statements, they were NOT checked), and (iii) open
+  questions. Do not present uncovered claims as established.
+- End with a "Verification summary" line: counts of confirmed / refuted / unverified / uncovered.
 Return the Markdown document only -- no preamble.`
 
 // ---- orchestration --------------------------------------------------------
@@ -288,27 +290,40 @@ const chunk = (arr, size) => {
   return out
 }
 const claimBatches = chunk(claims, verifyBatchSize)
-const batchResults = await parallel(
-  claimBatches.map((batch, i) => () =>
-    agent(verifyBatchPrompt(batch), { schema: VERDICT_BATCH_SCHEMA, label: `verify:batch-${i + 1}`, phase: 'Verify' })),
-)
+const runBatch = (batch, i, suffix) =>
+  agent(verifyBatchPrompt(batch), { schema: VERDICT_BATCH_SCHEMA, label: `verify:batch-${i + 1}${suffix}`, phase: 'Verify' })
+const batchResults = await parallel(claimBatches.map((batch, i) => () => runBatch(batch, i, '')))
+// Retry batches that failed (e.g. a transient API error) ONCE, so one blip does not
+// drop a whole batch of claims unverified.
+const failedIdx = batchResults.map((r, i) => (r ? -1 : i)).filter((i) => i >= 0)
+if (failedIdx.length) {
+  log(`retrying ${failedIdx.length} failed verify batch(es) once`)
+  const retried = await parallel(failedIdx.map((i) => () => runBatch(claimBatches[i], i, '-retry')))
+  failedIdx.forEach((origIdx, k) => {
+    if (retried[k]) batchResults[origIdx] = retried[k]
+  })
+}
 const droppedBatches = batchResults.filter((r) => !r).length
 if (droppedBatches) {
-  // A dropped batch loses its claims from the ledger -- surface it, never treat
-  // an unverified claim as confirmed by omission.
-  log(`WARNING: ${droppedBatches}/${claimBatches.length} verify batch(es) failed -- their claims are absent from the ledger, not silently confirmed`)
+  // A dropped batch loses its claims -- surface it, never treat an unverified claim
+  // as confirmed by omission.
+  log(`WARNING: ${droppedBatches}/${claimBatches.length} verify batch(es) still failed after retry -- their claims stay UNVERIFIED, not silently confirmed`)
 }
 const verdicts = batchResults.filter(Boolean).flatMap((r) => r.verdicts || [])
 
 const confirmed = verdicts.filter((v) => v.verdict === 'confirmed')
 const refuted = verdicts.filter((v) => v.verdict === 'refuted')
 const unverified = verdicts.filter((v) => v.verdict === 'unverified')
-log(`verify: ${confirmed.length} confirmed, ${refuted.length} refuted, ${unverified.length} unverified`)
+// Claims with NO verdict at all (dropped batch, or a verifier that skipped them):
+// a real coverage gap that must be disclosed downstream, not hidden.
+const verdictIds = new Set(verdicts.map((v) => v.claim_id))
+const uncovered = claims.filter((c) => !verdictIds.has(c.id))
+log(`verify: ${confirmed.length} confirmed, ${refuted.length} refuted, ${unverified.length} unverified, ${uncovered.length} uncovered (no verdict)`)
 
 phase('Compose')
-const doc = await agent(composePrompt(draft, { confirmed, refuted, unverified }), {
+const doc = await agent(composePrompt(draft, { confirmed, refuted, unverified, uncovered }), {
   label: 'compose',
   phase: 'Compose',
 })
 
-return { doc, confirmed, refuted, unverified, claimCount: claims.length, angles }
+return { doc, confirmed, refuted, unverified, uncovered, claimCount: claims.length, angles }

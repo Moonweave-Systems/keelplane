@@ -55,8 +55,9 @@ to `outPath`.
   to de-duplicate claims across angles.
 - Verify batches claims (`verifyBatchSize`, default 8): each verifier reads the
   sources once and judges its batch, instead of one agent per claim. A live audit
-  of 83 claims ran ~20 agents batched vs. ~92 unbatched. A failed batch is logged,
-  never silently treated as confirmed.
+  of 83 claims ran ~20 agents batched vs. ~92 unbatched. A failed batch is retried
+  once; any claim still left without a verdict is returned as `uncovered` and the
+  composed doc discloses it -- never silently treated as confirmed.
 
 ### Validation
 
