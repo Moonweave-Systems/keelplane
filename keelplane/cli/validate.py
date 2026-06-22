@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -26,7 +28,7 @@ def run(args: argparse.Namespace) -> None:
 
     try:
         plan = load_plan(str(path))
-    except Exception as e:
+    except (FileNotFoundError, json.JSONDecodeError) as e:
         print(f"Error: cannot load plan: {e}")
         sys.exit(1)
 
@@ -37,7 +39,6 @@ def run(args: argparse.Namespace) -> None:
 
 def _self_test() -> None:
     """Run a basic self-test."""
-    import sys
     print("keelplane validate --self-test")
     tests = 0
     passed = 0
@@ -93,12 +94,23 @@ def _self_test() -> None:
 
     print(f"\nSelf-test: {passed}/{tests} passed")
     if passed == tests:
-        # also run the existing evaluate_plan self-test
+        root = Path(__file__).resolve().parents[2]
+        script = root / "scripts" / "evaluate_plan.py"
+        if not script.is_file():
+            strict_errors = validate_plan_strict(valid_plan)
+            if any("activated plans need assumptions" in e for e in strict_errors):
+                print("  embedded strict validator: PASS")
+            else:
+                print(f"  embedded strict validator: FAIL ({strict_errors})")
+                sys.exit(1)
+            sys.exit(0)
+
         print("\nRunning evaluate_plan.py --self-test...")
-        import subprocess
         result = subprocess.run(
-            [sys.executable, "-m", "evaluate_plan", "--self-test"],
-            capture_output=True, text=True
+            [sys.executable, str(script), "--self-test"],
+            cwd=str(root),
+            capture_output=True,
+            text=True,
         )
         if result.returncode == 0:
             print("  evaluate_plan --self-test: PASS")
@@ -106,4 +118,7 @@ def _self_test() -> None:
             print(f"  evaluate_plan --self-test: FAIL (exit {result.returncode})")
             if result.stdout:
                 print(result.stdout[-500:])
+            if result.stderr:
+                print(result.stderr[-500:], file=sys.stderr)
+            sys.exit(result.returncode)
     sys.exit(0 if passed == tests else 1)

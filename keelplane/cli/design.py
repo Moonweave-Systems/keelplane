@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from keelplane.cli.design_contract import apply_minimal_contract
 from keelplane.core.plan_schema import validate_plan_strict
 
 # Reusable workflow templates indexed by detected pattern.
@@ -37,11 +38,11 @@ _PLAN_TEMPLATES: dict[str, dict[str, Any]] = {
         "phases": [],
         "workers": [],
         "handoffs": [],
-        "parallelism": {"shape": "none", "cap": 1, "barriers": [], "fan_in_rule": None},
+        "parallelism": {"shape": "none", "concurrency_cap": 1, "barriers": [], "fan_in_rule": "single downstream review"},
         "verification": [],
         "risk_gates": [],
-        "budget": {"max_agents": 3, "max_rounds": 5, "max_retries": 2},
-        "resume": {"cached_outputs": [], "invalidation_rules": []},
+        "budget": {"max_agents": 3, "max_rounds": 5, "max_retries": 2, "time_box": "30m", "file_touch_limit": "5 files"},
+        "resume": {"cacheable_outputs": [], "invalidators": [], "restart_points": []},
         "execution_path": {
             "mode": "plugin",
             "first_slice": {
@@ -72,11 +73,11 @@ _PLAN_TEMPLATES: dict[str, dict[str, Any]] = {
         "phases": [],
         "workers": [],
         "handoffs": [],
-        "parallelism": {"shape": "fan-out-fan-in", "cap": 3, "barriers": ["research-complete"], "fan_in_rule": "all"},
+        "parallelism": {"shape": "fan-out-fan-in", "concurrency_cap": 3, "barriers": ["research-complete"], "fan_in_rule": "all research findings reconcile before review"},
         "verification": [],
         "risk_gates": [],
-        "budget": {"max_agents": 5, "max_rounds": 3, "max_retries": 1},
-        "resume": {"cached_outputs": ["research-findings"], "invalidation_rules": ["source-change"]},
+        "budget": {"max_agents": 5, "max_rounds": 3, "max_retries": 1, "time_box": "45m", "file_touch_limit": "8 files"},
+        "resume": {"cacheable_outputs": [], "invalidators": [], "restart_points": []},
         "execution_path": {
             "mode": "plugin",
             "first_slice": {
@@ -107,13 +108,13 @@ _PLAN_TEMPLATES: dict[str, dict[str, Any]] = {
         "phases": [],
         "workers": [],
         "handoffs": [],
-        "parallelism": {"shape": "fan-out-fan-in", "cap": 4, "barriers": ["audit-complete"], "fan_in_rule": "all"},
+        "parallelism": {"shape": "fan-out-fan-in", "concurrency_cap": 4, "barriers": ["audit-complete"], "fan_in_rule": "all inspected surfaces reconcile before review"},
         "verification": [],
         "risk_gates": [
             {"trigger": "write", "safe_default": "read-only analysis", "requires_user_approval": True},
         ],
-        "budget": {"max_agents": 6, "max_rounds": 5, "max_retries": 2},
-        "resume": {"cached_outputs": ["findings-per-surface"], "invalidation_rules": ["source-change"]},
+        "budget": {"max_agents": 6, "max_rounds": 5, "max_retries": 2, "time_box": "60m", "file_touch_limit": "10 files"},
+        "resume": {"cacheable_outputs": [], "invalidators": [], "restart_points": []},
         "execution_path": {
             "mode": "plugin",
             "first_slice": {
@@ -173,6 +174,9 @@ def run(args: argparse.Namespace) -> None:
         return
 
     objective = args.objective
+    if not objective:
+        print("Usage: keelplane design <objective> [--surface PATH] [--out plan.json]", file=sys.stderr)
+        sys.exit(1)
     pattern_name = _detect_pattern(objective)
     template = _PLAN_TEMPLATES.get(pattern_name, _PLAN_TEMPLATES["sequential"])
     plan_id = _generate_plan_id(objective)
@@ -181,18 +185,15 @@ def run(args: argparse.Namespace) -> None:
     plan["plan_id"] = plan_id
     plan["source_prompt"] = objective
     plan["objective"] = objective
-    plan["surfaces"] = _create_surface_from_path(args.surface)
+    plan["surfaces"] = _create_surface_from_path(args.surface or ".")
+    apply_minimal_contract(plan, objective)
 
-    # Update first-slice instruction
-    plan["execution_path"]["first_slice"]["instruction"] = f"Execute the first phase of: {objective}"
-
-    # Validate before writing (strict check — templates are starting points,
-    # so failures are warnings, not blockers)
     errors = validate_plan_strict(plan)
     if errors:
-        print(f"Warning: generated plan has {len(errors)} validation issue(s):", file=sys.stderr)
+        print(f"Error: generated plan failed validation with {len(errors)} issue(s):", file=sys.stderr)
         for e in errors:
             print(f"  - {e}", file=sys.stderr)
+        sys.exit(1)
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -204,8 +205,6 @@ def run(args: argparse.Namespace) -> None:
     print(f"  Pattern: {pattern_name}")
     print(f"  Plan ID: {plan_id}")
     print(f"  Objective: {objective}")
-    if errors:
-        print(f"  Warnings: {len(errors)} (plan is usable but needs refinement)")
 
 
 def _self_test() -> None:
@@ -242,22 +241,23 @@ def _self_test() -> None:
     else:
         print(f"  [FAIL] Test {tests}: expected 'sequential', got '{pattern}'")
 
-    # Test 4: generate plan (accepts warnings from strict check — templates are starting points)
     tests += 1
     with tempfile.TemporaryDirectory() as tmp:
         out_path = Path(tmp) / "plan.json"
-        # Simulate args
-        class FakeArgs:
-            objective = "audit authentication module"
-            out = str(Path(tmp) / "plan.json")
-            surface = "."
-            self_test = False
-        run(FakeArgs())  # type: ignore[arg-type]
-        if out_path.exists():
+        fake_args = argparse.Namespace(
+            objective="audit authentication module",
+            out=str(out_path),
+            surface=".",
+            self_test=False,
+        )
+        run(fake_args)
+        generated = json.loads(out_path.read_text())
+        errors = validate_plan_strict(generated)
+        if out_path.exists() and not errors:
             passed += 1
-            print(f"  [PASS] Test {tests}: plan file written")
+            print(f"  [PASS] Test {tests}: strict-valid plan file written")
         else:
-            print(f"  [FAIL] Test {tests}: plan not written")
+            print(f"  [FAIL] Test {tests}: generated plan errors: {errors}")
 
     print(f"\nSelf-test: {passed}/{tests} passed")
     sys.exit(0 if passed == tests else 1)

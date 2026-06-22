@@ -8,8 +8,11 @@ will live here directly.
 from __future__ import annotations
 
 import json
+import importlib.util
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
+
+from keelplane.core.embedded_plan_contract import validate_embedded_contract
 
 
 # Re-export schema constants from evaluate_plan.
@@ -92,16 +95,29 @@ def validate_plan_strict(plan: dict[str, Any]) -> list[str]:
     if errors:
         return errors
 
+    evaluator = _load_repo_evaluator()
+    if evaluator is None:
+        errors.extend(validate_embedded_contract(plan))
+        return errors
     try:
-        from evaluate_plan import validate_plan as _evaluate_validate  # type: ignore[import-untyped]
-        try:
-            _evaluate_validate(plan)
-        except Exception as exc:
-            errors.append(f"evaluate_plan validation: {exc}")
-    except ImportError:
-        pass
+        evaluator(plan)
+    except ValueError as exc:
+        errors.append(f"evaluate_plan validation: {exc}")
 
     return errors
+
+
+def _load_repo_evaluator() -> Callable[[dict[str, Any]], None] | None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "evaluate_plan.py"
+    if not script_path.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location("_keelplane_evaluate_plan", script_path)
+    if spec is None or spec.loader is None:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    validate = getattr(module, "validate_plan")
+    return validate
 
 
 def format_errors(errors: list[str]) -> str:
