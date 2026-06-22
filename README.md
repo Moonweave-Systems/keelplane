@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-4F46E5.svg)](LICENSE)
 [![Agent skill](https://img.shields.io/badge/agent%20skill-Codex-4F46E5.svg)](SKILL.md)
-[![Release](https://img.shields.io/github/v/release/Moonweave-Systems/dwm?color=4F46E5)](https://github.com/Moonweave-Systems/dwm/releases)
+[![Release](https://img.shields.io/github/v/release/Moonweave-Systems/keelplane?color=4F46E5)](https://github.com/Moonweave-Systems/keelplane/releases)
 [![Contract](https://img.shields.io/badge/contract-self--tested-059669.svg)](scripts/check_contract.py)
 
 ![Keelplane hero](assets/dwm-hero.svg)
