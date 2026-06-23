@@ -1,6 +1,6 @@
 # V105 Final Adoption Plan
 
-Status: proposed execution plan  
+Status: proposed execution plan
 Date: 2026-06-23
 
 ## Purpose

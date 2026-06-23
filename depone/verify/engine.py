@@ -5,8 +5,11 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-from keelplane.verify.adapters.base import EvidenceContext
-from keelplane.verify.evidence_contract import EvidenceContractEntry, validate_evidence_contract
+from depone.verify.adapters.base import EvidenceContext
+from depone.verify.evidence_contract import (
+    EvidenceContractEntry,
+    validate_evidence_contract,
+)
 
 
 @dataclass
@@ -99,9 +102,17 @@ def check_gate_compliance(
         approval_path = f"gates/{gid}/approved"
         denial_path = f"gates/{gid}/denied"
         if approval_path in known_files:
-            results.append(GateCheck(gate_id=gid, trigger=gid, complied=True, evidence_path=approval_path))
+            results.append(
+                GateCheck(
+                    gate_id=gid, trigger=gid, complied=True, evidence_path=approval_path
+                )
+            )
         elif denial_path in known_files:
-            results.append(GateCheck(gate_id=gid, trigger=gid, complied=False, evidence_path=denial_path))
+            results.append(
+                GateCheck(
+                    gate_id=gid, trigger=gid, complied=False, evidence_path=denial_path
+                )
+            )
         else:
             results.append(GateCheck(gate_id=gid, trigger=gid, complied=False))
     return results
@@ -151,14 +162,16 @@ def check_handoff_integrity(
         else:
             st = "insufficient-evidence"
 
-        results.append(HandoffCheck(
-            artifact=artifact,
-            expected_hash=expected_sha,
-            actual_hash=actual_sha,
-            exists=exists,
-            hash_match=hash_match,
-            status=st,
-        ))
+        results.append(
+            HandoffCheck(
+                artifact=artifact,
+                expected_hash=expected_sha,
+                actual_hash=actual_sha,
+                exists=exists,
+                hash_match=hash_match,
+                status=st,
+            )
+        )
 
     return results
 
@@ -188,12 +201,14 @@ def check_adversarial(
         if ground_truth_source and ground_truth_source not in evidence_paths:
             refuted = True
             refutation = f"ground truth source not found: {ground_truth_source}"
-        results.append(AdversarialCheck(
-            claim=claim,
-            refuted=refuted,
-            refutation=refutation,
-            ground_truth_source=ground_truth_source,
-        ))
+        results.append(
+            AdversarialCheck(
+                claim=claim,
+                refuted=refuted,
+                refutation=refutation,
+                ground_truth_source=ground_truth_source,
+            )
+        )
     return results
 
 
@@ -266,10 +281,16 @@ def run_verification(
 
         # Phase-level pass/fail logic
         handoff_refuted = any(h.status == "refuted" for h in phase_handoffs)
-        handoff_insufficient = any(h.status == "insufficient-evidence" for h in phase_handoffs)
+        handoff_insufficient = any(
+            h.status == "insufficient-evidence" for h in phase_handoffs
+        )
         adv_refuted = any(a.refuted for a in phase_adv)
-        gate_refuted = any((not g.complied) and g.evidence_path is not None for g in phase_gates)
-        gate_insufficient = any((not g.complied) and g.evidence_path is None for g in phase_gates)
+        gate_refuted = any(
+            (not g.complied) and g.evidence_path is not None for g in phase_gates
+        )
+        gate_insufficient = any(
+            (not g.complied) and g.evidence_path is None for g in phase_gates
+        )
         budget_exceeded = not budget.within_limits
 
         if gate_refuted or handoff_refuted or adv_refuted or budget_exceeded:
@@ -281,14 +302,16 @@ def run_verification(
         else:
             st = "passed"
 
-        phase_verdicts.append(PhaseVerdict(
-            phase_id=pid,
-            status=st,
-            gates=phase_gates,
-            handoffs=phase_handoffs,
-            adversarial=phase_adv,
-            budget=budget,
-        ))
+        phase_verdicts.append(
+            PhaseVerdict(
+                phase_id=pid,
+                status=st,
+                gates=phase_gates,
+                handoffs=phase_handoffs,
+                adversarial=phase_adv,
+                budget=budget,
+            )
+        )
 
     if evidence_contract:
         any_refuted = True

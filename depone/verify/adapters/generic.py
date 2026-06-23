@@ -4,7 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from keelplane.verify.adapters.base import EvidenceContext, EvidenceFile
+from depone.verify.adapters.base import EvidenceContext, EvidenceFile
 
 
 def read_evidence(evidence_dir: str) -> EvidenceContext:

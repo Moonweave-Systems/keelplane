@@ -13,8 +13,8 @@ Decision: keep.
 Canonical audit:
 
 - `decision`: `brand_boundary_ready`
-- `public_product_brand`: `Keelplane`
+- `public_product_brand`: `Depone`
 - `internal_engine_name`: `DWM Core`
-- `skill_name`: `keelplane`
+- `skill_name`: `depone`
 
 This does not rename CLI commands, does not rename repository paths, and does not claim autonomous execution.

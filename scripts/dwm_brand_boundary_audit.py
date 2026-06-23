@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""V87 public brand boundary audit for Keelplane."""
+"""V87 public brand boundary audit for Depone."""
 
 from __future__ import annotations
 
@@ -55,9 +55,9 @@ class BrandBoundaryAuditError(ValueError):
 
 
 def now_utc() -> str:
-    from datetime import UTC, datetime
+    from datetime import datetime, timezone
 
-    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def rel(path: Path) -> str:
@@ -173,27 +173,27 @@ def audit_surfaces(surfaces: dict[str, str]) -> dict[str, Any]:
             add_forbidden(blockers, path, "executes live commands", code="ERR_BRAND_BOUNDARY_AUTONOMY_OVERCLAIM")
 
     readme = surfaces.get("README.md", "")
-    if first_nonempty_line(readme).lower() != "# keelplane":
-        add_missing(blockers, "README.md", "# Keelplane", code="ERR_BRAND_BOUNDARY_PUBLIC_HEADING_INVALID")
-    for term in ("DWM Core", "skill is named `keelplane`"):
+    if first_nonempty_line(readme).lower() != "# depone":
+        add_missing(blockers, "README.md", "# Depone", code="ERR_BRAND_BOUNDARY_PUBLIC_HEADING_INVALID")
+    for term in ("DWM Core", "skill is named `depone`"):
         if term.lower() not in lower(readme):
             add_missing(blockers, "README.md", term)
 
     skill = surfaces.get("SKILL.md", "")
-    for term in ("name: keelplane", "Keelplane skill entrypoint", "dynamic workflows"):
+    for term in ("name: depone", "Depone skill entrypoint", "dynamic workflows"):
         if term.lower() not in lower(skill):
             add_missing(blockers, "SKILL.md", term)
 
     agent_config = surfaces.get("agents/openai.yaml", "")
-    for term in ('display_name: "Keelplane"', "$keelplane"):
+    for term in ('display_name: "Depone"', "$depone"):
         if term.lower() not in lower(agent_config):
             add_missing(blockers, "agents/openai.yaml", term)
 
     branding = surfaces.get("docs/dwm-branding.md", "")
     for term in (
-        "Keelplane is the public product brand",
+        "Depone is the public product brand",
         "DWM Core stands for",
-        "Codex skill name is `keelplane`",
+        "Codex skill name is `depone`",
         "repository slug remains `dwm`",
         "Do not claim autonomous execution",
     ):
@@ -201,17 +201,17 @@ def audit_surfaces(surfaces: dict[str, str]) -> dict[str, Any]:
             add_missing(blockers, "docs/dwm-branding.md", term)
 
     command_reference = surfaces.get("docs/command-reference.md", "")
-    if first_nonempty_line(command_reference).lower() != "# keelplane command reference":
-        add_missing(blockers, "docs/command-reference.md", "# Keelplane Command Reference", code="ERR_BRAND_BOUNDARY_PUBLIC_HEADING_INVALID")
+    if first_nonempty_line(command_reference).lower() != "# depone command reference":
+        add_missing(blockers, "docs/command-reference.md", "# Depone Command Reference", code="ERR_BRAND_BOUNDARY_PUBLIC_HEADING_INVALID")
 
     release_history = surfaces.get("docs/release-history.md", "")
-    if first_nonempty_line(release_history).lower() != "# keelplane release history":
-        add_missing(blockers, "docs/release-history.md", "# Keelplane Release History", code="ERR_BRAND_BOUNDARY_PUBLIC_HEADING_INVALID")
+    if first_nonempty_line(release_history).lower() != "# depone release history":
+        add_missing(blockers, "docs/release-history.md", "# Depone Release History", code="ERR_BRAND_BOUNDARY_PUBLIC_HEADING_INVALID")
     if "docs/v86-keelplane-brand-spec.md" not in lower(release_history):
         add_missing(blockers, "docs/release-history.md", "docs/v86-keelplane-brand-spec.md")
 
     hero = surfaces.get("assets/dwm-hero.svg", "")
-    for term in ("Keelplane", "Powered by DWM Core"):
+    for term in ("Depone", "Powered by DWM Core"):
         if term.lower() not in lower(hero):
             add_missing(blockers, "assets/dwm-hero.svg", term)
 
@@ -222,9 +222,9 @@ def audit_surfaces(surfaces: dict[str, str]) -> dict[str, Any]:
         "blocked_by": blockers,
         "surfaces": surface_records,
         "policy": {
-            "public_product_brand": "Keelplane",
+            "public_product_brand": "Depone",
             "internal_engine_name": "DWM Core",
-            "skill_name": "keelplane",
+            "skill_name": "depone",
             "repository_slug": "dwm",
             "executes_commands": False,
         },
@@ -237,9 +237,9 @@ def render_markdown(audit: dict[str, Any]) -> str:
         "# Brand Boundary Audit",
         "",
         f"- Decision: `{audit['decision']}`",
-        "- Public product brand: `Keelplane`",
+        "- Public product brand: `Depone`",
         "- Internal engine name: `DWM Core`",
-        "- Skill name: `keelplane`",
+        "- Skill name: `depone`",
         f"- Executes commands: `{audit['policy']['executes_commands']}`",
         "",
         "## Surfaces",
@@ -327,13 +327,13 @@ def run_manifest(manifest_path: Path, out_dir: Path) -> dict[str, Any]:
 
 def good_surfaces() -> dict[str, str]:
     return {
-        "SKILL.md": "---\nname: keelplane\ndescription: Keelplane skill entrypoint. Use when a user asks for dynamic workflows.\n---\n# Keelplane Skill Entrypoint\n",
-        "agents/openai.yaml": 'interface:\n  display_name: "Keelplane"\n  default_prompt: "Use $keelplane to design a workflow."\n',
-        "README.md": "# Keelplane\n\nKeelplane uses DWM Core and the skill is named `keelplane`.\n",
-        "docs/dwm-branding.md": "# Keelplane Branding\n\nKeelplane is the public product brand.\nDWM Core stands for Deterministic Workflow Machine.\nThe Codex skill name is `keelplane`.\nThe repository slug remains `dwm`.\nDo not claim autonomous execution.\n",
-        "docs/command-reference.md": "# Keelplane Command Reference\n",
-        "docs/release-history.md": "# Keelplane Release History\n\n- V86: docs/v86-keelplane-brand-spec.md\n",
-        "assets/dwm-hero.svg": "<svg><title>Keelplane</title><text>Powered by DWM Core</text></svg>\n",
+        "SKILL.md": "---\nname: depone\ndescription: Depone skill entrypoint. Use when a user asks for dynamic workflows.\n---\n# Depone Skill Entrypoint\n",
+        "agents/openai.yaml": 'interface:\n  display_name: "Depone"\n  default_prompt: "Use $depone to design a workflow."\n',
+        "README.md": "# Depone\n\nDepone uses DWM Core and the skill is named `depone`.\n",
+        "docs/dwm-branding.md": "# Depone Branding\n\nDepone is the public product brand.\nDWM Core stands for Deterministic Workflow Machine.\nThe Codex skill name is `depone`.\nThe repository slug remains `dwm`.\nDo not claim autonomous execution.\n",
+        "docs/command-reference.md": "# Depone Command Reference\n",
+        "docs/release-history.md": "# Depone Release History\n\n- V86: docs/v86-keelplane-brand-spec.md\n",
+        "assets/dwm-hero.svg": "<svg><title>Depone</title><text>Powered by DWM Core</text></svg>\n",
     }
 
 
@@ -348,7 +348,7 @@ def self_test() -> None:
     if blocked["decision"] != "blocked" or "ERR_BRAND_BOUNDARY_PUBLIC_HEADING_INVALID" not in codes:
         raise BrandBoundaryAuditError("ERR_BRAND_BOUNDARY_SELF_TEST_FAILED", "stale DWM public heading should block")
     overclaim = good_surfaces()
-    overclaim["README.md"] += "\nKeelplane executes live commands without review.\n"
+    overclaim["README.md"] += "\nDepone executes live commands without review.\n"
     blocked_overclaim = audit_surfaces(overclaim)
     if blocked_overclaim["decision"] != "blocked":
         raise BrandBoundaryAuditError("ERR_BRAND_BOUNDARY_SELF_TEST_FAILED", "live execution overclaim should block")

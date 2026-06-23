@@ -1,46 +1,15 @@
 {
-  "schema_version": "0.5",
-  "plan_id": "v43-direction-check-roadmap",
-  "created_by": "keelplane",
-  "source_prompt": "Check whether the current DWM direction is meaningful, then write the next roadmap and docs.",
   "activation": {
     "decision": "activate",
+    "downgrade_target": null,
     "matched_thresholds": [
       "downstream-consumer",
       "resumable-handoffs",
       "adversarial-verification",
       "human-gates"
     ],
-    "downgrade_target": null,
     "reason": "The request affects roadmap direction, release claims, documentation, and future workflow execution."
   },
-  "objective": "Keep DWM moving toward real artifact-backed product value and away from decorative roadmap or benchmark claims.",
-  "surfaces": [
-    {
-      "id": "roadmap",
-      "kind": "document",
-      "locator": "docs/automation-roadmap.md",
-      "access_mode": "write-approved"
-    },
-    {
-      "id": "readme",
-      "kind": "document",
-      "locator": "README.md",
-      "access_mode": "write-approved"
-    },
-    {
-      "id": "v43_doc",
-      "kind": "document",
-      "locator": "docs/v43-direction-check-roadmap.md",
-      "access_mode": "write-approved"
-    },
-    {
-      "id": "release_contract",
-      "kind": "repo",
-      "locator": "scripts/check_contract.py",
-      "access_mode": "write-approved"
-    }
-  ],
   "assumptions": [
     {
       "claim": "V42 reached a pre-publish benchmark candidate, not a public external benchmark claim.",
@@ -51,269 +20,37 @@
       "verification": "Require V43 roadmap success criteria to mention user friction, evidence, gates, and honest publication."
     }
   ],
-  "patterns": [
-    "Sequential",
-    "Pipeline",
-    "Adversarial Verify",
-    "Human Gate",
-    "Resume And Cache"
-  ],
-  "phases": [
-    {
-      "id": "direction_audit",
-      "name": "Direction Audit",
-      "entry_criteria": [
-        "Current README, roadmap, V42 spec, and contract files are readable."
-      ],
-      "exit_criteria": [
-        "Direction judgment separates proven evidence from unproven claims."
-      ],
-      "depends_on": [],
-      "worker_ids": [
-        "direction_auditor"
-      ],
-      "outputs": [
-        "direction-check.md"
-      ]
-    },
-    {
-      "id": "roadmap_ordering",
-      "name": "Roadmap Ordering",
-      "entry_criteria": [
-        "Direction audit exists."
-      ],
-      "exit_criteria": [
-        "V44-V50 roadmap is ordered by user value and benchmark integrity."
-      ],
-      "depends_on": [
-        "direction_audit"
-      ],
-      "worker_ids": [
-        "roadmap_planner"
-      ],
-      "outputs": [
-        "v44-v50-roadmap.md"
-      ]
-    },
-    {
-      "id": "claim_gate",
-      "name": "Claim Gate",
-      "entry_criteria": [
-        "Roadmap and README references are drafted."
-      ],
-      "exit_criteria": [
-        "Unsupported benchmark, external superiority, and finished-runtime claims are absent."
-      ],
-      "depends_on": [
-        "roadmap_ordering"
-      ],
-      "worker_ids": [
-        "claim_reviewer"
-      ],
-      "outputs": [
-        "claim-review.md"
-      ]
-    },
-    {
-      "id": "verification",
-      "name": "Verification",
-      "entry_criteria": [
-        "Docs and contract references are written."
-      ],
-      "exit_criteria": [
-        "Whitespace, release text, skill validation, self-tests, and contract checks pass or produce explicit blockers."
-      ],
-      "depends_on": [
-        "claim_gate"
-      ],
-      "worker_ids": [
-        "operator_verifier"
-      ],
-      "outputs": [
-        "verification-log.md"
-      ]
-    }
-  ],
-  "workers": [
-    {
-      "id": "direction_auditor",
-      "role": "reviewer",
-      "tool_permissions": {
-        "read": true,
-        "write": false,
-        "shell": true,
-        "network": false,
-        "mcp_connectors": [],
-        "requires_escalation_for": [
-          "network",
-          "external-message"
-        ]
-      },
+  "budget": {
+    "file_touch_limit": "7 files",
+    "max_agents": 1,
+    "max_retries": 1,
+    "max_rounds": 1,
+    "time_box": "one documentation and contract slice"
+  },
+  "created_by": "depone",
+  "execution_path": {
+    "consumer": "human",
+    "first_slice": {
+      "completion_check": "python scripts/check_contract.py --self-test && python scripts/check_release_text.py . && python scripts/check_whitespace.py . && python scripts/quick_validate_skill.py .",
+      "expected_output": "V43 direction doc, V43 workflow plan JSON, README and roadmap references, and passing verification",
       "forbidden_actions": [
-        "edit tracked assets",
-        "claim external benchmark authority"
+        "edit docs/spec.md without reconciling existing user changes",
+        "publish README benchmark assets",
+        "claim external benchmark superiority",
+        "run networked adapter execution"
       ],
-      "context_budget": {
-        "max_files": 8,
-        "max_tokens": 12000,
-        "must_include": [
-          "README.md",
-          "docs/automation-roadmap.md",
-          "docs/v42-benchmark-candidate-spec.md"
-        ],
-        "must_exclude": [
-          "generated out directories except targeted evidence"
-        ]
-      },
-      "prompt_contract": {
-        "inputs": [
-          "current docs",
-          "current contract commands"
-        ],
-        "required_output_schema": "direction judgment with proven, unproven, and risk sections",
-        "stop_conditions": [
-          "roadmap contradiction found",
-          "missing current docs",
-          "unsupported public claim found"
-        ]
-      },
-      "ownership": [
-        "direction judgment only"
-      ]
+      "inputs": [
+        "repository path",
+        "README.md",
+        "docs/automation-roadmap.md",
+        "docs/v42-benchmark-candidate-spec.md"
+      ],
+      "instruction": "Write the V43 direction checkpoint and roadmap docs, connect them to README and automation roadmap, and verify release checks without touching tracked benchmark assets."
     },
-    {
-      "id": "roadmap_planner",
-      "role": "planner",
-      "tool_permissions": {
-        "read": true,
-        "write": true,
-        "shell": false,
-        "network": false,
-        "mcp_connectors": [],
-        "requires_escalation_for": [
-          "write",
-          "shell"
-        ]
-      },
-      "forbidden_actions": [
-        "add unverified benchmark numbers",
-        "expand scope beyond V44-V50"
-      ],
-      "context_budget": {
-        "max_files": 6,
-        "max_tokens": 10000,
-        "must_include": [
-          "direction judgment",
-          "V42 candidate contract"
-        ],
-        "must_exclude": [
-          "unrelated product speculation"
-        ]
-      },
-      "prompt_contract": {
-        "inputs": [
-          "direction judgment"
-        ],
-        "required_output_schema": "ordered roadmap with purpose and done means",
-        "stop_conditions": [
-          "roadmap item lacks verification",
-          "roadmap item depends on unapproved external action"
-        ]
-      },
-      "ownership": [
-        "V44-V50 roadmap"
-      ]
-    },
-    {
-      "id": "claim_reviewer",
-      "role": "reviewer",
-      "tool_permissions": {
-        "read": true,
-        "write": false,
-        "shell": true,
-        "network": false,
-        "mcp_connectors": [],
-        "requires_escalation_for": [
-          "network"
-        ]
-      },
-      "forbidden_actions": [
-        "rewrite docs directly",
-        "approve unsupported claims"
-      ],
-      "context_budget": {
-        "max_files": 6,
-        "max_tokens": 8000,
-        "must_include": [
-          "draft V43 doc",
-          "README references"
-        ],
-        "must_exclude": [
-          "generated prose not in tracked docs"
-        ]
-      },
-      "prompt_contract": {
-        "inputs": [
-          "draft docs"
-        ],
-        "required_output_schema": "confirmed, refuted, and unverified claim list",
-        "stop_conditions": [
-          "external superiority claim detected",
-          "graph claim lacks source artifact"
-        ]
-      },
-      "ownership": [
-        "claim review"
-      ]
-    },
-    {
-      "id": "operator_verifier",
-      "role": "verifier",
-      "tool_permissions": {
-        "read": true,
-        "write": false,
-        "shell": true,
-        "network": false,
-        "mcp_connectors": [],
-        "requires_escalation_for": [
-          "network",
-          "shell"
-        ]
-      },
-      "forbidden_actions": [
-        "commit without passing checks",
-        "push without user permission"
-      ],
-      "context_budget": {
-        "max_files": 10,
-        "max_tokens": 8000,
-        "must_include": [
-          "verification output"
-        ],
-        "must_exclude": [
-          "secret files"
-        ]
-      },
-      "prompt_contract": {
-        "inputs": [
-          "changed files"
-        ],
-        "required_output_schema": "verification command list with pass or blocker status",
-        "stop_conditions": [
-          "test failure",
-          "unexpected dirty file",
-          "contract drift"
-        ]
-      },
-      "ownership": [
-        "verification report"
-      ]
-    }
-  ],
+    "mode": "direct-codex"
+  },
   "handoffs": [
     {
-      "from_phase": "direction_audit",
-      "to_phase": "roadmap_ordering",
       "artifact": "direction-check.md",
       "artifact_schema": {
         "format": "markdown",
@@ -324,11 +61,11 @@
           "directional risks"
         ],
         "validation_command": "python scripts/check_release_text.py ."
-      }
+      },
+      "from_phase": "direction_audit",
+      "to_phase": "roadmap_ordering"
     },
     {
-      "from_phase": "roadmap_ordering",
-      "to_phase": "claim_gate",
       "artifact": "v44-v50-roadmap.md",
       "artifact_schema": {
         "format": "markdown",
@@ -338,11 +75,11 @@
           "done means"
         ],
         "validation_command": "python scripts/check_whitespace.py ."
-      }
+      },
+      "from_phase": "roadmap_ordering",
+      "to_phase": "claim_gate"
     },
     {
-      "from_phase": "claim_gate",
-      "to_phase": "verification",
       "artifact": "claim-review.md",
       "artifact_schema": {
         "format": "markdown",
@@ -352,71 +89,104 @@
           "human gates"
         ],
         "validation_command": "python scripts/check_release_text.py ."
-      }
+      },
+      "from_phase": "claim_gate",
+      "to_phase": "verification"
     }
   ],
+  "objective": "Keep DWM moving toward real artifact-backed product value and away from decorative roadmap or benchmark claims.",
   "parallelism": {
-    "shape": "pipeline",
-    "concurrency_cap": 2,
-    "fan_in_rule": "Claim review starts after the roadmap draft exists; verification starts after docs and contract references are updated.",
     "barriers": [
       "Do not promote README graph assets before V44 candidate review."
-    ]
+    ],
+    "concurrency_cap": 2,
+    "fan_in_rule": "Claim review starts after the roadmap draft exists; verification starts after docs and contract references are updated.",
+    "shape": "pipeline"
   },
-  "verification": [
+  "patterns": [
+    "Sequential",
+    "Pipeline",
+    "Adversarial Verify",
+    "Human Gate",
+    "Resume And Cache"
+  ],
+  "phases": [
     {
-      "claim_or_output": "V43 direction doc exists and does not overclaim benchmark authority.",
-      "falsifier": "Search finds external superiority language or missing V42 limitations.",
-      "evidence_required": [
-        "docs/v43-direction-check-roadmap.md",
-        "check_release_text output"
+      "depends_on": [],
+      "entry_criteria": [
+        "Current README, roadmap, V42 spec, and contract files are readable."
+      ],
+      "exit_criteria": [
+        "Direction judgment separates proven evidence from unproven claims."
+      ],
+      "id": "direction_audit",
+      "name": "Direction Audit",
+      "outputs": [
+        "direction-check.md"
+      ],
+      "worker_ids": [
+        "direction_auditor"
       ]
     },
     {
-      "claim_or_output": "Roadmap is connected to product docs.",
-      "falsifier": "README or automation roadmap omits V43.",
-      "evidence_required": [
-        "README.md",
-        "docs/automation-roadmap.md diff"
+      "depends_on": [
+        "direction_audit"
+      ],
+      "entry_criteria": [
+        "Direction audit exists."
+      ],
+      "exit_criteria": [
+        "V44-V50 roadmap is ordered by user value and benchmark integrity."
+      ],
+      "id": "roadmap_ordering",
+      "name": "Roadmap Ordering",
+      "outputs": [
+        "v44-v50-roadmap.md"
+      ],
+      "worker_ids": [
+        "roadmap_planner"
       ]
     },
     {
-      "claim_or_output": "Contract still passes after doc additions.",
-      "falsifier": "check_contract or skill validation fails.",
-      "evidence_required": [
-        "verification command output"
+      "depends_on": [
+        "roadmap_ordering"
+      ],
+      "entry_criteria": [
+        "Roadmap and README references are drafted."
+      ],
+      "exit_criteria": [
+        "Unsupported benchmark, external superiority, and finished-runtime claims are absent."
+      ],
+      "id": "claim_gate",
+      "name": "Claim Gate",
+      "outputs": [
+        "claim-review.md"
+      ],
+      "worker_ids": [
+        "claim_reviewer"
+      ]
+    },
+    {
+      "depends_on": [
+        "claim_gate"
+      ],
+      "entry_criteria": [
+        "Docs and contract references are written."
+      ],
+      "exit_criteria": [
+        "Whitespace, release text, skill validation, self-tests, and contract checks pass or produce explicit blockers."
+      ],
+      "id": "verification",
+      "name": "Verification",
+      "outputs": [
+        "verification-log.md"
+      ],
+      "worker_ids": [
+        "operator_verifier"
       ]
     }
   ],
-  "risk_gates": [
-    {
-      "trigger": "write tracked README benchmark asset change",
-      "safe_default": "do not write tracked readme benchmark asset without approval",
-      "requires_user_approval": true
-    },
-    {
-      "trigger": "external message benchmark or model superiority claim",
-      "safe_default": "do not external message benchmark claim without approval",
-      "requires_user_approval": true
-    },
-    {
-      "trigger": "network adapter execution beyond deterministic fixtures",
-      "safe_default": "do not network adapter execution without approval",
-      "requires_user_approval": true
-    },
-    {
-      "trigger": "shell verification command execution",
-      "safe_default": "do not shell command without approval",
-      "requires_user_approval": true
-    }
-  ],
-  "budget": {
-    "max_agents": 1,
-    "max_rounds": 1,
-    "max_retries": 1,
-    "time_box": "one documentation and contract slice",
-    "file_touch_limit": "7 files"
-  },
+  "plan_id": "v43-direction-check-roadmap",
   "resume": {
     "cacheable_outputs": [
       "direction-check.md",
@@ -436,25 +206,255 @@
       "verification"
     ]
   },
-  "execution_path": {
-    "mode": "direct-codex",
-    "consumer": "human",
-    "first_slice": {
-      "instruction": "Write the V43 direction checkpoint and roadmap docs, connect them to README and automation roadmap, and verify release checks without touching tracked benchmark assets.",
-      "inputs": [
-        "repository path",
-        "README.md",
-        "docs/automation-roadmap.md",
-        "docs/v42-benchmark-candidate-spec.md"
-      ],
-      "expected_output": "V43 direction doc, V43 workflow plan JSON, README and roadmap references, and passing verification",
-      "completion_check": "python scripts/check_contract.py --self-test && python scripts/check_release_text.py . && python scripts/check_whitespace.py . && python scripts/quick_validate_skill.py .",
-      "forbidden_actions": [
-        "edit docs/spec.md without reconciling existing user changes",
-        "publish README benchmark assets",
-        "claim external benchmark superiority",
-        "run networked adapter execution"
-      ]
+  "risk_gates": [
+    {
+      "requires_user_approval": true,
+      "safe_default": "do not write tracked readme benchmark asset without approval",
+      "trigger": "write tracked README benchmark asset change"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "do not external message benchmark claim without approval",
+      "trigger": "external message benchmark or model superiority claim"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "do not network adapter execution without approval",
+      "trigger": "network adapter execution beyond deterministic fixtures"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "do not shell command without approval",
+      "trigger": "shell verification command execution"
     }
-  }
+  ],
+  "schema_version": "0.5",
+  "source_prompt": "Check whether the current DWM direction is meaningful, then write the next roadmap and docs.",
+  "surfaces": [
+    {
+      "access_mode": "write-approved",
+      "id": "roadmap",
+      "kind": "document",
+      "locator": "docs/automation-roadmap.md"
+    },
+    {
+      "access_mode": "write-approved",
+      "id": "readme",
+      "kind": "document",
+      "locator": "README.md"
+    },
+    {
+      "access_mode": "write-approved",
+      "id": "v43_doc",
+      "kind": "document",
+      "locator": "docs/v43-direction-check-roadmap.md"
+    },
+    {
+      "access_mode": "write-approved",
+      "id": "release_contract",
+      "kind": "repo",
+      "locator": "scripts/check_contract.py"
+    }
+  ],
+  "verification": [
+    {
+      "claim_or_output": "V43 direction doc exists and does not overclaim benchmark authority.",
+      "evidence_required": [
+        "docs/v43-direction-check-roadmap.md",
+        "check_release_text output"
+      ],
+      "falsifier": "Search finds external superiority language or missing V42 limitations."
+    },
+    {
+      "claim_or_output": "Roadmap is connected to product docs.",
+      "evidence_required": [
+        "README.md",
+        "docs/automation-roadmap.md diff"
+      ],
+      "falsifier": "README or automation roadmap omits V43."
+    },
+    {
+      "claim_or_output": "Contract still passes after doc additions.",
+      "evidence_required": [
+        "verification command output"
+      ],
+      "falsifier": "check_contract or skill validation fails."
+    }
+  ],
+  "workers": [
+    {
+      "context_budget": {
+        "max_files": 8,
+        "max_tokens": 12000,
+        "must_exclude": [
+          "generated out directories except targeted evidence"
+        ],
+        "must_include": [
+          "README.md",
+          "docs/automation-roadmap.md",
+          "docs/v42-benchmark-candidate-spec.md"
+        ]
+      },
+      "forbidden_actions": [
+        "edit tracked assets",
+        "claim external benchmark authority"
+      ],
+      "id": "direction_auditor",
+      "ownership": [
+        "direction judgment only"
+      ],
+      "prompt_contract": {
+        "inputs": [
+          "current docs",
+          "current contract commands"
+        ],
+        "required_output_schema": "direction judgment with proven, unproven, and risk sections",
+        "stop_conditions": [
+          "roadmap contradiction found",
+          "missing current docs",
+          "unsupported public claim found"
+        ]
+      },
+      "role": "reviewer",
+      "tool_permissions": {
+        "mcp_connectors": [],
+        "network": false,
+        "read": true,
+        "requires_escalation_for": [
+          "network",
+          "external-message"
+        ],
+        "shell": true,
+        "write": false
+      }
+    },
+    {
+      "context_budget": {
+        "max_files": 6,
+        "max_tokens": 10000,
+        "must_exclude": [
+          "unrelated product speculation"
+        ],
+        "must_include": [
+          "direction judgment",
+          "V42 candidate contract"
+        ]
+      },
+      "forbidden_actions": [
+        "add unverified benchmark numbers",
+        "expand scope beyond V44-V50"
+      ],
+      "id": "roadmap_planner",
+      "ownership": [
+        "V44-V50 roadmap"
+      ],
+      "prompt_contract": {
+        "inputs": [
+          "direction judgment"
+        ],
+        "required_output_schema": "ordered roadmap with purpose and done means",
+        "stop_conditions": [
+          "roadmap item lacks verification",
+          "roadmap item depends on unapproved external action"
+        ]
+      },
+      "role": "planner",
+      "tool_permissions": {
+        "mcp_connectors": [],
+        "network": false,
+        "read": true,
+        "requires_escalation_for": [
+          "write",
+          "shell"
+        ],
+        "shell": false,
+        "write": true
+      }
+    },
+    {
+      "context_budget": {
+        "max_files": 6,
+        "max_tokens": 8000,
+        "must_exclude": [
+          "generated prose not in tracked docs"
+        ],
+        "must_include": [
+          "draft V43 doc",
+          "README references"
+        ]
+      },
+      "forbidden_actions": [
+        "rewrite docs directly",
+        "approve unsupported claims"
+      ],
+      "id": "claim_reviewer",
+      "ownership": [
+        "claim review"
+      ],
+      "prompt_contract": {
+        "inputs": [
+          "draft docs"
+        ],
+        "required_output_schema": "confirmed, refuted, and unverified claim list",
+        "stop_conditions": [
+          "external superiority claim detected",
+          "graph claim lacks source artifact"
+        ]
+      },
+      "role": "reviewer",
+      "tool_permissions": {
+        "mcp_connectors": [],
+        "network": false,
+        "read": true,
+        "requires_escalation_for": [
+          "network"
+        ],
+        "shell": true,
+        "write": false
+      }
+    },
+    {
+      "context_budget": {
+        "max_files": 10,
+        "max_tokens": 8000,
+        "must_exclude": [
+          "secret files"
+        ],
+        "must_include": [
+          "verification output"
+        ]
+      },
+      "forbidden_actions": [
+        "commit without passing checks",
+        "push without user permission"
+      ],
+      "id": "operator_verifier",
+      "ownership": [
+        "verification report"
+      ],
+      "prompt_contract": {
+        "inputs": [
+          "changed files"
+        ],
+        "required_output_schema": "verification command list with pass or blocker status",
+        "stop_conditions": [
+          "test failure",
+          "unexpected dirty file",
+          "contract drift"
+        ]
+      },
+      "role": "verifier",
+      "tool_permissions": {
+        "mcp_connectors": [],
+        "network": false,
+        "read": true,
+        "requires_escalation_for": [
+          "network",
+          "shell"
+        ],
+        "shell": true,
+        "write": false
+      }
+    }
+  ]
 }

@@ -1,6 +1,6 @@
 # Keelplane Threat Model v1
 
-Status: Proposed  
+Status: Proposed
 Date: 2026-06-23
 
 ## 1. Security objective

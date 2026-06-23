@@ -1,0 +1,11 @@
+{
+  "name": "claude-code",
+  "version": "1.0.0",
+  "supports_hard_tool_filtering": false,
+  "supports_per_subagent_allowlist": false,
+  "supports_mcp_filtering": false,
+  "supported_features": ["shell", "read", "edit", "write", "search", "glob", "web", "managed-agents"],
+  "unsupported_features": ["per-subagent-allowlist", "per-subagent-mcp-filtering", "hard-tool-allowlist"],
+  "approximations": ["managed agents have per-role instruction prompts but no hard tool filtering; tool restrictions rely on the agent respecting instructions"],
+  "notes": "Claude Code has managed agent support but per-agent tool restrictions are enforced by instruction, not by a runtime allowlist."
+}

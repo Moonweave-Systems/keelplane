@@ -19,7 +19,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_VERSION = "0.5"
-CREATED_BY = "keelplane"
+CREATED_BY = "depone"
 METRICS = [
     "activation_discipline",
     "executable_artifact",
@@ -781,7 +781,7 @@ def validate_budget_resume_execution(plan: dict[str, Any], activated: bool, expe
         require(not unexpected_repo_inputs, f"non-repo first_slice.inputs contains repo-only inputs: {unexpected_repo_inputs}")
     if not activated:
         target = plan["activation"]["downgrade_target"]
-        expected_instruction = f"Use {target} instead of keelplane for this request."
+        expected_instruction = f"Use {target} instead of depone for this request."
         require(
             first_slice["instruction"] == expected_instruction,
             "downgrade first_slice.instruction must route to the downgrade target",
@@ -1778,7 +1778,7 @@ def valid_plan_fixture(decision: str = "activate") -> dict[str, Any]:
                 "instruction": (
                     "Inspect the prompt and list required inputs."
                     if decision == "activate"
-                    else "Use direct-codex instead of keelplane for this request."
+                    else "Use direct-codex instead of depone for this request."
                 ),
                 "inputs": ["original prompt", "repository path"],
                 "expected_output": "input ledger",
@@ -2372,7 +2372,7 @@ def self_test() -> None:
     bad_downgrade = json.loads(json.dumps(downgrade))
     bad_downgrade["activation"]["downgrade_target"] = "workflow-router"
     bad_downgrade["execution_path"]["first_slice"]["instruction"] = (
-        "Use workflow-router instead of keelplane, then hand the user a simple-plan checklist."
+        "Use workflow-router instead of depone, then hand the user a simple-plan checklist."
     )
     try:
         validate_plan(bad_downgrade, {"activation": "downgrade", "downgrade_target": "workflow-router"})

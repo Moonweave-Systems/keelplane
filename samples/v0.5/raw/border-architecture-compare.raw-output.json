@@ -1,14 +1,14 @@
 {
   "fixture_id": "border-architecture-compare",
   "packet_sha256": {
-    "workflow.plan.json": "757df1c4641037a25bf8d6625a32d5f1026d53cd7ee777524fb53193627dd03b",
-    "blueprint.md": "7cf2bfe6e2b0260fd7cec0ad8d2243a36db07735f14f09b00a573fe6d7617796",
-    "original prompt": "bea821b09bee16bea384f1f72b1a208ee0bad17c9ae5091a354accef4ab54723"
+    "blueprint.md": "49b923f2945db5eb52a22b8450418dc22870855b8ca0e5df1de9e93e1b2e2287",
+    "original prompt": "bea821b09bee16bea384f1f72b1a208ee0bad17c9ae5091a354accef4ab54723",
+    "workflow.plan.json": "e4fd55d60d7afcdc89557a967e5526920af72aa07eea72a772843cfdb49b8436"
   },
-  "producer": "keelplane",
+  "producer": "depone",
   "raw_kind": "workflow-output",
-  "rendered_blueprint": "# border-architecture-compare\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (No downstream consumer or resumable execution is expected; use the router or a compact comparison.)\nPatterns: none\n\n## First Slice\n\nUse workflow-router instead of keelplane for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- implementation decision: stop before implementation decisions and ask for approval\n",
-  "skill_sha256": "27261b50e6811ad03073544983f5e4b4905a9c9035f2d1b8f044a4ee24b49798",
+  "rendered_blueprint": "# border-architecture-compare\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (No downstream consumer or resumable execution is expected; use the router or a compact comparison.)\nPatterns: none\n\n## First Slice\n\nUse workflow-router instead of depone for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- implementation decision: stop before implementation decisions and ask for approval\n",
+  "skill_sha256": "2781790c2ab14efcbf86b1bc142be17067aa088fa71c19728ce7db964bfdc097",
   "source_prompt": "Compare two architecture options without downstream execution.",
   "workflow_plan": {
     "activation": {
@@ -30,7 +30,7 @@
       "max_rounds": 1,
       "time_box": "one direct response or routed workflow"
     },
-    "created_by": "keelplane",
+    "created_by": "depone",
     "execution_path": {
       "consumer": "human",
       "first_slice": {
@@ -44,7 +44,7 @@
         "inputs": [
           "original prompt"
         ],
-        "instruction": "Use workflow-router instead of keelplane for this request."
+        "instruction": "Use workflow-router instead of depone for this request."
       },
       "mode": "direct-codex"
     },

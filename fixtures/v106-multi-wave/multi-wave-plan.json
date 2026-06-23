@@ -1,182 +1,262 @@
 {
-  "schema_version": "0.5",
-  "plan_id": "v106-multi-wave-plan",
-  "created_by": "keelplane",
-  "source_prompt": "Design a gated multi-wave workflow with a preferred object-shaped first wave.",
   "activation": {
     "decision": "activate",
-    "matched_thresholds": ["resumable-handoffs", "adversarial-verification"],
     "downgrade_target": null,
+    "matched_thresholds": [
+      "resumable-handoffs",
+      "adversarial-verification"
+    ],
     "reason": "Multi-wave workflow fixture."
   },
-  "objective": "Exercise first_wave and waves validation without breaking first_slice compatibility.",
-  "surfaces": [
-    {
-      "id": "repo",
-      "kind": "repo",
-      "locator": ".",
-      "access_mode": "read-only"
-    }
-  ],
   "assumptions": [
     {
       "claim": "Fixture inputs are present.",
       "verification": "Read the fixture directory."
     }
   ],
-  "patterns": ["Sequential"],
-  "phases": [
-    {
-      "id": "inspect",
-      "name": "Inspect",
-      "entry_criteria": ["Prompt is available"],
-      "exit_criteria": ["Inputs are listed"],
-      "depends_on": [],
-      "worker_ids": ["planner"],
-      "outputs": ["input-ledger"]
-    }
-  ],
-  "workers": [
-    {
-      "id": "planner",
-      "role": "Planner",
-      "tool_permissions": {
-        "read": true,
-        "write": false,
-        "shell": false,
-        "network": false,
-        "mcp_connectors": [],
-        "requires_escalation_for": ["write", "shell", "network"]
-      },
-      "forbidden_actions": ["edit files"],
-      "context_budget": {
-        "max_files": 5,
-        "max_tokens": 2000,
-        "must_include": ["prompt"],
-        "must_exclude": ["secrets"]
-      },
-      "prompt_contract": {
-        "inputs": ["prompt"],
-        "required_output_schema": "input-ledger",
-        "stop_conditions": ["missing prompt"]
-      },
-      "ownership": ["planning only"]
-    }
-  ],
-  "handoffs": [
-    {
-      "from_phase": "inspect",
-      "to_phase": "inspect",
-      "artifact": "input-ledger",
-      "artifact_schema": {
-        "format": "json",
-        "required_fields": ["inputs"],
-        "validation_command": "python -m json.tool input-ledger.json"
-      }
-    }
-  ],
-  "parallelism": {
-    "shape": "none",
-    "concurrency_cap": 1,
-    "fan_in_rule": "No fan-in.",
-    "barriers": []
-  },
-  "verification": [
-    {
-      "claim_or_output": "Plan is reusable.",
-      "falsifier": "A consumer cannot identify the first slice.",
-      "evidence_required": ["consumer report"]
-    }
-  ],
-  "risk_gates": [
-    {
-      "trigger": "write action",
-      "safe_default": "stop before writing and ask for approval",
-      "requires_user_approval": true
-    },
-    {
-      "trigger": "shell action",
-      "safe_default": "stop before shell use and ask for approval",
-      "requires_user_approval": true
-    },
-    {
-      "trigger": "network action",
-      "safe_default": "stop before network use and ask for approval",
-      "requires_user_approval": true
-    }
-  ],
   "budget": {
+    "file_touch_limit": "none",
     "max_agents": 1,
-    "max_rounds": 1,
     "max_retries": 0,
-    "time_box": "10 minutes",
-    "file_touch_limit": "none"
+    "max_rounds": 1,
+    "time_box": "10 minutes"
   },
-  "resume": {
-    "cacheable_outputs": ["input-ledger"],
-    "invalidators": ["prompt changes"],
-    "restart_points": ["inspect"]
-  },
+  "created_by": "depone",
   "execution_path": {
-    "mode": "subagent-plan",
     "consumer": "codex-agent",
     "first_slice": {
-      "instruction": "Inspect the prompt and list required inputs.",
-      "inputs": ["original prompt", "repository path"],
-      "expected_output": "input ledger",
       "completion_check": "ledger has inputs",
-      "forbidden_actions": ["write files"]
+      "expected_output": "input ledger",
+      "forbidden_actions": [
+        "write files"
+      ],
+      "inputs": [
+        "original prompt",
+        "repository path"
+      ],
+      "instruction": "Inspect the prompt and list required inputs."
     },
     "first_wave": {
-      "id": "wave-1",
       "concurrency_cap": 4,
       "entry_gate": "run started with V105 verify wedge fixtures available",
       "exit_gate": "wave-1 receipt verified after V105 verified/refuted verdicts match expected outcomes",
       "fan_in": "all V105 case reports must exist before the wave-1 receipt unlocks wave-2",
+      "id": "wave-1",
       "slices": [
         {
-          "id": "v105-missing-test-log",
-          "instruction": "Verify V105 case missing-test-log is refuted from harness evidence.",
-          "inputs": ["fixtures/v105-verify-wedge/plan.json", "fixtures/v105-verify-wedge/cases.json#missing-test-log", "fixtures/v105-verify-wedge/evidence/missing-test-log"],
-          "expected_output": "refuted verdict with ERR_REQUIRED_TEST_EVIDENCE_MISSING",
           "completion_check": "case report contains ERR_REQUIRED_TEST_EVIDENCE_MISSING",
-          "forbidden_actions": ["network", "publish", "secret access"]
+          "expected_output": "refuted verdict with ERR_REQUIRED_TEST_EVIDENCE_MISSING",
+          "forbidden_actions": [
+            "network",
+            "publish",
+            "secret access"
+          ],
+          "id": "v105-missing-test-log",
+          "inputs": [
+            "fixtures/v105-verify-wedge/plan.json",
+            "fixtures/v105-verify-wedge/cases.json#missing-test-log",
+            "fixtures/v105-verify-wedge/evidence/missing-test-log"
+          ],
+          "instruction": "Verify V105 case missing-test-log is refuted from harness evidence."
         },
         {
-          "id": "v105-forbidden-file-touch",
-          "instruction": "Verify V105 case forbidden-file-touch is refuted from touched-file evidence.",
-          "inputs": ["fixtures/v105-verify-wedge/plan.json", "fixtures/v105-verify-wedge/cases.json#forbidden-file-touch", "fixtures/v105-verify-wedge/evidence/forbidden-file-touch"],
-          "expected_output": "refuted verdict with ERR_FORBIDDEN_FILE_TOUCHED",
           "completion_check": "case report contains ERR_FORBIDDEN_FILE_TOUCHED",
-          "forbidden_actions": ["network", "publish", "secret access"]
+          "expected_output": "refuted verdict with ERR_FORBIDDEN_FILE_TOUCHED",
+          "forbidden_actions": [
+            "network",
+            "publish",
+            "secret access"
+          ],
+          "id": "v105-forbidden-file-touch",
+          "inputs": [
+            "fixtures/v105-verify-wedge/plan.json",
+            "fixtures/v105-verify-wedge/cases.json#forbidden-file-touch",
+            "fixtures/v105-verify-wedge/evidence/forbidden-file-touch"
+          ],
+          "instruction": "Verify V105 case forbidden-file-touch is refuted from touched-file evidence."
         },
         {
-          "id": "v105-test-weakened",
-          "instruction": "Verify V105 case test-weakened is refuted from diff evidence.",
-          "inputs": ["fixtures/v105-verify-wedge/plan.json", "fixtures/v105-verify-wedge/cases.json#test-weakened", "fixtures/v105-verify-wedge/evidence/test-weakened"],
-          "expected_output": "refuted verdict with ERR_TEST_WEAKENED",
           "completion_check": "case report contains ERR_TEST_WEAKENED",
-          "forbidden_actions": ["network", "publish", "secret access"]
+          "expected_output": "refuted verdict with ERR_TEST_WEAKENED",
+          "forbidden_actions": [
+            "network",
+            "publish",
+            "secret access"
+          ],
+          "id": "v105-test-weakened",
+          "inputs": [
+            "fixtures/v105-verify-wedge/plan.json",
+            "fixtures/v105-verify-wedge/cases.json#test-weakened",
+            "fixtures/v105-verify-wedge/evidence/test-weakened"
+          ],
+          "instruction": "Verify V105 case test-weakened is refuted from diff evidence."
         },
         {
-          "id": "v105-good",
-          "instruction": "Verify V105 case good remains verified without evidence-contract errors.",
-          "inputs": ["fixtures/v105-verify-wedge/plan.json", "fixtures/v105-verify-wedge/cases.json#good", "fixtures/v105-verify-wedge/evidence/good"],
-          "expected_output": "verified verdict with no evidence-contract codes",
           "completion_check": "case report has verified verdict and empty code list",
-          "forbidden_actions": ["network", "publish", "secret access"]
+          "expected_output": "verified verdict with no evidence-contract codes",
+          "forbidden_actions": [
+            "network",
+            "publish",
+            "secret access"
+          ],
+          "id": "v105-good",
+          "inputs": [
+            "fixtures/v105-verify-wedge/plan.json",
+            "fixtures/v105-verify-wedge/cases.json#good",
+            "fixtures/v105-verify-wedge/evidence/good"
+          ],
+          "instruction": "Verify V105 case good remains verified without evidence-contract errors."
         }
       ]
     },
+    "mode": "subagent-plan",
     "waves": [
       {
-        "id": "wave-2",
-        "depends_on": ["wave-1"],
         "concurrency_cap": 1,
+        "depends_on": [
+          "wave-1"
+        ],
         "entry_gate": "receipt from wave-1 verified after V105 verified/refuted verdicts match expected outcomes",
-        "slices": ["slice-review"],
-        "exit_gate": "wave-2 exit receipt verified"
+        "exit_gate": "wave-2 exit receipt verified",
+        "id": "wave-2",
+        "slices": [
+          "slice-review"
+        ]
       }
     ]
-  }
+  },
+  "handoffs": [
+    {
+      "artifact": "input-ledger",
+      "artifact_schema": {
+        "format": "json",
+        "required_fields": [
+          "inputs"
+        ],
+        "validation_command": "python -m json.tool input-ledger.json"
+      },
+      "from_phase": "inspect",
+      "to_phase": "inspect"
+    }
+  ],
+  "objective": "Exercise first_wave and waves validation without breaking first_slice compatibility.",
+  "parallelism": {
+    "barriers": [],
+    "concurrency_cap": 1,
+    "fan_in_rule": "No fan-in.",
+    "shape": "none"
+  },
+  "patterns": [
+    "Sequential"
+  ],
+  "phases": [
+    {
+      "depends_on": [],
+      "entry_criteria": [
+        "Prompt is available"
+      ],
+      "exit_criteria": [
+        "Inputs are listed"
+      ],
+      "id": "inspect",
+      "name": "Inspect",
+      "outputs": [
+        "input-ledger"
+      ],
+      "worker_ids": [
+        "planner"
+      ]
+    }
+  ],
+  "plan_id": "v106-multi-wave-plan",
+  "resume": {
+    "cacheable_outputs": [
+      "input-ledger"
+    ],
+    "invalidators": [
+      "prompt changes"
+    ],
+    "restart_points": [
+      "inspect"
+    ]
+  },
+  "risk_gates": [
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before writing and ask for approval",
+      "trigger": "write action"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before shell use and ask for approval",
+      "trigger": "shell action"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before network use and ask for approval",
+      "trigger": "network action"
+    }
+  ],
+  "schema_version": "0.5",
+  "source_prompt": "Design a gated multi-wave workflow with a preferred object-shaped first wave.",
+  "surfaces": [
+    {
+      "access_mode": "read-only",
+      "id": "repo",
+      "kind": "repo",
+      "locator": "."
+    }
+  ],
+  "verification": [
+    {
+      "claim_or_output": "Plan is reusable.",
+      "evidence_required": [
+        "consumer report"
+      ],
+      "falsifier": "A consumer cannot identify the first slice."
+    }
+  ],
+  "workers": [
+    {
+      "context_budget": {
+        "max_files": 5,
+        "max_tokens": 2000,
+        "must_exclude": [
+          "secrets"
+        ],
+        "must_include": [
+          "prompt"
+        ]
+      },
+      "forbidden_actions": [
+        "edit files"
+      ],
+      "id": "planner",
+      "ownership": [
+        "planning only"
+      ],
+      "prompt_contract": {
+        "inputs": [
+          "prompt"
+        ],
+        "required_output_schema": "input-ledger",
+        "stop_conditions": [
+          "missing prompt"
+        ]
+      },
+      "role": "Planner",
+      "tool_permissions": {
+        "mcp_connectors": [],
+        "network": false,
+        "read": true,
+        "requires_escalation_for": [
+          "write",
+          "shell",
+          "network"
+        ],
+        "shell": false,
+        "write": false
+      }
+    }
+  ]
 }

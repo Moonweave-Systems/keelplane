@@ -24,7 +24,7 @@ Generated dogfood values:
 - `reviewed_phase_ids`: `evidence_review, release_decision`
 - `ready_phase_ids`: `human_gate`
 - `selected_phase_ids`: `human_gate`
-- `state_hash`: `a96d40d2889a0a97ce0b3edd4170be30d2abac4c15beec7d1eaed545191086ab`
+- `state_hash`: `53ffa287b440c6c8c0a845e5448e202a227581f30671f402d6df3b2f2441e730`
 
 This decision covers ingestion of one deterministic V7.5 reviewed frontier
 result into the next frontier artifact. It does not claim workflow completion,

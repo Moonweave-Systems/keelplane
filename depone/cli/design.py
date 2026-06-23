@@ -1,4 +1,4 @@
-"""keelplane design — decompose an objective into a workflow plan.
+"""depone design — decompose an objective into a workflow plan.
 
 In V104.0, design produces a template plan.json from common workflow patterns,
 then validates it against the schema. The plan is intended to be reviewed and
@@ -14,8 +14,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from keelplane.cli.design_contract import apply_minimal_contract
-from keelplane.core.plan_schema import validate_plan_strict
+from depone.cli.design_contract import apply_minimal_contract
+from depone.core.plan_schema import validate_plan_strict
 
 # Reusable workflow templates indexed by detected pattern.
 # Each template is a partial plan.json that gets populated with the objective.
@@ -23,7 +23,7 @@ _PLAN_TEMPLATES: dict[str, dict[str, Any]] = {
     "sequential": {
         "schema_version": "0.5",
         "plan_id": "",
-        "created_by": "keelplane",
+        "created_by": "depone",
         "source_prompt": "",
         "activation": {
             "decision": "activate",
@@ -38,10 +38,21 @@ _PLAN_TEMPLATES: dict[str, dict[str, Any]] = {
         "phases": [],
         "workers": [],
         "handoffs": [],
-        "parallelism": {"shape": "none", "concurrency_cap": 1, "barriers": [], "fan_in_rule": "single downstream review"},
+        "parallelism": {
+            "shape": "none",
+            "concurrency_cap": 1,
+            "barriers": [],
+            "fan_in_rule": "single downstream review",
+        },
         "verification": [],
         "risk_gates": [],
-        "budget": {"max_agents": 3, "max_rounds": 5, "max_retries": 2, "time_box": "30m", "file_touch_limit": "5 files"},
+        "budget": {
+            "max_agents": 3,
+            "max_rounds": 5,
+            "max_retries": 2,
+            "time_box": "30m",
+            "file_touch_limit": "5 files",
+        },
         "resume": {"cacheable_outputs": [], "invalidators": [], "restart_points": []},
         "execution_path": {
             "mode": "plugin",
@@ -58,7 +69,7 @@ _PLAN_TEMPLATES: dict[str, dict[str, Any]] = {
     "research": {
         "schema_version": "0.5",
         "plan_id": "",
-        "created_by": "keelplane",
+        "created_by": "depone",
         "source_prompt": "",
         "activation": {
             "decision": "activate",
@@ -73,10 +84,21 @@ _PLAN_TEMPLATES: dict[str, dict[str, Any]] = {
         "phases": [],
         "workers": [],
         "handoffs": [],
-        "parallelism": {"shape": "fan-out-fan-in", "concurrency_cap": 3, "barriers": ["research-complete"], "fan_in_rule": "all research findings reconcile before review"},
+        "parallelism": {
+            "shape": "fan-out-fan-in",
+            "concurrency_cap": 3,
+            "barriers": ["research-complete"],
+            "fan_in_rule": "all research findings reconcile before review",
+        },
         "verification": [],
         "risk_gates": [],
-        "budget": {"max_agents": 5, "max_rounds": 3, "max_retries": 1, "time_box": "45m", "file_touch_limit": "8 files"},
+        "budget": {
+            "max_agents": 5,
+            "max_rounds": 3,
+            "max_retries": 1,
+            "time_box": "45m",
+            "file_touch_limit": "8 files",
+        },
         "resume": {"cacheable_outputs": [], "invalidators": [], "restart_points": []},
         "execution_path": {
             "mode": "plugin",
@@ -93,27 +115,50 @@ _PLAN_TEMPLATES: dict[str, dict[str, Any]] = {
     "audit": {
         "schema_version": "0.5",
         "plan_id": "",
-        "created_by": "keelplane",
+        "created_by": "depone",
         "source_prompt": "",
         "activation": {
             "decision": "activate",
-            "matched_thresholds": ["multi-surface-fanout", "resumable-handoffs", "adversarial-verification"],
+            "matched_thresholds": [
+                "multi-surface-fanout",
+                "resumable-handoffs",
+                "adversarial-verification",
+            ],
             "downgrade_target": None,
             "reason": "Codebase audit with parallel surface investigation and adversarial verification.",
         },
         "objective": "",
         "surfaces": [],
         "assumptions": [],
-        "patterns": ["Parallel Fan-Out / Fan-In", "Adversarial Verify", "Resume And Cache"],
+        "patterns": [
+            "Parallel Fan-Out / Fan-In",
+            "Adversarial Verify",
+            "Resume And Cache",
+        ],
         "phases": [],
         "workers": [],
         "handoffs": [],
-        "parallelism": {"shape": "fan-out-fan-in", "concurrency_cap": 4, "barriers": ["audit-complete"], "fan_in_rule": "all inspected surfaces reconcile before review"},
+        "parallelism": {
+            "shape": "fan-out-fan-in",
+            "concurrency_cap": 4,
+            "barriers": ["audit-complete"],
+            "fan_in_rule": "all inspected surfaces reconcile before review",
+        },
         "verification": [],
         "risk_gates": [
-            {"trigger": "write", "safe_default": "read-only analysis", "requires_user_approval": True},
+            {
+                "trigger": "write",
+                "safe_default": "read-only analysis",
+                "requires_user_approval": True,
+            },
         ],
-        "budget": {"max_agents": 6, "max_rounds": 5, "max_retries": 2, "time_box": "60m", "file_touch_limit": "10 files"},
+        "budget": {
+            "max_agents": 6,
+            "max_rounds": 5,
+            "max_retries": 2,
+            "time_box": "60m",
+            "file_touch_limit": "10 files",
+        },
         "resume": {"cacheable_outputs": [], "invalidators": [], "restart_points": []},
         "execution_path": {
             "mode": "plugin",
@@ -147,6 +192,7 @@ def _detect_pattern(objective: str) -> str:
 def _generate_plan_id(objective: str) -> str:
     """Generate a stable plan ID from the objective."""
     import hashlib
+
     suffix = hashlib.md5(objective.encode()).hexdigest()[:8]
     words = objective.lower().split()[:4]
     slug = "-".join(w for w in words if w.isalpha())
@@ -175,7 +221,10 @@ def run(args: argparse.Namespace) -> None:
 
     objective = args.objective
     if not objective:
-        print("Usage: keelplane design <objective> [--surface PATH] [--out plan.json]", file=sys.stderr)
+        print(
+            "Usage: depone design <objective> [--surface PATH] [--out plan.json]",
+            file=sys.stderr,
+        )
         sys.exit(1)
     pattern_name = _detect_pattern(objective)
     template = _PLAN_TEMPLATES.get(pattern_name, _PLAN_TEMPLATES["sequential"])
@@ -190,7 +239,10 @@ def run(args: argparse.Namespace) -> None:
 
     errors = validate_plan_strict(plan)
     if errors:
-        print(f"Error: generated plan failed validation with {len(errors)} issue(s):", file=sys.stderr)
+        print(
+            f"Error: generated plan failed validation with {len(errors)} issue(s):",
+            file=sys.stderr,
+        )
         for e in errors:
             print(f"  - {e}", file=sys.stderr)
         sys.exit(1)
@@ -210,7 +262,8 @@ def run(args: argparse.Namespace) -> None:
 def _self_test() -> None:
     """Run a basic self-test."""
     import tempfile
-    print("keelplane design --self-test")
+
+    print("depone design --self-test")
     tests = 0
     passed = 0
 

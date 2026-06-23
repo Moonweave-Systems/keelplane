@@ -25,7 +25,7 @@ Generated dogfood values:
 - `human_approved_phase_ids`: `human_gate`
 - `ready_phase_ids`: ``
 - `selected_phase_ids`: ``
-- `state_hash`: `1496e679c73fe99c118cb8eeb16c1853a7b282ffc0ddbf6b92f0d7e331031198`
+- `state_hash`: `541de5b9c877d27ff659081a5cdc327e2aa8be48d4f8f95f97c80b4cb2d5c09c`
 
 This decision covers resolution of one deterministic V8 `human_gate` frontier
 through one tracked approval artifact. It does not claim worker execution, Codex

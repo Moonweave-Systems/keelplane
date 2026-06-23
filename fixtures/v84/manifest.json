@@ -8,7 +8,7 @@
         "label": "active",
         "path": "SKILL.md",
         "exists": true,
-        "content_hash": "4720ffef70c1d156ee73fd8f7dacb1f84f4cc57397f4b1d6ed25097e9707ca87",
+        "content_hash": "2781790c2ab14efcbf86b1bc142be17067aa088fa71c19728ce7db964bfdc097",
         "is_repo_skill": true
       },
       "installed_surfaces": [],
@@ -21,15 +21,15 @@
         "label": "active",
         "path": "SKILL.md",
         "exists": true,
-        "content_hash": "4720ffef70c1d156ee73fd8f7dacb1f84f4cc57397f4b1d6ed25097e9707ca87",
+        "content_hash": "2781790c2ab14efcbf86b1bc142be17067aa088fa71c19728ce7db964bfdc097",
         "is_repo_skill": true
       },
       "installed_surfaces": [
         {
           "label": "installed-copy",
-          "path": "~/.codex/skills/keelplane/SKILL.md",
+          "path": "~/.codex/skills/depone/SKILL.md",
           "exists": true,
-          "content_hash": "4720ffef70c1d156ee73fd8f7dacb1f84f4cc57397f4b1d6ed25097e9707ca87",
+          "content_hash": "2781790c2ab14efcbf86b1bc142be17067aa088fa71c19728ce7db964bfdc097",
           "is_repo_skill": false
         }
       ],
@@ -42,13 +42,13 @@
         "label": "active",
         "path": "SKILL.md",
         "exists": true,
-        "content_hash": "4720ffef70c1d156ee73fd8f7dacb1f84f4cc57397f4b1d6ed25097e9707ca87",
+        "content_hash": "2781790c2ab14efcbf86b1bc142be17067aa088fa71c19728ce7db964bfdc097",
         "is_repo_skill": true
       },
       "installed_surfaces": [
         {
           "label": "installed-copy",
-          "path": "~/.codex/skills/keelplane/SKILL.md",
+          "path": "~/.codex/skills/depone/SKILL.md",
           "exists": true,
           "content_hash": "stale-copy-hash",
           "is_repo_skill": false

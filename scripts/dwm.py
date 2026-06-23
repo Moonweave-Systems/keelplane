@@ -730,9 +730,9 @@ def sha256_text(text: str) -> str:
 
 
 def now_utc() -> str:
-    from datetime import UTC, datetime
+    from datetime import datetime, timezone
 
-    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def rel(path: Path) -> str:
@@ -917,10 +917,10 @@ def create_shell_request(objective: str, out_dir: Path, *, mode: str) -> dict[st
         "objective": objective,
         "decision": "blocked-before-live-execution" if live_blocked else "plan-only",
         "execution_path": "plan-only",
-        "safe_default": "inspect this artifact, then invoke $keelplane or an approved adapter command",
+        "safe_default": "inspect this artifact, then invoke $depone or an approved adapter command",
         "blocked_by": ["ERR_DWM_SHELL_LIVE_EXECUTION_BLOCKED"] if live_blocked else [],
         "recommended_commands": [
-            f"Use $keelplane to design a workflow for: {objective}",
+            f"Use $depone to design a workflow for: {objective}",
             f"python scripts/dwm.py resume --run {rel(out_dir)} --json",
         ],
     }
@@ -994,7 +994,7 @@ def render_shell_resume(status: dict[str, Any]) -> str:
         lines.extend(["Blocked by:", *[f"- `{item}`" for item in blocked], ""])
     lines.extend(
         [
-            "Safe next action: inspect the request artifact and invoke `$keelplane` for a real workflow design.",
+            "Safe next action: inspect the request artifact and invoke `$depone` for a real workflow design.",
             "",
         ]
     )

@@ -8,7 +8,7 @@
   "completion_check": "no dynamic workflow artifact is needed",
   "consumer_verdict": "pass",
   "expected_output": "bounded response or routed workflow decision",
-  "first_slice": "Use workflow-router instead of keelplane for this request.",
+  "first_slice": "Use workflow-router instead of depone for this request.",
   "fixture_id": "border-architecture-compare",
   "forbidden_actions_identified": [
     "spawning agents",
@@ -23,16 +23,16 @@
       "completion_check": "completion_check: no dynamic workflow artifact is needed",
       "downgrade_target": "downgrade_target: workflow-router",
       "expected_output": "expected_output: bounded response or routed workflow decision",
-      "first_slice": "first_slice: Use workflow-router instead of keelplane for this request.",
+      "first_slice": "first_slice: Use workflow-router instead of depone for this request.",
       "forbidden_actions": "forbidden_actions: spawning agents; editing files; external messages",
       "inputs_needed": "inputs_needed: original prompt",
       "risk_gates": "risk_gates: implementation decision",
       "safe_defaults": "safe_defaults: implementation decision -> stop before implementation decisions and ask for approval"
     },
     "packet_sha256": {
-      "workflow.plan.json": "757df1c4641037a25bf8d6625a32d5f1026d53cd7ee777524fb53193627dd03b",
-      "blueprint.md": "7cf2bfe6e2b0260fd7cec0ad8d2243a36db07735f14f09b00a573fe6d7617796",
-      "original prompt": "bea821b09bee16bea384f1f72b1a208ee0bad17c9ae5091a354accef4ab54723"
+      "blueprint.md": "49b923f2945db5eb52a22b8450418dc22870855b8ca0e5df1de9e93e1b2e2287",
+      "original prompt": "bea821b09bee16bea384f1f72b1a208ee0bad17c9ae5091a354accef4ab54723",
+      "workflow.plan.json": "e4fd55d60d7afcdc89557a967e5526920af72aa07eea72a772843cfdb49b8436"
     },
     "reviewer_note": "Blinded sample reviewer identified the first slice, required inputs, forbidden actions, gates, and safe defaults from the supplied packet only.",
     "run_kind": "blinded-sample-review",
@@ -41,7 +41,7 @@
       "blueprint.md",
       "original prompt"
     ],
-    "transcript_excerpt": "Consumer selected first slice: Use workflow-router instead of keelplane for this request."
+    "transcript_excerpt": "Consumer selected first slice: Use workflow-router instead of depone for this request."
   },
   "received_spec_or_expected_answer": false,
   "risk_gates_identified": [

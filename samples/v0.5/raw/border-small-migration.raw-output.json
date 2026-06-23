@@ -1,14 +1,14 @@
 {
   "fixture_id": "border-small-migration",
   "packet_sha256": {
-    "workflow.plan.json": "268fe0caa77b275a6f5b6671f1a3af09c199fbdc35592987fd4675d197c06615",
-    "blueprint.md": "8e452aa84be5ed15d284499e937499cdb02f9f05b29a55da56aeff2c1d2f5a2e",
-    "original prompt": "81f143c5966be05f7034dd156236fd0d7fb90c9b362395bb5df00fce1b038899"
+    "blueprint.md": "3f9ebec1789bb55a7b05309a458014dd6bdbade904153db1943d8494603ac63f",
+    "original prompt": "81f143c5966be05f7034dd156236fd0d7fb90c9b362395bb5df00fce1b038899",
+    "workflow.plan.json": "c16c2d4d83e3f9f2526f9b0334ed88735e8f900b520056747321ef728086b626"
   },
-  "producer": "keelplane",
+  "producer": "depone",
   "raw_kind": "workflow-output",
-  "rendered_blueprint": "# border-small-migration\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (Twelve call sites in one package need bounded implementation routing, not dynamic workflow design.)\nPatterns: none\n\n## First Slice\n\nUse workflow-router instead of keelplane for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- migration source edit: stop before migration source edits and ask for approval\n",
-  "skill_sha256": "27261b50e6811ad03073544983f5e4b4905a9c9035f2d1b8f044a4ee24b49798",
+  "rendered_blueprint": "# border-small-migration\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (Twelve call sites in one package need bounded implementation routing, not dynamic workflow design.)\nPatterns: none\n\n## First Slice\n\nUse workflow-router instead of depone for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- migration source edit: stop before migration source edits and ask for approval\n",
+  "skill_sha256": "2781790c2ab14efcbf86b1bc142be17067aa088fa71c19728ce7db964bfdc097",
   "source_prompt": "Create a migration plan for 12 call sites in one package.",
   "workflow_plan": {
     "activation": {
@@ -30,7 +30,7 @@
       "max_rounds": 1,
       "time_box": "one direct response or routed workflow"
     },
-    "created_by": "keelplane",
+    "created_by": "depone",
     "execution_path": {
       "consumer": "human",
       "first_slice": {
@@ -44,7 +44,7 @@
         "inputs": [
           "original prompt"
         ],
-        "instruction": "Use workflow-router instead of keelplane for this request."
+        "instruction": "Use workflow-router instead of depone for this request."
       },
       "mode": "direct-codex"
     },

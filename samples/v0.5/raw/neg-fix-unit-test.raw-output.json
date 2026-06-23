@@ -1,14 +1,14 @@
 {
   "fixture_id": "neg-fix-unit-test",
   "packet_sha256": {
-    "workflow.plan.json": "a6dbe7f9e51db414522a3ee21ac595250a86f7e8cd2f4c879eb394f9ab6f4ec8",
-    "blueprint.md": "6286350e820cbcda65d96e4242517277306fc30b73a4de1030a424c7a23cab59",
-    "original prompt": "f8e61ddc5660e707003459711cdbd66f3cd203b102be88886d13841cbd4c3065"
+    "blueprint.md": "d28795805e57a7b4082c98a490ad0aef77d727286b49db0627c6f04216024a7a",
+    "original prompt": "f8e61ddc5660e707003459711cdbd66f3cd203b102be88886d13841cbd4c3065",
+    "workflow.plan.json": "ce6332034248f4d343ebd82b7ddc52d3037f8857d7442bb3a696897c69bc6064"
   },
-  "producer": "keelplane",
+  "producer": "depone",
   "raw_kind": "workflow-output",
-  "rendered_blueprint": "# neg-fix-unit-test\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (A single failing test should be reproduced and fixed directly; no resumable multi-agent artifact is needed.)\nPatterns: none\n\n## First Slice\n\nUse direct-codex instead of keelplane for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- source edit action: stop before source edits and ask for approval\n",
-  "skill_sha256": "27261b50e6811ad03073544983f5e4b4905a9c9035f2d1b8f044a4ee24b49798",
+  "rendered_blueprint": "# neg-fix-unit-test\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (A single failing test should be reproduced and fixed directly; no resumable multi-agent artifact is needed.)\nPatterns: none\n\n## First Slice\n\nUse direct-codex instead of depone for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- source edit action: stop before source edits and ask for approval\n",
+  "skill_sha256": "2781790c2ab14efcbf86b1bc142be17067aa088fa71c19728ce7db964bfdc097",
   "source_prompt": "Fix this failing unit test.",
   "workflow_plan": {
     "activation": {
@@ -30,7 +30,7 @@
       "max_rounds": 1,
       "time_box": "one direct response or routed workflow"
     },
-    "created_by": "keelplane",
+    "created_by": "depone",
     "execution_path": {
       "consumer": "human",
       "first_slice": {
@@ -44,7 +44,7 @@
         "inputs": [
           "original prompt"
         ],
-        "instruction": "Use direct-codex instead of keelplane for this request."
+        "instruction": "Use direct-codex instead of depone for this request."
       },
       "mode": "direct-codex"
     },

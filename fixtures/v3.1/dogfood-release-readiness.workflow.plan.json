@@ -26,7 +26,7 @@
     "max_rounds": 2,
     "time_box": "one dogfood session"
   },
-  "created_by": "keelplane",
+  "created_by": "depone",
   "execution_path": {
     "consumer": "runtime",
     "first_slice": {

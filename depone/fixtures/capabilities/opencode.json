@@ -1,0 +1,11 @@
+{
+  "name": "opencode",
+  "version": "1.0.0",
+  "supports_hard_tool_filtering": false,
+  "supports_per_subagent_allowlist": false,
+  "supports_mcp_filtering": false,
+  "supported_features": ["shell", "read", "edit", "write", "search", "glob", "mcp-server", "subagent-delegation"],
+  "unsupported_features": ["per-subagent-allowlist", "per-subagent-mcp-filtering", "hard-tool-allowlist"],
+  "approximations": ["MCP servers are global by default; per-agent MCP filtering is not supported unless externally proven"],
+  "notes": "OpenCode/OMO supports MCP servers and subagent delegation but all MCP tools are globally available. Per-agent tool filtering is approximated."
+}

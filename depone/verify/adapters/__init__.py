@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 _ADAPTER_REGISTRY: dict[str, str] = {
-    "generic": "keelplane.verify.adapters.generic",
-    "conductor": "keelplane.verify.adapters.generic",  # V104.0: same as generic
+    "generic": "depone.verify.adapters.generic",
+    "conductor": "depone.verify.adapters.generic",  # V104.0: same as generic
 }
 
 

@@ -1,4 +1,4 @@
-"""keelplane validate — validate a plan.json against the schema."""
+"""depone validate — validate a plan.json against the schema."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from keelplane.core.plan_schema import (
+from depone.core.plan_schema import (
     load_plan,
     validate_plan,
     validate_plan_strict,
@@ -23,7 +23,7 @@ def run(args: argparse.Namespace) -> None:
 
     plan_path = args.plan
     if not plan_path:
-        print("Usage: keelplane validate <plan.json>")
+        print("Usage: depone validate <plan.json>")
         sys.exit(1)
 
     path = Path(plan_path)
@@ -45,9 +45,9 @@ def run(args: argparse.Namespace) -> None:
 def _embedded_parity_holds() -> bool:
     import copy
 
-    from keelplane.cli.demo import _generate_demo_plan
-    from keelplane.core.embedded_plan_contract import validate_embedded_contract
-    from keelplane.core.plan_schema import _load_repo_evaluator
+    from depone.cli.demo import _generate_demo_plan
+    from depone.core.embedded_plan_contract import validate_embedded_contract
+    from depone.core.plan_schema import _load_repo_evaluator
 
     base = _generate_demo_plan()
     vectors: list[tuple[str, bool, dict]] = [("valid-base", True, base)]
@@ -82,7 +82,7 @@ def _embedded_parity_holds() -> bool:
 
 def _self_test() -> None:
     """Run a basic self-test."""
-    print("keelplane validate --self-test")
+    print("depone validate --self-test")
     tests = 0
     passed = 0
 
@@ -91,7 +91,7 @@ def _self_test() -> None:
     valid_plan = {
         "schema_version": "0.5",
         "plan_id": "self-test",
-        "created_by": "keelplane",
+        "created_by": "depone",
         "source_prompt": "self-test",
         "activation": {
             "decision": "activate",

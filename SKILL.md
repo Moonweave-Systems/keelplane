@@ -1,9 +1,9 @@
 ---
-name: keelplane
-description: Keelplane skill entrypoint. Design large, situation-aware multi-agent workflows for broad tasks that are too big for one normal agent turn. Use when a user asks for dynamic workflows, ultracode-style orchestration, large workflow design, multi-agent decomposition, codebase-wide audits, migrations, research sweeps, verification harnesses, or a plan that should scale across phases, subagents, gates, budgets, and resumable execution.
+name: depone
+description: Depone skill entrypoint. Design large, situation-aware multi-agent workflows for broad tasks that are too big for one normal agent turn. Use when a user asks for dynamic workflows, ultracode-style orchestration, large workflow design, multi-agent decomposition, codebase-wide audits, migrations, research sweeps, verification harnesses, or a plan that should scale across phases, subagents, gates, budgets, and resumable execution.
 ---
 
-# Keelplane Skill Entrypoint
+# Depone Skill Entrypoint
 
 DWM means Deterministic Workflow Machine. Use this skill entrypoint to turn a
 large objective into an executable workflow design. It is not a thin router. It

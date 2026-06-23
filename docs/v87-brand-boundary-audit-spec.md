@@ -4,14 +4,14 @@ Status: implemented brand boundary audit in `scripts/dwm_brand_boundary_audit.py
 
 ## Objective
 
-Protect the V86 Keelplane brand decision from drifting back into ambiguous
+Protect the V86 Depone brand decision from drifting back into ambiguous
 public DWM naming while enforcing the single current skill identity.
 
 ## Product Boundary
 
-- Public product brand: `Keelplane`.
+- Public product brand: `Depone`.
 - Internal engine name: `DWM Core`.
-- Skill name: `keelplane`.
+- Skill name: `depone`.
 - Repository slug remains `dwm`.
 - Existing CLI commands and artifact paths are not renamed in V87.
 
@@ -22,7 +22,7 @@ The audit reads public source surfaces and emits `brand-boundary-audit.json`,
 
 It blocks when:
 
-- README does not lead with `# Keelplane`.
+- README does not lead with `# Depone`.
 - Public docs regress to `# DWM` or `# DWM Branding` headings.
 - The skill name is dropped from the brand boundary.
 - The internal `DWM Core` engine name is dropped.

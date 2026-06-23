@@ -1,13 +1,13 @@
-# Keelplane / DWM Core Spec
+# Depone / DWM Core Spec
 
 Status: V1 implemented, V2 release candidate, V2.5 first loop implemented, V3 entry runtime implemented, V12-V20 product slices implemented, V87 brand boundary audit implemented, V88 roadmap reconciliation, V89 command safety, V90 activation v2, V91 contract tiering, V92 evidence oracle, V93 workflow narrative, V94 control deck score, V95 score history, V96 metric ladder, V97 benchmark readiness, V98 wave operator, V99 wave receipt, V100 promotion evidence, V101 promotion route, V102 deterministic live-proof recorder, V103 live-proof comparison schema, V104 product direction, V105 verify wedge, V106 multi-wave validation, Last updated: 2026-06-20
 
 ## Purpose
 
-Keelplane is the public product brand. DWM Core, the Deterministic Workflow
+Depone is the public product brand. DWM Core, the Deterministic Workflow
 Machine, helps Codex design and operate large, situation-aware workflows for
 work that is too broad for a single normal agent turn. The installed skill
-entrypoint is `keelplane`. Keelplane
+entrypoint is `depone`. Depone
 fills the gap between a thin route selector and a full workflow runtime.
 
 The skill entrypoint should produce a concrete workflow architecture: phases,
@@ -24,7 +24,7 @@ workflow itself for a very large task.
 Positioning:
 
 - `workflow-router`: classify and route ordinary broad work.
-- DWM / `keelplane`: design an ultracode-style workflow for
+- DWM / `depone`: design an ultracode-style workflow for
   major work before execution, then move through deterministic control-plane
   artifacts.
 - DWM Runner: execute approved packets through bounded adapters while returning
@@ -55,8 +55,8 @@ Positioning:
   bounded fanout, HUD, install packaging, adapter registry, and release
   hardening.
 - V86-V100 brand, roadmap, command safety, activation, contract tier, evidence oracle, narrative, score, history, and metric gates:
-  make Keelplane the public product brand, preserve DWM Core and
-  the `keelplane` skill name, keep the spec, roadmap, and
+  make Depone the public product brand, preserve DWM Core and
+  the `depone` skill name, keep the spec, roadmap, and
   release history aligned through audit artifacts, prevent command planning from
   trusting declared `risk_codes` alone, require that evidence before
   next-workflow activation, and keep iterative verification fast enough to use.
@@ -221,7 +221,7 @@ single skill, harden the command boundary that follows next-action selection,
 make next-workflow activation consume those later evidence gates, and split
 verification into practical tiers. V92 adds a read-only evidence oracle so later
 scores and graphs can be tied to specific artifact assertions instead of status
-strings alone. V93 renders those signals as a Keelplane Control Deck so users
+strings alone. V93 renders those signals as a Depone Control Deck so users
 can see chart, gate, activation, oracle, and next-move state without treating
 evocative labels as source truth. V94 derives a Control Deck readiness score
 from those same artifacts while explicitly blocking public benchmark and upward
@@ -242,13 +242,13 @@ deterministic live-proof recorder now records one bounded live Codex-backed n=1
 proof that passed red-green verification and independent review. V103 adds a
 deterministic two-arm comparison schema for direct-codex versus dwm-controlled
 evidence richness; the live comparison remains opt-in and makes no pass-rate,
-speed, cost, or direct-agent superiority claim. V104 repositions Keelplane as a
+speed, cost, or direct-agent superiority claim. V104 repositions Depone as a
 workflow designer plus cross-platform evidence verifier. V105 adds the
 evidence-contract verify wedge for harness-captured logs, diffs, and root
 control files. V106 adds optional multi-wave execution-path validation while
 preserving first-slice compatibility. The public
-product brand is Keelplane. DWM Core remains the internal
-deterministic engine. The skill name is now `keelplane`. The `dwm_*.py`
+product brand is Depone. DWM Core remains the internal
+deterministic engine. The skill name is now `depone`. The `dwm_*.py`
 file prefix and GitHub repository slug remain legacy/internal and
 intentionally deferred until a separate migration gate proves a rename will
 not break install surfaces.
@@ -281,7 +281,7 @@ benchmark claims.
 
 V93 workflow narrative renders a `workflow-narrative.json` and
 `workflow-narrative.md` from V88, V89, V90, and V92 artifacts. It may use
-Keelplane-flavored labels such as Chart, Gate, Oracle, and Next move, but those
+Depone-flavored labels such as Chart, Gate, Oracle, and Next move, but those
 labels are status rendering only. Artifact assertions and source hashes remain
 the source of truth.
 
@@ -407,7 +407,7 @@ verification.
 
 The skill activates when:
 
-- the user names `$keelplane`
+- the user names `$depone`
 - the user asks for dynamic workflows, ultracode-style orchestration, or a
   workflow that can handle a very large task
 - the task clearly requires multi-phase, multi-agent design before execution

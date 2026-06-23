@@ -2,16 +2,16 @@
   "suite_id": "v87-brand-boundary-audit",
   "fixtures": [
     {
-      "id": "ready-keelplane-boundary",
+      "id": "ready-depone-boundary",
       "required": true,
       "surfaces": {
-        "SKILL.md": "---\nname: keelplane\ndescription: Keelplane skill entrypoint. Use when a user asks for dynamic workflows.\n---\n# Keelplane Skill Entrypoint\n",
-        "agents/openai.yaml": "interface:\n  display_name: \"Keelplane\"\n  default_prompt: \"Use $keelplane to design a workflow.\"\n",
-        "README.md": "# Keelplane\n\nKeelplane uses DWM Core and the skill is named `keelplane`.\n",
-        "docs/dwm-branding.md": "# Keelplane Branding\n\nKeelplane is the public product brand.\nDWM Core stands for Deterministic Workflow Machine.\nThe Codex skill name is `keelplane`.\nThe repository slug remains `dwm`.\nDo not claim autonomous execution.\n",
-        "docs/command-reference.md": "# Keelplane Command Reference\n",
-        "docs/release-history.md": "# Keelplane Release History\n\n- V86: docs/v86-keelplane-brand-spec.md\n",
-        "assets/dwm-hero.svg": "<svg><title>Keelplane</title><text>Powered by DWM Core</text></svg>\n"
+        "SKILL.md": "---\nname: depone\ndescription: Depone skill entrypoint. Use when a user asks for dynamic workflows.\n---\n# Depone Skill Entrypoint\n",
+        "agents/openai.yaml": "interface:\n  display_name: \"Depone\"\n  default_prompt: \"Use $depone to design a workflow.\"\n",
+        "README.md": "# Depone\n\nDepone uses DWM Core and the skill is named `depone`.\n",
+        "docs/dwm-branding.md": "# Depone Branding\n\nDepone is the public product brand.\nDWM Core stands for Deterministic Workflow Machine.\nThe Codex skill name is `depone`.\nThe repository slug remains `dwm`.\nDo not claim autonomous execution.\n",
+        "docs/command-reference.md": "# Depone Command Reference\n",
+        "docs/release-history.md": "# Depone Release History\n\n- V86: docs/v86-keelplane-brand-spec.md\n",
+        "assets/dwm-hero.svg": "<svg><title>Depone</title><text>Powered by DWM Core</text></svg>\n"
       },
       "expected_decision": "brand_boundary_ready"
     },
@@ -19,13 +19,13 @@
       "id": "blocked-old-public-heading",
       "required": true,
       "surfaces": {
-        "SKILL.md": "---\nname: keelplane\ndescription: Keelplane skill entrypoint. Use when a user asks for dynamic workflows.\n---\n# Keelplane Skill Entrypoint\n",
-        "agents/openai.yaml": "interface:\n  display_name: \"Keelplane\"\n  default_prompt: \"Use $keelplane to design a workflow.\"\n",
+        "SKILL.md": "---\nname: depone\ndescription: Depone skill entrypoint. Use when a user asks for dynamic workflows.\n---\n# Depone Skill Entrypoint\n",
+        "agents/openai.yaml": "interface:\n  display_name: \"Depone\"\n  default_prompt: \"Use $depone to design a workflow.\"\n",
         "README.md": "# DWM\n\nOld public product heading.\n",
-        "docs/dwm-branding.md": "# Keelplane Branding\n\nKeelplane is the public product brand.\nDWM Core stands for Deterministic Workflow Machine.\nThe Codex skill name is `keelplane`.\nThe repository slug remains `dwm`.\nDo not claim autonomous execution.\n",
-        "docs/command-reference.md": "# Keelplane Command Reference\n",
-        "docs/release-history.md": "# Keelplane Release History\n\n- V86: docs/v86-keelplane-brand-spec.md\n",
-        "assets/dwm-hero.svg": "<svg><title>Keelplane</title><text>Powered by DWM Core</text></svg>\n"
+        "docs/dwm-branding.md": "# Depone Branding\n\nDepone is the public product brand.\nDWM Core stands for Deterministic Workflow Machine.\nThe Codex skill name is `depone`.\nThe repository slug remains `dwm`.\nDo not claim autonomous execution.\n",
+        "docs/command-reference.md": "# Depone Command Reference\n",
+        "docs/release-history.md": "# Depone Release History\n\n- V86: docs/v86-keelplane-brand-spec.md\n",
+        "assets/dwm-hero.svg": "<svg><title>Depone</title><text>Powered by DWM Core</text></svg>\n"
       },
       "expected_decision": "blocked"
     },
@@ -35,11 +35,11 @@
       "surfaces": {
         "SKILL.md": "---\nname: old-skill\ndescription: Old skill entrypoint. Use when a user asks for dynamic workflows.\n---\n# Old Skill Entrypoint\n",
         "agents/openai.yaml": "interface:\n  display_name: \"Old Skill\"\n  default_prompt: \"Use $old-skill to design a workflow.\"\n",
-        "README.md": "# Keelplane\n\nKeelplane uses DWM Core.\n",
-        "docs/dwm-branding.md": "# Keelplane Branding\n\nKeelplane is the public product brand.\nDWM Core stands for Deterministic Workflow Machine.\nThe repository slug remains `dwm`.\nDo not claim autonomous execution.\n",
-        "docs/command-reference.md": "# Keelplane Command Reference\n",
-        "docs/release-history.md": "# Keelplane Release History\n\n- V86: docs/v86-keelplane-brand-spec.md\n",
-        "assets/dwm-hero.svg": "<svg><title>Keelplane</title><text>Powered by DWM Core</text></svg>\n"
+        "README.md": "# Depone\n\nDepone uses DWM Core.\n",
+        "docs/dwm-branding.md": "# Depone Branding\n\nDepone is the public product brand.\nDWM Core stands for Deterministic Workflow Machine.\nThe repository slug remains `dwm`.\nDo not claim autonomous execution.\n",
+        "docs/command-reference.md": "# Depone Command Reference\n",
+        "docs/release-history.md": "# Depone Release History\n\n- V86: docs/v86-keelplane-brand-spec.md\n",
+        "assets/dwm-hero.svg": "<svg><title>Depone</title><text>Powered by DWM Core</text></svg>\n"
       },
       "expected_decision": "blocked"
     },
@@ -47,13 +47,13 @@
       "id": "blocked-live-execution-overclaim",
       "required": true,
       "surfaces": {
-        "SKILL.md": "---\nname: keelplane\ndescription: Keelplane skill entrypoint. Use when a user asks for dynamic workflows.\n---\n# Keelplane Skill Entrypoint\n",
-        "agents/openai.yaml": "interface:\n  display_name: \"Keelplane\"\n  default_prompt: \"Use $keelplane to design a workflow.\"\n",
-        "README.md": "# Keelplane\n\nKeelplane uses DWM Core and the skill is named `keelplane`. Keelplane executes live commands for you.\n",
-        "docs/dwm-branding.md": "# Keelplane Branding\n\nKeelplane is the public product brand.\nDWM Core stands for Deterministic Workflow Machine.\nThe Codex skill name is `keelplane`.\nThe repository slug remains `dwm`.\nDo not claim autonomous execution.\n",
-        "docs/command-reference.md": "# Keelplane Command Reference\n",
-        "docs/release-history.md": "# Keelplane Release History\n\n- V86: docs/v86-keelplane-brand-spec.md\n",
-        "assets/dwm-hero.svg": "<svg><title>Keelplane</title><text>Powered by DWM Core</text></svg>\n"
+        "SKILL.md": "---\nname: depone\ndescription: Depone skill entrypoint. Use when a user asks for dynamic workflows.\n---\n# Depone Skill Entrypoint\n",
+        "agents/openai.yaml": "interface:\n  display_name: \"Depone\"\n  default_prompt: \"Use $depone to design a workflow.\"\n",
+        "README.md": "# Depone\n\nDepone uses DWM Core and the skill is named `depone`. Depone executes live commands for you.\n",
+        "docs/dwm-branding.md": "# Depone Branding\n\nDepone is the public product brand.\nDWM Core stands for Deterministic Workflow Machine.\nThe Codex skill name is `depone`.\nThe repository slug remains `dwm`.\nDo not claim autonomous execution.\n",
+        "docs/command-reference.md": "# Depone Command Reference\n",
+        "docs/release-history.md": "# Depone Release History\n\n- V86: docs/v86-keelplane-brand-spec.md\n",
+        "assets/dwm-hero.svg": "<svg><title>Depone</title><text>Powered by DWM Core</text></svg>\n"
       },
       "expected_decision": "blocked"
     }

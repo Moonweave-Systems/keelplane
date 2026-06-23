@@ -12,11 +12,11 @@ import importlib.util
 from pathlib import Path
 from typing import Any, Callable
 
-from keelplane.core.embedded_plan_contract import validate_embedded_contract
+from depone.core.embedded_plan_contract import validate_embedded_contract
 
 
 # Re-export schema constants from evaluate_plan.
-# These are kept here so keelplane consumers don't need to import scripts/.
+# These are kept here so depone consumers don't need to import scripts/.
 SCHEMA_VERSION = "0.5"
 REQUIRED_PLAN_FIELDS = [
     "schema_version",
@@ -70,7 +70,9 @@ def validate_plan(plan: dict[str, Any]) -> list[str]:
 
     # Schema version
     if plan.get("schema_version") != SCHEMA_VERSION:
-        errors.append(f"Expected schema_version={SCHEMA_VERSION!r}, got {plan.get('schema_version')!r}")
+        errors.append(
+            f"Expected schema_version={SCHEMA_VERSION!r}, got {plan.get('schema_version')!r}"
+        )
 
     # Activation
     activation = plan.get("activation", {})
@@ -79,7 +81,15 @@ def validate_plan(plan: dict[str, Any]) -> list[str]:
 
     # Surface kinds
     for s in plan.get("surfaces", []):
-        if s.get("kind") not in ("repo", "package", "artifact", "api", "data-source", "web-source", "document"):
+        if s.get("kind") not in (
+            "repo",
+            "package",
+            "artifact",
+            "api",
+            "data-source",
+            "web-source",
+            "document",
+        ):
             errors.append(f"Invalid surface kind: {s.get('kind')}")
 
     return errors
@@ -111,7 +121,9 @@ def _load_repo_evaluator() -> Callable[[dict[str, Any]], None] | None:
     script_path = Path(__file__).resolve().parents[2] / "scripts" / "evaluate_plan.py"
     if not script_path.is_file():
         return None
-    spec = importlib.util.spec_from_file_location("_keelplane_evaluate_plan", script_path)
+    spec = importlib.util.spec_from_file_location(
+        "_depone_evaluate_plan", script_path
+    )
     if spec is None or spec.loader is None:
         return None
     module = importlib.util.module_from_spec(spec)

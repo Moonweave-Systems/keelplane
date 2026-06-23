@@ -1,15 +1,15 @@
 {
   "fixture_id": "pos-api-auth-audit",
   "packet_sha256": {
-    "workflow.plan.json": "80dc1a1bc641e4668e410069b2611e23128465406dce234f6d8f9c7b7579aab8",
     "blueprint.md": "f3ec3151f13ae82eca835068f2db5aae5ff307ebe17afa048961162bd552f2ac",
     "original prompt": "919be14bebe46b05d65d2ad0c1fc6908171ed74296e417abde92c0791c0808b1",
-    "repository surfaces": "6e9be9b5d04686423e0e19f7939000b63b6308d72c2ea20f064cb90dfbf58cfa"
+    "repository surfaces": "6e9be9b5d04686423e0e19f7939000b63b6308d72c2ea20f064cb90dfbf58cfa",
+    "workflow.plan.json": "b94d4138441f1fc4c4202c9a451d988cd5a6e2ef931543e02df90f22b4a51ee2"
   },
-  "producer": "keelplane",
+  "producer": "depone",
   "raw_kind": "workflow-output",
   "rendered_blueprint": "# pos-api-auth-audit\n\nObjective: Find API routes that lack required authorization checks across packages and produce a verified evidence ledger.\nActivation: activate (The prompt needs a reusable artifact with downstream handoffs, verification, and gated execution.)\nPatterns: Pipeline, Parallel Fan-Out / Fan-In, Adversarial Verify, Human Gate, Resume And Cache\n\n## First Slice\n\nInventory route entry points, auth middleware, and package boundaries without editing files.\n\nCompletion check: inventory validates and every gap is either resolved or recorded\n\n## Risk Gates\n\n- write action: stop before writing and ask for approval\n- shell action: stop before shell use and ask for approval\n- network action: stop before network use and ask for approval\n- external message action: stop before sending external messages and ask for approval\n- secret access: stop before secret access and ask for approval\n",
-  "skill_sha256": "27261b50e6811ad03073544983f5e4b4905a9c9035f2d1b8f044a4ee24b49798",
+  "skill_sha256": "2781790c2ab14efcbf86b1bc142be17067aa088fa71c19728ce7db964bfdc097",
   "source_prompt": "Design a workflow to audit every API route for missing auth across a multi-package service.",
   "workflow_plan": {
     "activation": {
@@ -41,7 +41,7 @@
       "max_rounds": 3,
       "time_box": "one bounded planning session before execution"
     },
-    "created_by": "keelplane",
+    "created_by": "depone",
     "execution_path": {
       "consumer": "codex-agent",
       "first_slice": {

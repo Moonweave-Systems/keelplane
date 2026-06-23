@@ -1,4 +1,4 @@
-# Keelplane Release History
+# Depone Release History
 
 This is an implementation history, not the README product pitch.
 
@@ -133,12 +133,12 @@ promotion requires real release history.
 - V85: `docs/v85-workflow-activation-spec.md` added
   `workflow-activation.json` and `workflow-activation.md` to decide whether the
   next safe action is workflow design.
-- V86: `docs/v86-keelplane-brand-spec.md` set **Keelplane** as the public
-  product brand while preserving DWM Core and preparing the later `keelplane`
+- V86: `docs/v86-keelplane-brand-spec.md` set **Depone** as the public
+  product brand while preserving DWM Core and preparing the later `depone`
   skill-name migration.
 - V87: `docs/v87-brand-boundary-audit-spec.md` added
   `brand-boundary-audit.json` and `brand-boundary-audit.md` to keep public
-  Keelplane naming, DWM Core internals, and the skill-name boundary from
+  Depone naming, DWM Core internals, and the skill-name boundary from
   drifting.
 - V88: `docs/v88-roadmap-reconciliation-spec.md` added
   `roadmap-reconciliation.json` and `roadmap-reconciliation.md` to keep
@@ -153,7 +153,7 @@ promotion requires real release history.
   boundary.
 - V92: `docs/v92-evidence-oracle-spec.md` added read-only artifact assertions
   for JSON fields, text evidence, missing artifacts, and source-hash drift.
-- V93: `docs/v93-workflow-narrative-spec.md` added the Keelplane Control Deck
+- V93: `docs/v93-workflow-narrative-spec.md` added the Depone Control Deck
   renderer for artifact-backed chart, gate, activation, oracle, and next-move
   status.
 - V94: `docs/v94-control-deck-score-spec.md` added operator-readiness scoring
@@ -183,7 +183,7 @@ promotion requires real release history.
   comparison schema for direct-codex versus dwm-controlled evidence richness.
   The live comparison remains opt-in and makes no pass-rate, speed, cost, or
   direct-agent superiority claim.
-- V104: `docs/v104-product-direction-spec.md` repositioned Keelplane as a
+- V104: `docs/v104-product-direction-spec.md` repositioned Depone as a
   workflow designer plus cross-platform evidence verifier above existing agent
   execution engines.
 - V105: `docs/v105-verify-wedge-spec.md` added deterministic evidence-contract
@@ -191,6 +191,11 @@ promotion requires real release history.
   root contracts, nested control-file shadows, and a clean verified case.
 - V106: `docs/v106-multi-wave-spec.md` added optional `first_wave` and `waves`
   validation while preserving legacy `first_slice` compatibility.
+- V107: `docs/v107-agent-fabric-control-plane-spec.md` added the Agent Fabric
+  contract direction and the deterministic contract/compiler slice:
+  role/toolbelt/profile/harness/compile-report/invocation/result validators,
+  `compile_agent_fabric(...)`, and self-tests for exact, approximated, and
+  unsupported-critical tool mappings without live model execution.
 
 ## Current Public Boundaries
 
@@ -216,7 +221,7 @@ promotion requires real release history.
   work before actual queued command execution.
 - Receipt work is allowed through dry-run evidence only; actual execution stays
   behind the V84 human gate.
-- Brand boundary audits preserve Keelplane as the public brand without claiming
+- Brand boundary audits preserve Depone as the public brand without claiming
   autonomous execution or renaming compatibility surfaces.
 - Roadmap reconciliation audits keep spec, roadmap, and release history aligned
   before the next product wave is selected.
@@ -231,3 +236,5 @@ promotion requires real release history.
 - V105 evidence contracts are root-controlled harness evidence, not model claims.
 - V106 multi-wave execution paths remain plan contracts only; they do not execute
   agents or relax existing human gates.
+- V107 Agent Fabric contracts compile invocation packets and reports only; they
+  do not execute live agents or prove productivity, quality, or superiority.

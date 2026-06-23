@@ -1,0 +1,11 @@
+{
+  "name": "codex",
+  "version": "1.0.0",
+  "supports_hard_tool_filtering": false,
+  "supports_per_subagent_allowlist": false,
+  "supports_mcp_filtering": false,
+  "supported_features": ["shell", "read", "edit", "write", "search", "glob", "web"],
+  "unsupported_features": ["per-subagent-allowlist", "per-subagent-mcp-filtering", "hard-tool-allowlist"],
+  "approximations": ["tool restrictions enforced by instruction prompt only, not by runtime"],
+  "notes": "Codex CLI runs as a single agent session. Per-subagent tool filtering is not supported. Tool access is controlled by the instruction prompt, not by a hard allowlist."
+}

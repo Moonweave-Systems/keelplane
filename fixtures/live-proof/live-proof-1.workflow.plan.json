@@ -21,7 +21,7 @@
     "max_rounds": 1,
     "time_box": "120 seconds"
   },
-  "created_by": "keelplane",
+  "created_by": "depone",
   "execution_path": {
     "consumer": "codex-agent",
     "first_slice": {

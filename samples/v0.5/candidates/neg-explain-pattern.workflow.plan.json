@@ -18,7 +18,7 @@
     "max_rounds": 1,
     "time_box": "one direct response or routed workflow"
   },
-  "created_by": "keelplane",
+  "created_by": "depone",
   "execution_path": {
     "consumer": "human",
     "first_slice": {
@@ -32,7 +32,7 @@
       "inputs": [
         "original prompt"
       ],
-      "instruction": "Use direct-codex instead of keelplane for this request."
+      "instruction": "Use direct-codex instead of depone for this request."
     },
     "mode": "direct-codex"
   },

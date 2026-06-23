@@ -1,7 +1,7 @@
-"""keelplane demo — run a complete design→compile→verify cycle.
+"""depone demo — run a complete design→compile→verify cycle.
 
 The demo works entirely offline with Python stdlib only. It:
-1. Generates a plan using keelplane design
+1. Generates a plan using depone design
 2. Validates the plan
 3. Compiles to Conductor YAML
 4. Creates synthetic execution evidence
@@ -19,10 +19,10 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-from keelplane.compile.conductor import emit_yaml
-from keelplane.core.plan_schema import validate_plan_strict
-from keelplane.verify.adapters.generic import read_evidence
-from keelplane.verify.engine import run_verification
+from depone.compile.conductor import emit_yaml
+from depone.core.plan_schema import validate_plan_strict
+from depone.verify.adapters.generic import read_evidence
+from depone.verify.engine import run_verification
 
 
 def run(args: argparse.Namespace) -> None:
@@ -30,11 +30,13 @@ def run(args: argparse.Namespace) -> None:
         _self_test()
         return
 
-    out_dir = Path(args.out) if args.out else Path(tempfile.mkdtemp(suffix="_keelplane_demo"))
+    out_dir = (
+        Path(args.out) if args.out else Path(tempfile.mkdtemp(suffix="_depone_demo"))
+    )
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print("=" * 56)
-    print("  Keelplane Demo — Design → Compile → Verify")
+    print("  Depone Demo — Design → Compile → Verify")
     print("=" * 56)
 
     # Step 1: Design
@@ -98,7 +100,7 @@ def _generate_demo_plan() -> dict[str, Any]:
     return {
         "schema_version": "0.5",
         "plan_id": "demo-code-review-001",
-        "created_by": "keelplane",
+        "created_by": "depone",
         "source_prompt": "Review the README for clarity and completeness",
         "objective": "Review the README for clarity and completeness",
         "activation": {
@@ -111,7 +113,10 @@ def _generate_demo_plan() -> dict[str, Any]:
             {"id": "repo", "kind": "repo", "locator": ".", "access_mode": "read-only"},
         ],
         "assumptions": [
-            {"claim": "README exists at repo root", "verification": "Check file exists"},
+            {
+                "claim": "README exists at repo root",
+                "verification": "Check file exists",
+            },
         ],
         "patterns": ["Sequential"],
         "phases": [
@@ -138,25 +143,51 @@ def _generate_demo_plan() -> dict[str, Any]:
             {
                 "id": "reader",
                 "role": "explorer",
-                "tool_permissions": {"read": True, "write": False, "shell": False, "network": False,
-                                     "mcp_connectors": [], "requires_escalation_for": []},
+                "tool_permissions": {
+                    "read": True,
+                    "write": False,
+                    "shell": False,
+                    "network": False,
+                    "mcp_connectors": [],
+                    "requires_escalation_for": [],
+                },
                 "forbidden_actions": ["write", "shell", "network"],
-                "context_budget": {"max_files": 5, "max_tokens": 8000, "must_include": ["README.md"], "must_exclude": []},
-                "prompt_contract": {"inputs": [{"name": "readme_path", "type": "string"}],
-                                    "required_output_schema": "content (string) + sections (list)",
-                                    "stop_conditions": ["content_extracted"]},
+                "context_budget": {
+                    "max_files": 5,
+                    "max_tokens": 8000,
+                    "must_include": ["README.md"],
+                    "must_exclude": [],
+                },
+                "prompt_contract": {
+                    "inputs": [{"name": "readme_path", "type": "string"}],
+                    "required_output_schema": "content (string) + sections (list)",
+                    "stop_conditions": ["content_extracted"],
+                },
                 "ownership": ["README.md"],
             },
             {
                 "id": "reviewer",
                 "role": "reviewer",
-                "tool_permissions": {"read": True, "write": False, "shell": False, "network": False,
-                                     "mcp_connectors": [], "requires_escalation_for": []},
+                "tool_permissions": {
+                    "read": True,
+                    "write": False,
+                    "shell": False,
+                    "network": False,
+                    "mcp_connectors": [],
+                    "requires_escalation_for": [],
+                },
                 "forbidden_actions": ["write", "shell", "network"],
-                "context_budget": {"max_files": 3, "max_tokens": 16000, "must_include": ["README.md"], "must_exclude": []},
-                "prompt_contract": {"inputs": [{"name": "readme_content", "type": "string"}],
-                                    "required_output_schema": "findings (list) + score (integer)",
-                                    "stop_conditions": ["review_complete"]},
+                "context_budget": {
+                    "max_files": 3,
+                    "max_tokens": 16000,
+                    "must_include": ["README.md"],
+                    "must_exclude": [],
+                },
+                "prompt_contract": {
+                    "inputs": [{"name": "readme_content", "type": "string"}],
+                    "required_output_schema": "findings (list) + score (integer)",
+                    "stop_conditions": ["review_complete"],
+                },
                 "ownership": ["review-findings"],
             },
         ],
@@ -165,10 +196,19 @@ def _generate_demo_plan() -> dict[str, Any]:
                 "from_phase": "phase-1-inspect",
                 "to_phase": "phase-2-review",
                 "artifact": "handoffs/phase-2-input.md",
-                "artifact_schema": {"format": "markdown", "required_fields": ["content"], "validation_command": "check non-empty"},
+                "artifact_schema": {
+                    "format": "markdown",
+                    "required_fields": ["content"],
+                    "validation_command": "check non-empty",
+                },
             },
         ],
-        "parallelism": {"shape": "none", "concurrency_cap": 1, "barriers": [], "fan_in_rule": "all"},
+        "parallelism": {
+            "shape": "none",
+            "concurrency_cap": 1,
+            "barriers": [],
+            "fan_in_rule": "all",
+        },
         "verification": [
             {
                 "claim_or_output": "README exists and was read",
@@ -177,12 +217,24 @@ def _generate_demo_plan() -> dict[str, Any]:
             },
         ],
         "risk_gates": [
-            {"trigger": "write", "safe_default": "do not write without approval", "requires_user_approval": True},
+            {
+                "trigger": "write",
+                "safe_default": "do not write without approval",
+                "requires_user_approval": True,
+            },
         ],
-        "budget": {"max_agents": 2, "max_rounds": 3, "max_retries": 1, "time_box": "15m", "file_touch_limit": "5"},
-        "resume": {"cacheable_outputs": ["README.md content", "review-findings"],
-                   "invalidators": ["README.md-change"],
-                   "restart_points": ["phase-1-inspect"]},
+        "budget": {
+            "max_agents": 2,
+            "max_rounds": 3,
+            "max_retries": 1,
+            "time_box": "15m",
+            "file_touch_limit": "5",
+        },
+        "resume": {
+            "cacheable_outputs": ["README.md content", "review-findings"],
+            "invalidators": ["README.md-change"],
+            "restart_points": ["phase-1-inspect"],
+        },
         "execution_path": {
             "mode": "plugin",
             "first_slice": {
@@ -228,10 +280,12 @@ def _generate_synthetic_evidence(plan: dict[str, Any], evidence_dir: Path) -> No
 def _self_test() -> None:
     """Run self-test."""
     import tempfile
-    print("keelplane demo --self-test")
+
+    print("depone demo --self-test")
 
     # Run the full demo in a temp directory
     with tempfile.TemporaryDirectory() as tmp:
+
         class FakeArgs:
             out = tmp
             self_test = False

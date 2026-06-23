@@ -1,7 +1,7 @@
 # V104: Keelplane Product Direction — Workflow Designer + Cross-Platform Verifier
 
-Status: Draft (v2)  
-Date: 2026-06-22  
+Status: Draft (v2)
+Date: 2026-06-22
 
 ## Why V104
 

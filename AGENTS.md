@@ -1,10 +1,10 @@
-# Keelplane - Agent Context
+# Depone - Agent Context
 
-Keelplane (engine: **DWM Core**, the Deterministic Workflow Machine) is a
+Depone (engine: **DWM Core**, the Deterministic Workflow Machine) is a
 control-plane for large AI-native work: workflow design, packet compilation,
 bounded runner gates, review/repair evidence, and scoring artifacts. The tooling
 is pure-stdlib Python under `scripts/` plus one `.cjs` reference implementation.
-The installed skill is `keelplane`; the entry doc is `SKILL.md`.
+The installed skill is `depone`; the entry doc is `SKILL.md`.
 
 This file exists so Codex Cloud or local Codex agents that clone the repo with
 no other context know how to work here. Keep it short and current.

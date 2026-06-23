@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from keelplane.verify.adapters.base import EvidenceContext
+from depone.verify.adapters.base import EvidenceContext
 
 
 @dataclass
@@ -17,7 +17,9 @@ class EvidenceContractEntry:
 
 _EVIDENCE_CONTRACT_FILENAME = "evidence-contract.json"
 _CONTRACT_SCHEMA_VERSION = "v105.verify_wedge"
-_ROOT_CONTROL_FILENAMES = frozenset({"evidence-contract.json", "git-diff-name-only.txt", "git-diff.patch"})
+_ROOT_CONTROL_FILENAMES = frozenset(
+    {"evidence-contract.json", "git-diff-name-only.txt", "git-diff.patch"}
+)
 _ERR_CONTRACT_INVALID = "ERR_EVIDENCE_CONTRACT_INVALID"
 _ERR_CONTRACT_MISSING = "ERR_EVIDENCE_CONTRACT_MISSING"
 _ERR_CONTRACT_SHADOWED = "ERR_EVIDENCE_CONTRACT_SHADOWED"
@@ -56,7 +58,9 @@ def _find_control_shadow(evidence: EvidenceContext) -> EvidenceContractEntry | N
     return None
 
 
-def _read_evidence_contract(evidence: EvidenceContext) -> tuple[dict[str, Any] | None, EvidenceContractEntry | None]:
+def _read_evidence_contract(
+    evidence: EvidenceContext,
+) -> tuple[dict[str, Any] | None, EvidenceContractEntry | None]:
     found = _find_evidence_file(evidence, _EVIDENCE_CONTRACT_FILENAME)
     if found is None:
         return None, EvidenceContractEntry(
@@ -122,7 +126,9 @@ def _has_enforcement_directive(contract: dict[str, Any]) -> bool:
     )
 
 
-def _validate_contract_semantics(contract: dict[str, Any]) -> EvidenceContractEntry | None:
+def _validate_contract_semantics(
+    contract: dict[str, Any],
+) -> EvidenceContractEntry | None:
     if contract.get("schema_version") != _CONTRACT_SCHEMA_VERSION:
         return EvidenceContractEntry(
             code=_ERR_CONTRACT_INVALID,
@@ -185,7 +191,9 @@ def _line_weakens_test(line: str) -> bool:
     )
 
 
-def _forbidden_test_file_weakened(patch_text: str, forbidden_test_files: set[str]) -> str | None:
+def _forbidden_test_file_weakened(
+    patch_text: str, forbidden_test_files: set[str]
+) -> str | None:
     current_file: str | None = None
     for line in patch_text.splitlines():
         if line.startswith("diff --git "):
@@ -200,13 +208,20 @@ def _forbidden_test_file_weakened(patch_text: str, forbidden_test_files: set[str
     return None
 
 
-def _append_unique_entry(results: list[EvidenceContractEntry], entry: EvidenceContractEntry) -> None:
-    if any(existing.code == entry.code and existing.evidence_path == entry.evidence_path for existing in results):
+def _append_unique_entry(
+    results: list[EvidenceContractEntry], entry: EvidenceContractEntry
+) -> None:
+    if any(
+        existing.code == entry.code and existing.evidence_path == entry.evidence_path
+        for existing in results
+    ):
         return
     results.append(entry)
 
 
-def validate_evidence_contract(evidence: EvidenceContext) -> list[EvidenceContractEntry]:
+def validate_evidence_contract(
+    evidence: EvidenceContext,
+) -> list[EvidenceContractEntry]:
     shadowed = _find_control_shadow(evidence)
     if shadowed is not None:
         return [shadowed]
@@ -234,7 +249,7 @@ def validate_evidence_contract(evidence: EvidenceContext) -> list[EvidenceContra
                     code=_ERR_REQUIRED_TEST_EVIDENCE_MISSING,
                     message=f"required evidence missing: {required_path}",
                     evidence_path=required_path,
-                )
+                ),
             )
 
     required_commands = contract.get("required_commands")
@@ -250,33 +265,43 @@ def validate_evidence_contract(evidence: EvidenceContext) -> list[EvidenceContra
                         code=_ERR_REQUIRED_TEST_EVIDENCE_MISSING,
                         message=f"required command log missing: {log_path}",
                         evidence_path=log_path,
-                    )
+                    ),
                 )
             expected_exit_code = command.get("expected_exit_code")
             exit_code_path = command.get("exit_code_path")
             if not isinstance(exit_code_path, str):
                 exit_code_path = "exit-code.txt"
             actual_exit_code = _read_exit_code(evidence, exit_code_path)
-            if isinstance(expected_exit_code, int) and actual_exit_code != expected_exit_code:
+            if (
+                isinstance(expected_exit_code, int)
+                and actual_exit_code != expected_exit_code
+            ):
                 _append_unique_entry(
                     results,
                     EvidenceContractEntry(
                         code=_ERR_TEST_EXIT_CODE_MISMATCH,
                         message=f"expected exit code {expected_exit_code}, got {actual_exit_code}",
-                        evidence_path=exit_code_path if exit_code_path in evidence_map else "run-metadata.json",
-                    )
+                        evidence_path=exit_code_path
+                        if exit_code_path in evidence_map
+                        else "run-metadata.json",
+                    ),
                 )
     else:
         expected_exit_code = contract.get("expected_exit_code")
         actual_exit_code = _read_exit_code(evidence, "exit-code.txt")
-        if isinstance(expected_exit_code, int) and actual_exit_code != expected_exit_code:
+        if (
+            isinstance(expected_exit_code, int)
+            and actual_exit_code != expected_exit_code
+        ):
             _append_unique_entry(
                 results,
                 EvidenceContractEntry(
                     code=_ERR_TEST_EXIT_CODE_MISMATCH,
                     message=f"expected exit code {expected_exit_code}, got {actual_exit_code}",
-                    evidence_path="exit-code.txt" if "exit-code.txt" in evidence_map else "run-metadata.json",
-                )
+                    evidence_path="exit-code.txt"
+                    if "exit-code.txt" in evidence_map
+                    else "run-metadata.json",
+                ),
             )
 
     touched_files = _touched_files(evidence)
@@ -287,21 +312,27 @@ def validate_evidence_contract(evidence: EvidenceContext) -> list[EvidenceContra
     if not forbidden_files:
         forbidden_files = set(_as_str_list(contract.get("forbidden_files")))
     for touched in touched_files:
-        if touched in forbidden_files or (allowed_files and touched not in allowed_files):
+        if touched in forbidden_files or (
+            allowed_files and touched not in allowed_files
+        ):
             _append_unique_entry(
                 results,
                 EvidenceContractEntry(
                     code=_ERR_FORBIDDEN_FILE_TOUCHED,
                     message=f"touched file is not allowed: {touched}",
                     evidence_path=touched,
-                )
+                ),
             )
             break
 
     test_patterns = _as_str_list(contract.get("test_file_patterns"))
     forbidden_test_files = set(_as_str_list(contract.get("forbidden_test_files")))
     if contract.get("forbid_test_weakening") is True and test_patterns:
-        forbidden_test_files.update(touched for touched in touched_files if any(touched.startswith(pattern) for pattern in test_patterns))
+        forbidden_test_files.update(
+            touched
+            for touched in touched_files
+            if any(touched.startswith(pattern) for pattern in test_patterns)
+        )
     if forbidden_test_files:
         patch_entry = _find_evidence_file(evidence, "git-diff.patch")
         if patch_entry is not None:
@@ -314,7 +345,7 @@ def validate_evidence_contract(evidence: EvidenceContext) -> list[EvidenceContra
                         code=_ERR_TEST_WEAKENED,
                         message=f"forbidden test file was weakened: {weakened}",
                         evidence_path=patch_path,
-                    )
+                    ),
                 )
 
     return results

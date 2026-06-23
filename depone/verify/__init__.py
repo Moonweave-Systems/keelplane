@@ -8,9 +8,9 @@ import tempfile
 from dataclasses import asdict
 from pathlib import Path
 
-from keelplane.core.plan_schema import load_plan
-from keelplane.verify.adapters import generic, resolve
-from keelplane.verify.engine import run_verification
+from depone.core.plan_schema import load_plan
+from depone.verify.adapters import generic, resolve
+from depone.verify.engine import run_verification
 
 
 def run(args: argparse.Namespace) -> None:
@@ -19,7 +19,10 @@ def run(args: argparse.Namespace) -> None:
         return
 
     if not args.plan:
-        print("Usage: keelplane verify <plan.json> --evidence <evidence-dir>", file=sys.stderr)
+        print(
+            "Usage: depone verify <plan.json> --evidence <evidence-dir>",
+            file=sys.stderr,
+        )
         sys.exit(1)
     if not args.evidence:
         print("Error: --evidence is required", file=sys.stderr)
@@ -64,7 +67,7 @@ def run(args: argparse.Namespace) -> None:
 
 def _self_test() -> None:
     """Verify distinguishes known-good from tampered evidence."""
-    print("keelplane verify --self-test")
+    print("depone verify --self-test")
     tests = 0
     passed = 0
 
@@ -81,7 +84,11 @@ def _self_test() -> None:
         d.mkdir(parents=True, exist_ok=True)
 
         # Handoff artifact
-        handoff_content = "analysis complete: all endpoints authenticated" if not tamper else "TAMPERED DATA"
+        handoff_content = (
+            "analysis complete: all endpoints authenticated"
+            if not tamper
+            else "TAMPERED DATA"
+        )
         (d / "handoffs").mkdir(parents=True, exist_ok=True)
         (d / "handoffs" / "phase-1-report.md").write_text(handoff_content)
 
@@ -96,14 +103,19 @@ def _self_test() -> None:
 
         # Plan that expects the handoff
         import hashlib
-        expected_sha = hashlib.sha256(
-            b"analysis complete: all endpoints authenticated"
-        ).hexdigest() if not tamper else "0" * 64
+
+        expected_sha = (
+            hashlib.sha256(
+                b"analysis complete: all endpoints authenticated"
+            ).hexdigest()
+            if not tamper
+            else "0" * 64
+        )
 
         plan = {
             "schema_version": "0.5",
             "plan_id": "test-verify-plan",
-            "created_by": "keelplane",
+            "created_by": "depone",
             "source_prompt": "test verification",
             "activation": {
                 "decision": "activate",
@@ -116,8 +128,18 @@ def _self_test() -> None:
             "assumptions": ["this is a test"],
             "patterns": ["Sequential"],
             "phases": [
-                {"id": "phase-1", "name": "Analysis", "entry_criteria": [], "exit_criteria": []},
-                {"id": "phase-2", "name": "Review", "entry_criteria": [], "exit_criteria": []},
+                {
+                    "id": "phase-1",
+                    "name": "Analysis",
+                    "entry_criteria": [],
+                    "exit_criteria": [],
+                },
+                {
+                    "id": "phase-2",
+                    "name": "Review",
+                    "entry_criteria": [],
+                    "exit_criteria": [],
+                },
             ],
             "workers": [],
             "handoffs": [
@@ -126,22 +148,43 @@ def _self_test() -> None:
                     "to_phase": "phase-2",
                     "artifact": "handoffs/phase-1-report.md",
                     "expected_hash": expected_sha,
-                    "artifact_schema": {"format": "markdown", "required_fields": ["content"], "validation_command": ""},
+                    "artifact_schema": {
+                        "format": "markdown",
+                        "required_fields": ["content"],
+                        "validation_command": "",
+                    },
                 }
             ],
-            "parallelism": {"shape": "none", "cap": 1, "barriers": [], "fan_in_rule": None},
+            "parallelism": {
+                "shape": "none",
+                "cap": 1,
+                "barriers": [],
+                "fan_in_rule": None,
+            },
             "verification": [
                 {
                     "claim_or_output": "All endpoints authenticated",
                     "ground_truth": "handoffs/phase-1-report.md",
                 }
             ],
-            "risk_gates": [{"trigger": "write", "safe_default": "read-only", "requires_user_approval": True}],
+            "risk_gates": [
+                {
+                    "trigger": "write",
+                    "safe_default": "read-only",
+                    "requires_user_approval": True,
+                }
+            ],
             "budget": {"max_agents": 5, "max_rounds": 10, "max_retries": 2},
             "resume": {"cached_outputs": [], "invalidation_rules": []},
             "execution_path": {
                 "mode": "plugin",
-                "first_slice": {"instruction": "", "inputs": [], "expected_output": "", "completion_check": "", "forbidden_actions": []},
+                "first_slice": {
+                    "instruction": "",
+                    "inputs": [],
+                    "expected_output": "",
+                    "completion_check": "",
+                    "forbidden_actions": [],
+                },
                 "consumer": "codex-agent",
             },
         }
@@ -188,22 +231,67 @@ def _self_test() -> None:
         empty_plan = {
             "schema_version": "0.5",
             "plan_id": "empty-test",
-            "created_by": "keelplane",
+            "created_by": "depone",
             "source_prompt": "test",
-            "activation": {"decision": "activate", "matched_thresholds": ["downstream-consumer"], "downgrade_target": None, "reason": "test"},
+            "activation": {
+                "decision": "activate",
+                "matched_thresholds": ["downstream-consumer"],
+                "downgrade_target": None,
+                "reason": "test",
+            },
             "objective": "test",
             "surfaces": [],
             "assumptions": ["test"],
             "patterns": ["Sequential"],
-            "phases": [{"id": "phase-1", "name": "Test", "entry_criteria": [], "exit_criteria": []}, {"id": "phase-2", "name": "Next", "entry_criteria": [], "exit_criteria": []}],
+            "phases": [
+                {
+                    "id": "phase-1",
+                    "name": "Test",
+                    "entry_criteria": [],
+                    "exit_criteria": [],
+                },
+                {
+                    "id": "phase-2",
+                    "name": "Next",
+                    "entry_criteria": [],
+                    "exit_criteria": [],
+                },
+            ],
             "workers": [],
-            "handoffs": [{"from_phase": "phase-1", "to_phase": "phase-2", "artifact": "missing-report.md", "expected_hash": "", "artifact_schema": {"format": "markdown", "required_fields": ["content"], "validation_command": ""}}],
-            "parallelism": {"shape": "none", "cap": 1, "barriers": [], "fan_in_rule": None},
+            "handoffs": [
+                {
+                    "from_phase": "phase-1",
+                    "to_phase": "phase-2",
+                    "artifact": "missing-report.md",
+                    "expected_hash": "",
+                    "artifact_schema": {
+                        "format": "markdown",
+                        "required_fields": ["content"],
+                        "validation_command": "",
+                    },
+                }
+            ],
+            "parallelism": {
+                "shape": "none",
+                "cap": 1,
+                "barriers": [],
+                "fan_in_rule": None,
+            },
             "verification": [],
             "risk_gates": [],
             "budget": {"max_agents": 5, "max_rounds": 10, "max_retries": 2},
             "resume": {"cached_outputs": [], "invalidation_rules": []},
-            "execution_path": {"mode": "plugin", "first_slice": {"instruction": "", "inputs": [], "expected_output": "", "completion_check": "", "forbidden_actions": []}, "consumer": "codex-agent"},
+            "execution_path": {
+                "mode": "plugin",
+                "first_slice": {
+                    "instruction": "",
+                    "inputs": [],
+                    "expected_output": "",
+                    "completion_check": "",
+                    "forbidden_actions": [],
+                },
+                "consumer": "codex-agent",
+            },
         }
         plan_path = Path(tmp) / "plan.json"
         with open(plan_path, "w") as f:
@@ -212,9 +300,13 @@ def _self_test() -> None:
         report = run_verification(empty_plan, evidence)
         if report.verdict == "insufficient-evidence":
             passed += 1
-            print(f"  [PASS] Test {tests}: description-only handoff → insufficient-evidence")
+            print(
+                f"  [PASS] Test {tests}: description-only handoff → insufficient-evidence"
+            )
         else:
-            print(f"  [FAIL] Test {tests}: expected insufficient-evidence, got {report.verdict}")
+            print(
+                f"  [FAIL] Test {tests}: expected insufficient-evidence, got {report.verdict}"
+            )
 
     # Test 4: Canonical handoff with evidence_path + good evidence → verified
     tests += 1
@@ -228,22 +320,67 @@ def _self_test() -> None:
         plan_canon_good = {
             "schema_version": "0.5",
             "plan_id": "canon-good",
-            "created_by": "keelplane",
+            "created_by": "depone",
             "source_prompt": "test",
-            "activation": {"decision": "activate", "matched_thresholds": ["downstream-consumer"], "downgrade_target": None, "reason": "test"},
+            "activation": {
+                "decision": "activate",
+                "matched_thresholds": ["downstream-consumer"],
+                "downgrade_target": None,
+                "reason": "test",
+            },
             "objective": "test",
             "surfaces": [],
             "assumptions": ["test"],
             "patterns": ["Sequential"],
-            "phases": [{"id": "phase-1", "name": "Test", "entry_criteria": [], "exit_criteria": []}, {"id": "phase-2", "name": "Next", "entry_criteria": [], "exit_criteria": []}],
+            "phases": [
+                {
+                    "id": "phase-1",
+                    "name": "Test",
+                    "entry_criteria": [],
+                    "exit_criteria": [],
+                },
+                {
+                    "id": "phase-2",
+                    "name": "Next",
+                    "entry_criteria": [],
+                    "exit_criteria": [],
+                },
+            ],
             "workers": [],
-            "handoffs": [{"from_phase": "phase-1", "to_phase": "phase-2", "artifact": "full analysis report", "evidence_path": "reports/analysis.md", "artifact_schema": {"format": "markdown", "required_fields": [], "validation_command": ""}}],
-            "parallelism": {"shape": "none", "cap": 1, "barriers": [], "fan_in_rule": None},
+            "handoffs": [
+                {
+                    "from_phase": "phase-1",
+                    "to_phase": "phase-2",
+                    "artifact": "full analysis report",
+                    "evidence_path": "reports/analysis.md",
+                    "artifact_schema": {
+                        "format": "markdown",
+                        "required_fields": [],
+                        "validation_command": "",
+                    },
+                }
+            ],
+            "parallelism": {
+                "shape": "none",
+                "cap": 1,
+                "barriers": [],
+                "fan_in_rule": None,
+            },
             "verification": [],
             "risk_gates": [],
             "budget": {"max_agents": 5, "max_rounds": 10, "max_retries": 2},
             "resume": {"cached_outputs": [], "invalidation_rules": []},
-            "execution_path": {"mode": "plugin", "first_slice": {"instruction": "", "inputs": [], "expected_output": "", "completion_check": "", "forbidden_actions": []}, "consumer": "codex-agent"},
+            "execution_path": {
+                "mode": "plugin",
+                "first_slice": {
+                    "instruction": "",
+                    "inputs": [],
+                    "expected_output": "",
+                    "completion_check": "",
+                    "forbidden_actions": [],
+                },
+                "consumer": "codex-agent",
+            },
         }
         evidence = generic.read_evidence(str(d))
         report = run_verification(plan_canon_good, evidence)
@@ -265,30 +402,84 @@ def _self_test() -> None:
         plan_canon_desc = {
             "schema_version": "0.5",
             "plan_id": "canon-desc",
-            "created_by": "keelplane",
+            "created_by": "depone",
             "source_prompt": "test",
-            "activation": {"decision": "activate", "matched_thresholds": ["downstream-consumer"], "downgrade_target": None, "reason": "test"},
+            "activation": {
+                "decision": "activate",
+                "matched_thresholds": ["downstream-consumer"],
+                "downgrade_target": None,
+                "reason": "test",
+            },
             "objective": "test",
             "surfaces": [],
             "assumptions": ["test"],
             "patterns": ["Sequential"],
-            "phases": [{"id": "phase-1", "name": "Test", "entry_criteria": [], "exit_criteria": []}, {"id": "phase-2", "name": "Next", "entry_criteria": [], "exit_criteria": []}],
+            "phases": [
+                {
+                    "id": "phase-1",
+                    "name": "Test",
+                    "entry_criteria": [],
+                    "exit_criteria": [],
+                },
+                {
+                    "id": "phase-2",
+                    "name": "Next",
+                    "entry_criteria": [],
+                    "exit_criteria": [],
+                },
+            ],
             "workers": [],
-            "handoffs": [{"from_phase": "phase-1", "to_phase": "phase-2", "artifact": "some analysis result", "artifact_schema": {"format": "text", "required_fields": [], "validation_command": ""}}],
-            "parallelism": {"shape": "none", "cap": 1, "barriers": [], "fan_in_rule": None},
+            "handoffs": [
+                {
+                    "from_phase": "phase-1",
+                    "to_phase": "phase-2",
+                    "artifact": "some analysis result",
+                    "artifact_schema": {
+                        "format": "text",
+                        "required_fields": [],
+                        "validation_command": "",
+                    },
+                }
+            ],
+            "parallelism": {
+                "shape": "none",
+                "cap": 1,
+                "barriers": [],
+                "fan_in_rule": None,
+            },
             "verification": [],
-            "risk_gates": [{"trigger": "write", "safe_default": "read-only", "requires_user_approval": True}],
+            "risk_gates": [
+                {
+                    "trigger": "write",
+                    "safe_default": "read-only",
+                    "requires_user_approval": True,
+                }
+            ],
             "budget": {"max_agents": 5, "max_rounds": 10, "max_retries": 2},
             "resume": {"cached_outputs": [], "invalidation_rules": []},
-            "execution_path": {"mode": "plugin", "first_slice": {"instruction": "", "inputs": [], "expected_output": "", "completion_check": "", "forbidden_actions": []}, "consumer": "codex-agent"},
+            "execution_path": {
+                "mode": "plugin",
+                "first_slice": {
+                    "instruction": "",
+                    "inputs": [],
+                    "expected_output": "",
+                    "completion_check": "",
+                    "forbidden_actions": [],
+                },
+                "consumer": "codex-agent",
+            },
         }
         evidence = generic.read_evidence(str(d))
         report = run_verification(plan_canon_desc, evidence)
         if report.verdict == "insufficient-evidence":
             passed += 1
-            print(f"  [PASS] Test {tests}: description artifact, no path/hash → insufficient-evidence")
+            print(
+                f"  [PASS] Test {tests}: description artifact, no path/hash → insufficient-evidence"
+            )
         else:
-            print(f"  [FAIL] Test {tests}: expected insufficient-evidence, got {report.verdict}")
+            print(
+                f"  [FAIL] Test {tests}: expected insufficient-evidence, got {report.verdict}"
+            )
 
     # Test 6: Hash tamper → refuted (canonical keys)
     tests += 1
@@ -302,22 +493,67 @@ def _self_test() -> None:
         plan_canon_tamper = {
             "schema_version": "0.5",
             "plan_id": "canon-tamper",
-            "created_by": "keelplane",
+            "created_by": "depone",
             "source_prompt": "test",
-            "activation": {"decision": "activate", "matched_thresholds": ["downstream-consumer"], "downgrade_target": None, "reason": "test"},
+            "activation": {
+                "decision": "activate",
+                "matched_thresholds": ["downstream-consumer"],
+                "downgrade_target": None,
+                "reason": "test",
+            },
             "objective": "test",
             "surfaces": [],
             "assumptions": ["test"],
             "patterns": ["Sequential"],
-            "phases": [{"id": "phase-1", "name": "Test", "entry_criteria": [], "exit_criteria": []}, {"id": "phase-2", "name": "Next", "entry_criteria": [], "exit_criteria": []}],
+            "phases": [
+                {
+                    "id": "phase-1",
+                    "name": "Test",
+                    "entry_criteria": [],
+                    "exit_criteria": [],
+                },
+                {
+                    "id": "phase-2",
+                    "name": "Next",
+                    "entry_criteria": [],
+                    "exit_criteria": [],
+                },
+            ],
             "workers": [],
-            "handoffs": [{"from_phase": "phase-1", "to_phase": "phase-2", "artifact": "handoffs/output.json", "expected_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "artifact_schema": {"format": "json", "required_fields": [], "validation_command": ""}}],
-            "parallelism": {"shape": "none", "cap": 1, "barriers": [], "fan_in_rule": None},
+            "handoffs": [
+                {
+                    "from_phase": "phase-1",
+                    "to_phase": "phase-2",
+                    "artifact": "handoffs/output.json",
+                    "expected_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                    "artifact_schema": {
+                        "format": "json",
+                        "required_fields": [],
+                        "validation_command": "",
+                    },
+                }
+            ],
+            "parallelism": {
+                "shape": "none",
+                "cap": 1,
+                "barriers": [],
+                "fan_in_rule": None,
+            },
             "verification": [],
             "risk_gates": [],
             "budget": {"max_agents": 5, "max_rounds": 10, "max_retries": 2},
             "resume": {"cached_outputs": [], "invalidation_rules": []},
-            "execution_path": {"mode": "plugin", "first_slice": {"instruction": "", "inputs": [], "expected_output": "", "completion_check": "", "forbidden_actions": []}, "consumer": "codex-agent"},
+            "execution_path": {
+                "mode": "plugin",
+                "first_slice": {
+                    "instruction": "",
+                    "inputs": [],
+                    "expected_output": "",
+                    "completion_check": "",
+                    "forbidden_actions": [],
+                },
+                "consumer": "codex-agent",
+            },
         }
         evidence = generic.read_evidence(str(d))
         report = run_verification(plan_canon_tamper, evidence)
@@ -336,9 +572,13 @@ def _self_test() -> None:
         report = run_verification(ctx["plan"], evidence)
         if report.verdict == "insufficient-evidence":
             passed += 1
-            print(f"  [PASS] Test {tests}: missing required gate evidence → insufficient-evidence")
+            print(
+                f"  [PASS] Test {tests}: missing required gate evidence → insufficient-evidence"
+            )
         else:
-            print(f"  [FAIL] Test {tests}: expected insufficient-evidence, got {report.verdict}")
+            print(
+                f"  [FAIL] Test {tests}: expected insufficient-evidence, got {report.verdict}"
+            )
 
     print(f"\nSelf-test: {passed}/{tests} passed")
     sys.exit(0 if passed == tests else 1)

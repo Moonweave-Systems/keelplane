@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""V88 roadmap reconciliation audit for Keelplane."""
+"""V88 roadmap reconciliation audit for Depone."""
 
 from __future__ import annotations
 
@@ -50,9 +50,9 @@ class RoadmapReconciliationError(ValueError):
 
 
 def now_utc() -> str:
-    from datetime import UTC, datetime
+    from datetime import datetime, timezone
 
-    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def reject_traversal(path: Path, *, code: str, message: str) -> None:
@@ -138,8 +138,8 @@ def audit_surfaces(surfaces: dict[str, str]) -> dict[str, Any]:
     blockers: list[dict[str, Any]] = []
     surface_records = [{"path": path, "content_hash": canonical_hash({"text": text})} for path, text in sorted(surfaces.items())]
 
-    if first_line(surfaces.get("docs/spec.md", "")).lower() != "# keelplane / dwm core spec":
-        blockers.append({"code": "ERR_ROADMAP_RECONCILIATION_SPEC_HEADING_STALE", "path": "docs/spec.md", "term": "# Keelplane / DWM Core Spec", "message": "spec heading does not reflect current product and engine boundary"})
+    if first_line(surfaces.get("docs/spec.md", "")).lower() != "# depone / dwm core spec":
+        blockers.append({"code": "ERR_ROADMAP_RECONCILIATION_SPEC_HEADING_STALE", "path": "docs/spec.md", "term": "# Depone / DWM Core Spec", "message": "spec heading does not reflect current product and engine boundary"})
     require_term(blockers, surfaces, "docs/spec.md", "Last updated: 2026-06-20")
     require_term(blockers, surfaces, "docs/spec.md", "V87 brand boundary audit implemented")
     require_term(blockers, surfaces, "docs/spec.md", "V88 roadmap reconciliation")
@@ -152,8 +152,8 @@ def audit_surfaces(surfaces: dict[str, str]) -> dict[str, Any]:
     require_term(blockers, surfaces, "docs/spec.md", "V95 score history")
     require_term(blockers, surfaces, "docs/spec.md", "V96 metric ladder, V97 benchmark readiness, V98 wave operator, V99 wave receipt, V100 promotion evidence, V101 promotion route, V102 deterministic live-proof recorder, V103 live-proof comparison schema, V104 product direction, V105 verify wedge, V106 multi-wave validation")
 
-    if first_line(surfaces.get("docs/automation-roadmap.md", "")).lower() != "# keelplane automation roadmap":
-        blockers.append({"code": "ERR_ROADMAP_RECONCILIATION_ROADMAP_HEADING_STALE", "path": "docs/automation-roadmap.md", "term": "# Keelplane Automation Roadmap", "message": "roadmap heading does not reflect current product brand"})
+    if first_line(surfaces.get("docs/automation-roadmap.md", "")).lower() != "# depone automation roadmap":
+        blockers.append({"code": "ERR_ROADMAP_RECONCILIATION_ROADMAP_HEADING_STALE", "path": "docs/automation-roadmap.md", "term": "# Depone Automation Roadmap", "message": "roadmap heading does not reflect current product brand"})
     forbid_term(blockers, surfaces, "docs/automation-roadmap.md", "Status: planned; not implemented")
     require_term(blockers, surfaces, "docs/automation-roadmap.md", "V12-V20: Implemented Product Roadmap")
     require_term(blockers, surfaces, "docs/automation-roadmap.md", "V52-V106: Product Evidence And Control Deck")
@@ -177,8 +177,8 @@ def audit_surfaces(surfaces: dict[str, str]) -> dict[str, Any]:
     require_term(blockers, surfaces, "docs/automation-roadmap.md", "V105 verify wedge")
     require_term(blockers, surfaces, "docs/automation-roadmap.md", "V106 multi-wave validation")
 
-    if first_line(surfaces.get("docs/release-history.md", "")).lower() != "# keelplane release history":
-        blockers.append({"code": "ERR_ROADMAP_RECONCILIATION_RELEASE_HEADING_STALE", "path": "docs/release-history.md", "term": "# Keelplane Release History", "message": "release history heading is stale"})
+    if first_line(surfaces.get("docs/release-history.md", "")).lower() != "# depone release history":
+        blockers.append({"code": "ERR_ROADMAP_RECONCILIATION_RELEASE_HEADING_STALE", "path": "docs/release-history.md", "term": "# Depone Release History", "message": "release history heading is stale"})
     require_term(blockers, surfaces, "docs/release-history.md", "docs/v87-brand-boundary-audit-spec.md")
     require_term(blockers, surfaces, "docs/release-history.md", "docs/v88-roadmap-reconciliation-spec.md")
     require_term(blockers, surfaces, "docs/release-history.md", "docs/v89-command-safety-spec.md")
@@ -208,7 +208,7 @@ def audit_surfaces(surfaces: dict[str, str]) -> dict[str, Any]:
         "blocked_by": blockers,
         "surfaces": surface_records,
         "policy": {
-            "public_product_brand": "Keelplane",
+            "public_product_brand": "Depone",
             "internal_engine_name": "DWM Core",
             "latest_version": "V106",
             "executes_commands": False,
@@ -223,7 +223,7 @@ def render_markdown(audit: dict[str, Any]) -> str:
         "",
         f"- Decision: `{audit['decision']}`",
         "- Latest version: `V106`",
-        "- Public product brand: `Keelplane`",
+        "- Public product brand: `Depone`",
         "- Internal engine name: `DWM Core`",
         f"- Executes commands: `{audit['policy']['executes_commands']}`",
         "",
@@ -312,9 +312,9 @@ def run_manifest(manifest_path: Path, out_dir: Path) -> dict[str, Any]:
 
 def good_surfaces() -> dict[str, str]:
     return {
-        "docs/spec.md": "# Keelplane / DWM Core Spec\n\nStatus: V87 brand boundary audit implemented, V88 roadmap reconciliation, V89 command safety, V90 activation v2, V91 contract tiering, V92 evidence oracle, V93 workflow narrative, V94 control deck score, V95 score history, V96 metric ladder, V97 benchmark readiness, V98 wave operator, V99 wave receipt, V100 promotion evidence, V101 promotion route, V102 deterministic live-proof recorder, V103 live-proof comparison schema, V104 product direction, V105 verify wedge, V106 multi-wave validation, Last updated: 2026-06-20\n",
-        "docs/automation-roadmap.md": "# Keelplane Automation Roadmap\n\nStatus: V88 roadmap reconciliation audit implemented. V89 command safety gate implemented. V90 activation v2 implemented. V91 contract tiering implemented. V92 evidence oracle implemented. V93 workflow narrative implemented. V94 control deck score implemented; V95 score history implemented; V96 metric ladder implemented; V97 benchmark readiness implemented; V98 wave operator implemented; V99 wave receipt implemented; V100 promotion evidence implemented; V101 promotion route implemented; V102 deterministic live-proof recorder implemented; V103 live-proof comparison schema implemented; V104 product direction implemented; V105 verify wedge implemented; V106 multi-wave validation implemented.\n\n### V12-V20: Implemented Product Roadmap\n\n### V52-V106: Product Evidence And Control Deck\n",
-        "docs/release-history.md": "# Keelplane Release History\n\n- V87: docs/v87-brand-boundary-audit-spec.md\n- V88: docs/v88-roadmap-reconciliation-spec.md\n- V89: docs/v89-command-safety-spec.md\n- V90: docs/v90-workflow-activation-v2-spec.md\n- V91: docs/v91-contract-tiering-spec.md\n- V92: docs/v92-evidence-oracle-spec.md\n- V93: docs/v93-workflow-narrative-spec.md\n- V94: docs/v94-control-deck-score-spec.md\n- V95: docs/v95-control-deck-score-history-spec.md\n- V96: docs/v96-metric-ladder-spec.md\n- V97: docs/v97-benchmark-readiness-spec.md\n- V98: docs/v98-wave-operator-spec.md\n- V99: docs/v99-wave-receipt-spec.md\n- V100: docs/v100-promotion-evidence-spec.md\n- V101: docs/v101-promotion-route-spec.md\n- V102: docs/v102-live-proof-1-spec.md\n- V103: docs/v103-live-proof-2-spec.md\n- V104: docs/v104-product-direction-spec.md\n- V105: docs/v105-verify-wedge-spec.md\n- V106: docs/v106-multi-wave-spec.md\n\nRoadmap reconciliation audits keep spec, roadmap, and release history aligned.\n",
+        "docs/spec.md": "# Depone / DWM Core Spec\n\nStatus: V87 brand boundary audit implemented, V88 roadmap reconciliation, V89 command safety, V90 activation v2, V91 contract tiering, V92 evidence oracle, V93 workflow narrative, V94 control deck score, V95 score history, V96 metric ladder, V97 benchmark readiness, V98 wave operator, V99 wave receipt, V100 promotion evidence, V101 promotion route, V102 deterministic live-proof recorder, V103 live-proof comparison schema, V104 product direction, V105 verify wedge, V106 multi-wave validation, Last updated: 2026-06-20\n",
+        "docs/automation-roadmap.md": "# Depone Automation Roadmap\n\nStatus: V88 roadmap reconciliation audit implemented. V89 command safety gate implemented. V90 activation v2 implemented. V91 contract tiering implemented. V92 evidence oracle implemented. V93 workflow narrative implemented. V94 control deck score implemented; V95 score history implemented; V96 metric ladder implemented; V97 benchmark readiness implemented; V98 wave operator implemented; V99 wave receipt implemented; V100 promotion evidence implemented; V101 promotion route implemented; V102 deterministic live-proof recorder implemented; V103 live-proof comparison schema implemented; V104 product direction implemented; V105 verify wedge implemented; V106 multi-wave validation implemented.\n\n### V12-V20: Implemented Product Roadmap\n\n### V52-V106: Product Evidence And Control Deck\n",
+        "docs/release-history.md": "# Depone Release History\n\n- V87: docs/v87-brand-boundary-audit-spec.md\n- V88: docs/v88-roadmap-reconciliation-spec.md\n- V89: docs/v89-command-safety-spec.md\n- V90: docs/v90-workflow-activation-v2-spec.md\n- V91: docs/v91-contract-tiering-spec.md\n- V92: docs/v92-evidence-oracle-spec.md\n- V93: docs/v93-workflow-narrative-spec.md\n- V94: docs/v94-control-deck-score-spec.md\n- V95: docs/v95-control-deck-score-history-spec.md\n- V96: docs/v96-metric-ladder-spec.md\n- V97: docs/v97-benchmark-readiness-spec.md\n- V98: docs/v98-wave-operator-spec.md\n- V99: docs/v99-wave-receipt-spec.md\n- V100: docs/v100-promotion-evidence-spec.md\n- V101: docs/v101-promotion-route-spec.md\n- V102: docs/v102-live-proof-1-spec.md\n- V103: docs/v103-live-proof-2-spec.md\n- V104: docs/v104-product-direction-spec.md\n- V105: docs/v105-verify-wedge-spec.md\n- V106: docs/v106-multi-wave-spec.md\n\nRoadmap reconciliation audits keep spec, roadmap, and release history aligned.\n",
     }
 
 
@@ -327,7 +327,7 @@ def self_test() -> None:
     if audit_surfaces(stale)["decision"] != "blocked":
         raise RoadmapReconciliationError("ERR_ROADMAP_RECONCILIATION_SELF_TEST_FAILED", "stale roadmap status should block")
     missing_release = good_surfaces()
-    missing_release["docs/release-history.md"] = "# Keelplane Release History\n\n- V87: docs/v87-brand-boundary-audit-spec.md\n"
+    missing_release["docs/release-history.md"] = "# Depone Release History\n\n- V87: docs/v87-brand-boundary-audit-spec.md\n"
     if audit_surfaces(missing_release)["decision"] != "blocked":
         raise RoadmapReconciliationError("ERR_ROADMAP_RECONCILIATION_SELF_TEST_FAILED", "missing latest release entry should block")
 

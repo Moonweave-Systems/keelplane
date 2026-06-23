@@ -1,11 +1,11 @@
-# Keelplane Automation Roadmap
+# Depone Automation Roadmap
 
-Status: V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented; V10 product CLI implemented; V11 operator guidance implemented; V12-V20 product roadmap implemented; V52-V87 product evidence, graph timing, activation, and brand boundary gates implemented; V88 roadmap reconciliation audit implemented; V89 command safety gate implemented; V90 activation v2 implemented; V91 contract tiering implemented; V92 evidence oracle implemented; V93 workflow narrative implemented; V94 control deck score implemented; V95 score history implemented; V96 metric ladder implemented; V97 benchmark readiness implemented; V98 wave operator implemented; V99 wave receipt implemented; V100 promotion evidence implemented; V101 promotion route implemented; V102 deterministic live-proof recorder implemented; V103 live-proof comparison schema implemented; V104 product direction implemented; V105 verify wedge implemented; V106 multi-wave validation implemented; V94-V101 meta layer frozen; live proof n=1 completed
+Status: V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented; V10 product CLI implemented; V11 operator guidance implemented; V12-V20 product roadmap implemented; V52-V87 product evidence, graph timing, activation, and brand boundary gates implemented; V88 roadmap reconciliation audit implemented; V89 command safety gate implemented; V90 activation v2 implemented; V91 contract tiering implemented; V92 evidence oracle implemented; V93 workflow narrative implemented; V94 control deck score implemented; V95 score history implemented; V96 metric ladder implemented; V97 benchmark readiness implemented; V98 wave operator implemented; V99 wave receipt implemented; V100 promotion evidence implemented; V101 promotion route implemented; V102 deterministic live-proof recorder implemented; V103 live-proof comparison schema implemented; V104 product direction implemented; V105 verify wedge implemented; V106 multi-wave validation implemented; V107 Agent Fabric contracts and compiler implemented; V94-V101 meta layer frozen; live proof n=1 completed
 Date: 2026-06-20
 
 ## Purpose
 
-Keelplane is the public product brand for the DWM Core large-task automation
+Depone is the public product brand for the DWM Core large-task automation
 control-plane: a system that can take a broad objective, decompose it into
 inspectable work, execute bounded waves, verify results, resume after
 interruption, and stop at human gates for risky actions.
@@ -16,9 +16,9 @@ packets are explicit, hashed, reviewable, resumable, and falsifiable.
 
 ## Product Position
 
-Keelplane should become the control-plane for large Codex workflows. DWM Core
+Depone should become the control-plane for large Codex workflows. DWM Core
 remains the internal deterministic engine, and the skill name is now
-`keelplane`. The `dwm_*.py` file prefix and GitHub repository slug remain
+`depone`. The `dwm_*.py` file prefix and GitHub repository slug remain
 legacy/internal and intentionally deferred.
 
 | Layer | Responsibility | Repo stance |
@@ -52,6 +52,7 @@ legacy/internal and intentionally deferred.
 | Dogfood replay | deterministic replay evidence for canonical dogfood chain | planned V20.6, replay gate implemented |
 | Product shell | memorable `plan`, `run`, and `resume` commands over safe artifacts | planned V21, first shell slice implemented |
 | Role pack | role contracts for planner, explorer, worker, reviewer, verifier, and operator | planned V22, first registry implemented |
+| Agent Fabric contracts | deterministic role, toolbelt, profile, harness, compile-report, invocation, and result contracts | planned V107, contract/compiler slice implemented |
 | Harness benchmark | corpus and scoring gate for direct harness comparisons | planned V23, first benchmark gate implemented |
 | README public page | source-bound benchmark graph on the GitHub landing page | planned V37, first publish slice implemented |
 | Benchmark history | hash-bound report history ledger and trend graph artifacts | planned V38, first ledger slice implemented |
@@ -689,7 +690,7 @@ The planned roadmap splits the remaining product into versioned specs:
 - V48 daily operator loop:
   `docs/v48-daily-operator-loop-spec.md`.
 
-These specs define the implemented path to an independent Keelplane product
+These specs define the implemented path to an independent Depone product
 that can use Codex CLI directly through DWM Runner while keeping optional
 adapter targets outside DWM Core.
 
@@ -852,8 +853,10 @@ First canonical demo done means:
 
 ### V52-V106: Product Evidence And Control Deck
 
-Status: implemented through V106 multi-wave validation; the V103 live two-arm
-comparison remains behind explicit approval; V94-V101 meta layer is frozen.
+Status: implemented through V106 multi-wave validation, with the V107 Agent
+Fabric contract/compiler slice recorded as the next contract layer; the V103
+live two-arm comparison remains behind explicit approval; V94-V101 meta layer
+is frozen.
 
 Purpose: move from a runnable demo into a product that can explain its current
 state, measure real dogfood evidence, gate graph claims, continue safely across
@@ -874,7 +877,7 @@ Implemented continuation:
   and live adapter execution must stop.
 - V84-V85 verified the installed skill surface and activated the next workflow
   design path without executing queued commands.
-- V86-V87 set Keelplane as the public brand and added the brand boundary audit.
+- V86-V87 set Depone as the public brand and added the brand boundary audit.
 - V88 roadmap reconciliation audit keeps this spec, roadmap, and release
   history aligned with implementation truth.
 - V89 command safety gate adds shared command-shape and inferred-risk checks
@@ -885,7 +888,7 @@ Implemented continuation:
   layers so iterative work is faster without weakening release approval.
 - V92 evidence oracle verifies artifact existence, JSON field claims, text
   evidence, and source-hash links without executing commands.
-- V93 workflow narrative renders a Keelplane Control Deck from artifact-backed
+- V93 workflow narrative renders a Depone Control Deck from artifact-backed
   chart, gate, activation, oracle, and next-move signals.
 - V94 control deck score derives an operator-readiness score from the Control
   Deck and source hashes without creating a public benchmark or upward trend
@@ -914,12 +917,15 @@ Implemented continuation:
 - V103 live proof comparison adds a deterministic two-arm schema for direct-codex
   versus dwm-controlled evidence richness. It records no pass-rate, speed, cost,
   or direct-agent superiority claim; the live two-arm run remains opt-in.
-- V104 repositioned Keelplane as a workflow designer plus cross-platform evidence
+- V104 repositioned Depone as a workflow designer plus cross-platform evidence
   verifier above existing agent execution engines.
 - V105 added root-controlled evidence-contract wedge fixtures for missing logs,
   forbidden touches, test weakening, missing contracts, and control-file shadows.
 - V106 added optional multi-wave execution-path validation while preserving
   first-slice compatibility and existing human gates.
+- V107 added deterministic Agent Fabric role/toolbelt/profile/harness contracts,
+  compile reports, invocation/result validation, and `compile_agent_fabric(...)`
+  without live agent execution or public benefit claims.
 
 Next roadmap direction:
 
@@ -931,6 +937,8 @@ Next roadmap direction:
    migration gate proves compatibility.
 4. Expand read-only or pre-isolated live execution only where V84/V85 and queue
    preflight evidence permit it.
+5. Add the next Agent Fabric adapter fixture only after preserving deterministic
+   contract behavior and explicit unsupported-control reporting.
 
 ## Strategic Decisions
 

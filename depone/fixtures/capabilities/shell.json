@@ -1,0 +1,11 @@
+{
+  "name": "shell",
+  "version": "1.0.0",
+  "supports_hard_tool_filtering": true,
+  "supports_per_subagent_allowlist": true,
+  "supports_mcp_filtering": true,
+  "supported_features": ["shell", "read", "edit", "write", "exact-command-allowlist", "per-process-isolation"],
+  "unsupported_features": [],
+  "approximations": [],
+  "notes": "Shell harness provides exact tool control. Each command is explicitly allowed or denied. No approximation needed."
+}
