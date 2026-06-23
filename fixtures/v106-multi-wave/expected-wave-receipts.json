@@ -1,0 +1,72 @@
+{
+  "schema_version": "v106.0",
+  "plan": "multi-wave-plan.json",
+  "v105_wave_1_cases": ["missing-test-log", "forbidden-file-touch", "test-weakened", "good"],
+  "receipt_chain": [
+    {
+      "wave_id": "wave-1",
+      "receipt": "verified",
+      "case_results": [
+        {
+          "case_id": "missing-test-log",
+          "expected_verdict": "refuted",
+          "expected_codes": ["ERR_REQUIRED_TEST_EVIDENCE_MISSING"],
+          "status": "matched"
+        },
+        {
+          "case_id": "forbidden-file-touch",
+          "expected_verdict": "refuted",
+          "expected_codes": ["ERR_FORBIDDEN_FILE_TOUCHED"],
+          "status": "matched"
+        },
+        {
+          "case_id": "test-weakened",
+          "expected_verdict": "refuted",
+          "expected_codes": ["ERR_TEST_WEAKENED"],
+          "status": "matched"
+        },
+        {
+          "case_id": "good",
+          "expected_verdict": "verified",
+          "expected_codes": [],
+          "status": "matched"
+        }
+      ],
+      "unlocks": ["wave-2"]
+    },
+    {
+      "wave_id": "wave-2",
+      "receipt": "verified",
+      "entry_gate": "receipt from wave-1 verified after V105 verified/refuted verdicts match expected outcomes",
+      "unlocks": []
+    }
+  ],
+  "auto_continue_requires": [
+    "previous wave receipt is verified",
+    "required evidence exists",
+    "verify/refuter passed",
+    "V105 verified/refuted verdicts match expected outcomes",
+    "V105 evidence-contract codes match expected codes",
+    "touched files are within allowed scope",
+    "no forbidden file touched",
+    "no test weakening",
+    "command exit codes match expected",
+    "budget within limits",
+    "no network/deploy/publish/secret/payment/external-message",
+    "no human approval gate required"
+  ],
+  "auto_stop_on": [
+    "missing required evidence",
+    "test failure",
+    "forbidden file touched",
+    "test weakened",
+    "unexpected V105 verdict or evidence-contract code",
+    "dependency install",
+    "network/deploy/publish",
+    "secret/env access",
+    "budget exceeded",
+    "refuter rejects",
+    "next wave entry gate not satisfied",
+    "human approval required"
+  ]
+}

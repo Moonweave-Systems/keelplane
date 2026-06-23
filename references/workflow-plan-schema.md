@@ -31,7 +31,8 @@ Required top-level fields:
 - `risk_gates`: gated actions and safe defaults.
 - `budget`: agent, round, retry, time, and file-touch limits.
 - `resume`: cache, invalidation, and restart rules.
-- `execution_path`: mode, first slice, and consumer.
+- `execution_path`: mode, first slice, consumer, and optional multi-wave
+  execution contract.
 
 ## Activation
 
@@ -140,7 +141,21 @@ risk gates, not only prose. Fixture-specific dependency, production, database,
 secret, and history-rewrite expectations are enforced when the manifest names
 them as required risk gates.
 
-## First Slice
+## Execution Path And Wave Model
+
+Official UX centers on a gated run model:
+
+- `slice`: one atomic worker task.
+- `wave`: one gated group of one or more slices sharing evidence, budget, and
+  fan-in rules.
+- `run`: one or more waves, where each follow-on wave unlocks only after the
+  prior wave receipt, verification, and gate evidence pass.
+
+`execution_path.first_wave` is the preferred first runnable unit. Legacy
+`execution_path.first_slice` remains required for compatibility with existing
+consumers and must continue to validate.
+
+## Legacy First Slice
 
 `execution_path.first_slice` requires:
 
@@ -154,3 +169,59 @@ The first slice must be small enough for another agent to start without
 reinterpretation and must identify forbidden actions before execution.
 Repo-bound plans must include `repository path` in `first_slice.inputs`;
 non-repo plans must not include it.
+
+## First Wave And Follow-On Waves
+
+Plans may include `execution_path.first_wave` and `execution_path.waves` when a
+consumer needs a bounded multi-wave handoff contract. `first_wave` is the
+official model for new plans; `first_slice` is the backward-compatible alias.
+
+`execution_path.first_wave` requires:
+
+- `id`
+- `concurrency_cap`: positive integer
+- `slices`: non-empty list of slice objects
+- `entry_gate`
+- `exit_gate`
+- `fan_in`
+
+Each `first_wave.slices[]` item requires:
+
+- `id`
+- `instruction`
+- `expected_output`
+- `completion_check`
+- `forbidden_actions`: non-empty list
+
+`first_wave.slices[].inputs` is optional, but when present it must be a
+non-empty list.
+
+`execution_path.waves` is optional, but when present it must be a non-empty list
+of wave records. Each wave requires:
+
+- `id`
+- `depends_on`: list of wave ids
+- `concurrency_cap`: positive integer
+- `slices`: non-empty list of slice ids
+- `exit_gate`
+
+Dependent waves must include `entry_gate`, and the entry gate must reference a
+prior receipt, verified state, or exit-gate semantics. Dependencies may point to
+`first_wave.id` or to another `waves[].id`. Wave ids must be unique across
+`first_wave` and `waves`, dependencies must point to known wave ids, and
+dependency cycles are rejected.
+When `first_wave` is present, every `waves[]` entry is a follow-on wave and must
+declare a non-empty `depends_on` path back to `first_wave` or a verified prior
+wave.
+
+Automatic progression to the next wave is allowed only when the previous wave
+receipt is verified, required evidence exists, the verifier or refuter passed,
+touched files are within scope, forbidden actions are absent, tests were not
+weakened, expected command exit codes match, budgets remain within limits, no
+network/deploy/publish/secret/payment/external-message action occurred, and no
+human approval gate is required.
+
+Automatic progression stops on missing evidence, test failure, forbidden file
+touches, test weakening, dependency installation, network/deploy/publish access,
+secret or environment access, budget excess, refuter rejection, an unsatisfied
+next-wave entry gate, or a required human approval gate.

@@ -32,6 +32,124 @@ def validate_embedded_contract(plan: dict[str, Any]) -> list[str]:
     return errors
 
 
+def _validate_execution_wave_slice(slice_data: Any, label: str, errors: list[str]) -> None:
+    if not isinstance(slice_data, dict):
+        errors.append(f"{label} must be an object")
+        return
+    _require_keys(slice_data, ["id", "instruction", "expected_output", "completion_check", "forbidden_actions"], label, errors)
+    if "id" in slice_data and not _non_empty_string(slice_data["id"]):
+        errors.append(f"{label}.id is empty")
+    if "instruction" in slice_data and not _non_empty_string(slice_data["instruction"]):
+        errors.append(f"{label}.instruction is empty")
+    if "inputs" in slice_data and not _non_empty_list(slice_data["inputs"]):
+        errors.append(f"{label}.inputs must be non-empty")
+    if "expected_output" in slice_data and not _non_empty_string(slice_data["expected_output"]):
+        errors.append(f"{label}.expected_output is empty")
+    if "completion_check" in slice_data and not _non_empty_string(slice_data["completion_check"]):
+        errors.append(f"{label}.completion_check is empty")
+    if "forbidden_actions" in slice_data and not _non_empty_list(slice_data["forbidden_actions"]):
+        errors.append(f"{label}.forbidden_actions must be non-empty")
+
+
+def _validate_execution_first_wave(first_wave: Any, errors: list[str]) -> str | None:
+    if not isinstance(first_wave, dict):
+        errors.append("execution_path.first_wave must be an object")
+        return None
+    _require_keys(first_wave, ["id", "concurrency_cap", "slices", "entry_gate", "exit_gate", "fan_in"], "first_wave", errors)
+    if "id" in first_wave and not _non_empty_string(first_wave["id"]):
+        errors.append("first_wave.id is empty")
+    if "concurrency_cap" in first_wave and not (isinstance(first_wave["concurrency_cap"], int) and first_wave["concurrency_cap"] >= 1):
+        errors.append("first_wave.concurrency_cap must be a positive integer")
+    if "slices" in first_wave and not _non_empty_list(first_wave["slices"]):
+        errors.append("first_wave.slices must be non-empty")
+    if "entry_gate" in first_wave and not _non_empty_string(first_wave["entry_gate"]):
+        errors.append("first_wave.entry_gate is empty")
+    if "exit_gate" in first_wave and not _non_empty_string(first_wave["exit_gate"]):
+        errors.append("first_wave.exit_gate is empty")
+    if "fan_in" in first_wave and not _non_empty_string(first_wave["fan_in"]):
+        errors.append("first_wave.fan_in is empty")
+    if isinstance(first_wave.get("slices"), list):
+        for index, slice_data in enumerate(first_wave["slices"]):
+            _validate_execution_wave_slice(slice_data, f"first_wave.slices[{index}]", errors)
+    wave_id = first_wave.get("id")
+    return wave_id if _non_empty_string(wave_id) else None
+
+
+def _validate_execution_waves(waves: Any, errors: list[str], *, first_wave_id: str | None = None) -> None:
+    if not isinstance(waves, list):
+        errors.append("execution_path.waves must be a list")
+        return
+    if not waves:
+        errors.append("execution_path.waves must be non-empty")
+        return
+    seen_wave_ids: set[str] = {first_wave_id} if first_wave_id is not None else set()
+    depends_on: dict[str, list[str]] = {}
+    for index, wave in enumerate(waves):
+        label = f"waves[{index}]"
+        if not isinstance(wave, dict):
+            errors.append(f"{label} must be an object")
+            continue
+        _require_keys(wave, ["id", "depends_on", "concurrency_cap", "slices", "exit_gate"], label, errors)
+        wave_id = wave.get("id")
+        if "id" in wave and not _non_empty_string(wave_id):
+            errors.append(f"{label}.id is empty")
+        elif isinstance(wave_id, str):
+            if wave_id in seen_wave_ids:
+                errors.append("execution_path.waves contains duplicate ids")
+            else:
+                seen_wave_ids.add(wave_id)
+        if "depends_on" in wave and not isinstance(wave["depends_on"], list):
+            errors.append(f"{label}.depends_on must be a list")
+        elif isinstance(wave.get("depends_on"), list) and any(not _non_empty_string(dep) for dep in wave["depends_on"]):
+            errors.append(f"{label}.depends_on contains an empty id")
+        if "concurrency_cap" in wave and not (isinstance(wave["concurrency_cap"], int) and wave["concurrency_cap"] >= 1):
+            errors.append(f"{label}.concurrency_cap must be a positive integer")
+        if "slices" in wave and not _non_empty_list(wave["slices"]):
+            errors.append(f"{label}.slices must be non-empty")
+        elif isinstance(wave.get("slices"), list) and any(not _non_empty_string(slice_id) for slice_id in wave["slices"]):
+            errors.append(f"{label}.slices contains an empty slice id")
+        if "exit_gate" in wave and not _non_empty_string(wave["exit_gate"]):
+            errors.append(f"{label}.exit_gate is empty")
+        if "entry_gate" in wave and not _non_empty_string(wave["entry_gate"]):
+            errors.append(f"{label}.entry_gate is empty")
+        depends = wave.get("depends_on") if isinstance(wave.get("depends_on"), list) else []
+        if first_wave_id is not None and not depends:
+            errors.append(f"{label}.depends_on must reference first_wave or a verified prior wave")
+        if depends:
+            if "entry_gate" not in wave:
+                errors.append(f"{label} missing entry_gate for dependent wave")
+            elif _non_empty_string(wave["entry_gate"]):
+                lowered_entry_gate = wave["entry_gate"].lower()
+                if not any(marker in lowered_entry_gate for marker in ("receipt", "verified", "exit gate")):
+                    errors.append(f"{label}.entry_gate must reference prior receipt/verified/exit gate semantics")
+        if isinstance(wave_id, str):
+            depends_on[wave_id] = depends
+
+    for wave_id, wave_deps in depends_on.items():
+        for dep_id in wave_deps:
+            if dep_id not in seen_wave_ids:
+                errors.append(f"execution_path.waves.{wave_id} depends_on unknown wave id: {dep_id}")
+
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(node_id: str) -> None:
+        if node_id in visited:
+            return
+        if node_id in visiting:
+            errors.append("execution_path.waves contains a dependency cycle")
+            return
+        visiting.add(node_id)
+        for dep_id in depends_on.get(node_id, []):
+            if dep_id in depends_on:
+                visit(dep_id)
+        visiting.remove(node_id)
+        visited.add(node_id)
+
+    for wave_id in depends_on:
+        visit(wave_id)
+
+
 def _non_empty_string(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
@@ -60,6 +178,9 @@ def _validate_parallelism(parallelism: Any, errors: list[str]) -> None:
 
 
 def _validate_workers(workers: Any, errors: list[str]) -> None:
+    if not isinstance(workers, list):
+        errors.append("workers must be a list")
+        return
     for worker in workers:
         if not isinstance(worker, dict):
             errors.append("worker must be an object")
@@ -75,6 +196,9 @@ def _validate_workers(workers: Any, errors: list[str]) -> None:
 
 
 def _validate_handoffs(handoffs: Any, errors: list[str]) -> None:
+    if not isinstance(handoffs, list):
+        errors.append("handoffs must be a list")
+        return
     for handoff in handoffs:
         if not isinstance(handoff, dict):
             errors.append("handoff must be an object")
@@ -92,6 +216,9 @@ def _validate_handoffs(handoffs: Any, errors: list[str]) -> None:
 
 
 def _validate_risk_gates(gates: Any, errors: list[str]) -> None:
+    if not isinstance(gates, list):
+        errors.append("risk_gates must be a list")
+        return
     for gate in gates:
         if not isinstance(gate, dict):
             errors.append("risk gate must be an object")
@@ -139,3 +266,8 @@ def _validate_execution_path(execution: Any, errors: list[str]) -> None:
         errors.append("first_slice.completion_check is empty")
     if "forbidden_actions" in first_slice and not _non_empty_list(first_slice["forbidden_actions"]):
         errors.append("first_slice.forbidden_actions must be non-empty")
+    first_wave_id = None
+    if "first_wave" in execution:
+        first_wave_id = _validate_execution_first_wave(execution["first_wave"], errors)
+    if "waves" in execution:
+        _validate_execution_waves(execution["waves"], errors, first_wave_id=first_wave_id)

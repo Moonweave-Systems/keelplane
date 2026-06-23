@@ -75,10 +75,11 @@ For substantial work, emit both:
   `references/workflow-plan-schema.md`.
 - rendered blueprint: a human-readable view derived from the same JSON.
 
-The JSON and blueprint must agree on activation, first slice, handoffs,
-verification, risk gates, budgets, and resume points. If the router-first rule
-does not justify activation, emit a downgrade artifact that names the target:
-direct Codex, `workflow-router`, or a simple plan.
+The JSON and blueprint must agree on activation, the first wave containing one
+or more slices, handoffs, verification, risk gates, budgets, and resume points.
+Keep `first_slice` only as a compatibility alias when emitting JSON. If the
+router-first rule does not justify activation, emit a downgrade artifact that
+names the target: direct Codex, `workflow-router`, or a simple plan.
 
 When writing a spec file, include:
 
@@ -90,5 +91,5 @@ When writing a spec file, include:
 6. Evaluation fixtures.
 7. Release or implementation plan.
 
-If implementation follows, keep the first slice small enough to verify with a
-real prompt, command, fixture, or generated workflow artifact.
+If implementation follows, keep the first wave small enough to verify with real
+slice reports, receipts, commands, fixtures, or generated workflow artifacts.

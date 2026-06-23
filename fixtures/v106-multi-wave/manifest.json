@@ -1,0 +1,57 @@
+{
+  "suite_id": "v106-multi-wave",
+  "fixtures": [
+    {
+      "id": "valid-multi-wave-plan",
+      "plan": "multi-wave-plan.json",
+      "expect": {
+        "evaluate_plan": "pass",
+        "embedded_contract": "pass"
+      }
+    },
+    {
+      "id": "invalid-dependency-cycle",
+      "plan": "invalid-dependency-cycle.json",
+      "expect": {
+        "evaluate_plan": "fail",
+        "embedded_contract": "fail",
+        "error_contains": "dependency cycle"
+      }
+    },
+    {
+      "id": "invalid-empty-slices",
+      "plan": "invalid-empty-slices.json",
+      "expect": {
+        "evaluate_plan": "fail",
+        "embedded_contract": "fail",
+        "error_contains": "slices must be non-empty"
+      }
+    },
+    {
+      "id": "invalid-missing-entry-gate",
+      "plan": "invalid-missing-entry-gate.json",
+      "expect": {
+        "evaluate_plan": "fail",
+        "embedded_contract": "fail",
+        "error_contains": "missing entry_gate"
+      }
+    },
+    {
+      "id": "invalid-ungated-follow-on-wave",
+      "plan": "invalid-ungated-follow-on-wave.json",
+      "expect": {
+        "evaluate_plan": "fail",
+        "embedded_contract": "fail",
+        "error_contains": "depends_on must reference first_wave"
+      }
+    },
+    {
+      "id": "legacy-first-slice-only",
+      "plan": "legacy-first-slice-only.json",
+      "expect": {
+        "evaluate_plan": "pass",
+        "embedded_contract": "pass"
+      }
+    }
+  ]
+}

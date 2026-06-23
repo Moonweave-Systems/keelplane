@@ -745,7 +745,12 @@ def validate_budget_resume_execution(plan: dict[str, Any], activated: bool, expe
 
     execution = plan["execution_path"]
     require(isinstance(execution, dict), "execution_path must be an object")
-    require_keys(execution, ["mode", "first_slice", "consumer"], "execution_path")
+    execution_keys = ["mode", "first_slice", "consumer"]
+    if "first_wave" in execution:
+        execution_keys.append("first_wave")
+    if "waves" in execution:
+        execution_keys.append("waves")
+    require_keys(execution, execution_keys, "execution_path")
     require(execution["mode"] in EXECUTION_MODES, "invalid execution mode")
     require(execution["consumer"] in CONSUMERS, "invalid consumer")
     if not activated:
@@ -781,6 +786,103 @@ def validate_budget_resume_execution(plan: dict[str, Any], activated: bool, expe
             first_slice["instruction"] == expected_instruction,
             "downgrade first_slice.instruction must route to the downgrade target",
         )
+
+    first_wave_id = None
+    if "first_wave" in execution:
+        first_wave_id = validate_execution_first_wave(execution["first_wave"])
+    if "waves" in execution:
+        validate_execution_waves(execution["waves"], first_wave_id=first_wave_id)
+
+
+def validate_execution_wave_slice(slice_data: Any, label: str) -> None:
+    require(isinstance(slice_data, dict), f"{label} must be an object")
+    slice_keys = ["id", "instruction", "expected_output", "completion_check", "forbidden_actions"]
+    if "inputs" in slice_data:
+        slice_keys.append("inputs")
+    require_keys(
+        slice_data,
+        slice_keys,
+        label,
+    )
+    require(non_empty_string(slice_data["id"]), f"{label}.id is empty")
+    require(non_empty_string(slice_data["instruction"]), f"{label}.instruction is empty")
+    if "inputs" in slice_data:
+        require(non_empty_list(slice_data["inputs"]), f"{label}.inputs must be non-empty")
+    require(non_empty_string(slice_data["expected_output"]), f"{label}.expected_output is empty")
+    require(non_empty_string(slice_data["completion_check"]), f"{label}.completion_check is empty")
+    require(non_empty_list(slice_data["forbidden_actions"]), f"{label}.forbidden_actions must be non-empty")
+
+
+def validate_execution_first_wave(first_wave: Any) -> str:
+    require(isinstance(first_wave, dict), "execution_path.first_wave must be an object")
+    require_keys(first_wave, ["id", "concurrency_cap", "slices", "entry_gate", "exit_gate", "fan_in"], "first_wave")
+    require(non_empty_string(first_wave["id"]), "first_wave.id is empty")
+    require(isinstance(first_wave["concurrency_cap"], int) and first_wave["concurrency_cap"] >= 1, "first_wave.concurrency_cap must be a positive integer")
+    require(non_empty_list(first_wave["slices"]), "first_wave.slices must be non-empty")
+    require(non_empty_string(first_wave["entry_gate"]), "first_wave.entry_gate is empty")
+    require(non_empty_string(first_wave["exit_gate"]), "first_wave.exit_gate is empty")
+    require(non_empty_string(first_wave["fan_in"]), "first_wave.fan_in is empty")
+    for index, slice_data in enumerate(first_wave["slices"]):
+        validate_execution_wave_slice(slice_data, f"first_wave.slices[{index}]")
+    return first_wave["id"]
+
+
+def validate_execution_waves(waves: Any, *, first_wave_id: str | None = None) -> None:
+    require(isinstance(waves, list), "execution_path.waves must be a list")
+    require(waves, "execution_path.waves must be non-empty")
+    seen_wave_ids: set[str] = {first_wave_id} if first_wave_id is not None else set()
+    depends_on: dict[str, list[str]] = {}
+    for index, wave in enumerate(waves):
+        label = f"waves[{index}]"
+        require(isinstance(wave, dict), f"{label} must be an object")
+        wave_keys = ["id", "depends_on", "concurrency_cap", "slices", "exit_gate"]
+        if "entry_gate" in wave:
+            wave_keys.append("entry_gate")
+        require_keys(wave, wave_keys, label)
+        wave_id = wave["id"]
+        require(non_empty_string(wave_id), f"{label}.id is empty")
+        require(wave_id not in seen_wave_ids, "execution_path.waves contains duplicate ids")
+        seen_wave_ids.add(wave_id)
+        require(isinstance(wave["depends_on"], list), f"{label}.depends_on must be a list")
+        require(all(non_empty_string(dep) for dep in wave["depends_on"]), f"{label}.depends_on contains an empty id")
+        require(isinstance(wave["concurrency_cap"], int) and wave["concurrency_cap"] >= 1, f"{label}.concurrency_cap must be a positive integer")
+        require(non_empty_list(wave["slices"]), f"{label}.slices must be non-empty")
+        require(all(non_empty_string(slice_id) for slice_id in wave["slices"]), f"{label}.slices contains an empty slice id")
+        require(non_empty_string(wave["exit_gate"]), f"{label}.exit_gate is empty")
+        if "entry_gate" in wave and not non_empty_string(wave["entry_gate"]):
+            raise EvaluationError(f"{label}.entry_gate is empty")
+        if first_wave_id is not None:
+            require(wave["depends_on"], f"{label}.depends_on must reference first_wave or a verified prior wave")
+        if wave["depends_on"]:
+            require("entry_gate" in wave, f"{label} missing entry_gate for dependent wave")
+            require(non_empty_string(wave["entry_gate"]), f"{label}.entry_gate is empty")
+            lowered_entry_gate = wave["entry_gate"].lower()
+            require(
+                any(marker in lowered_entry_gate for marker in ("receipt", "verified", "exit gate")),
+                f"{label}.entry_gate must reference prior receipt/verified/exit gate semantics",
+            )
+        depends_on[wave_id] = list(wave["depends_on"])
+
+    for wave_id, wave_deps in depends_on.items():
+        for dep_id in wave_deps:
+            require(dep_id in seen_wave_ids, f"execution_path.waves.{wave_id} depends_on unknown wave id: {dep_id}")
+
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(node_id: str) -> None:
+        if node_id in visited:
+            return
+        require(node_id not in visiting, "execution_path.waves contains a dependency cycle")
+        visiting.add(node_id)
+        for dep_id in depends_on[node_id]:
+            if dep_id in depends_on:
+                visit(dep_id)
+        visiting.remove(node_id)
+        visited.add(node_id)
+
+    for wave_id in depends_on:
+        visit(wave_id)
 
 
 def validate_plan(
@@ -1458,15 +1560,6 @@ def evaluate_manifest(manifest_path: Path, out_root: Path) -> dict[str, Any]:
         for path in sorted((ROOT / "samples" / "v0.5" / "baselines").glob("*/*.normalization-failure.json"))
     }
     require(expected_baseline_paths == actual_baseline_paths, "manifest baseline records must match tracked baseline corpus")
-    fixture_keys = [
-        "id",
-        "category",
-        "prompt_path",
-        "candidate_plan",
-        "raw_output",
-        "consumer_report",
-        "expected",
-    ]
     for fixture in manifest["fixtures"]:
         validate_fixture_manifest_entry(fixture)
     expected_candidate_paths = {fixture["candidate_plan"] for fixture in manifest["fixtures"]}
