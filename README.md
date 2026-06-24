@@ -16,18 +16,18 @@ evidence. It does not execute agents — it makes runs from other frameworks
 ## Quickstart
 
 ```bash
-# Installation from source
+# Installation from source. PyPI publishing is not active yet.
 git clone https://github.com/Moonweave-Systems/depone
 cd depone
 
 # Run the full design → compile → verify cycle
-python -m depone demo
+python3 -m depone demo --out out/depone-quickstart
 
 # Or step by step:
-python -m depone design "audit all API routes for authentication" --surface . --out plan.json
-python -m depone validate plan.json
-python -m depone compile plan.json --target conductor --out workflow.yaml
-python -m depone verify plan.json --evidence ./evidence/ --out report.json
+python3 -m depone design "audit all API routes for authentication" --surface . --out plan.json
+python3 -m depone validate plan.json
+python3 -m depone compile plan.json --target conductor --out workflow.yaml
+python3 -m depone verify plan.json --evidence ./evidence/ --out report.json --operator-view-out operator-view.md
 ```
 
 ## Installation
@@ -59,6 +59,7 @@ evidence gates.
 | `depone validate` | Validate a plan.json against the schema v0.5 |
 | `depone compile` | Translate a plan into a target framework format (Conductor YAML) |
 | `depone verify` | Verify execution evidence against a plan (4-check engine) |
+| `depone validate-contracts` | Validate Agent Fabric contracts and fixtures |
 | `depone demo` | Run a complete design → compile → verify cycle |
 
 ### Verify: 4-Check Engine
@@ -151,11 +152,12 @@ python scripts/check_readme_quality.py README.md
 All CLI commands include built-in `--self-test`:
 
 ```bash
-python -m depone design --self-test    # 4/4 passed
-python -m depone compile --self-test   # 4/4 passed
-python -m depone validate --self-test  # 3/3 passed
-python -m depone verify --self-test    # 3/3 passed
-python -m depone demo --self-test      # full cycle passed
+python3 -m depone design --self-test              # 4/4 passed
+python3 -m depone compile --self-test             # conductor 4/4, agent_fabric 6/6 passed
+python3 -m depone validate --self-test            # 4/4 passed
+python3 -m depone verify --self-test              # 7/7 passed
+python3 -m depone validate-contracts --self-test  # 22/22 passed
+python3 -m depone demo --self-test                # full cycle passed
 ```
 
 Run the release contract before publishing changes:
