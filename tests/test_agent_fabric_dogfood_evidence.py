@@ -83,6 +83,50 @@ class AgentFabricDogfoodEvidenceTests(unittest.TestCase):
         self.assertEqual(report["decision"], "blocked-invalid-capture-manifest")
         self.assertEqual(report["blockers"][0]["code"], "ERR_CAPTURE_MANIFEST_INVALID")
 
+
+    def test_corpus_summarizes_multiple_source_only_capture_manifests(self) -> None:
+        from depone.agent_fabric.capture_bridge import _sha256_json
+        from depone.agent_fabric.dogfood_evidence import (
+            build_dogfood_evidence_corpus_report,
+        )
+
+        shell_capture = observed_capture_manifest()
+        codex_capture = json.loads(json.dumps(shell_capture))
+        codex_capture["fixture"]["adapter"]["harness"] = "codex"
+        codex_capture["fixture"]["adapter"]["name"] = "codex-reference-fixture"
+        codex_capture["fixture"]["invocation"]["target_harness"] = "codex"
+        codex_capture["fixture"]["invocation"]["profile"] = "codex-source-only"
+        codex_capture["fixture"]["capture"]["self_report"]["profile"] = "codex-source-only"
+        codex_capture["source_fixture_hash"] = _sha256_json(codex_capture["fixture"])
+        codex_capture["observer_capture"]["source_fixture_hash"] = codex_capture[
+            "source_fixture_hash"
+        ]
+        codex_capture["observer_capture_hash"] = _sha256_json(
+            codex_capture["observer_capture"]
+        )
+
+        corpus = build_dogfood_evidence_corpus_report(
+            [
+                ("shell", shell_capture),
+                ("codex", codex_capture),
+            ]
+        )
+
+        self.assertEqual(corpus["kind"], "agent-fabric-dogfood-evidence-corpus")
+        self.assertEqual(corpus["decision"], "dogfood-corpus-ready-source-only")
+        self.assertEqual(corpus["summary"]["total_manifests"], 2)
+        self.assertEqual(corpus["summary"]["ready_manifests"], 2)
+        self.assertEqual(corpus["summary"]["blocked_manifests"], 0)
+        self.assertEqual([entry["id"] for entry in corpus["entries"]], ["shell", "codex"])
+        self.assertEqual(
+            [entry["decision"] for entry in corpus["entries"]],
+            ["dogfood-evidence-ready-source-only", "dogfood-evidence-ready-source-only"],
+        )
+        self.assertFalse(corpus["boundary"]["executes_commands"])
+        self.assertFalse(corpus["boundary"]["calls_live_models"])
+        self.assertFalse(corpus["boundary"]["approves_public_claim"])
+        self.assertFalse(corpus["boundary"]["trust_upgrade"])
+
     def test_cli_writes_dogfood_evidence_report(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
