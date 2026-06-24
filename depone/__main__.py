@@ -8,6 +8,7 @@ import sys
 from depone.cli import (
     agent_fabric_adapter_smoke,
     agent_fabric_claim_gate,
+    agent_fabric_dogfood_evidence,
     agent_fabric_harness_snapshot,
     agent_fabric_paired_evidence,
     agent_fabric_smoke,
@@ -212,6 +213,24 @@ def main() -> None:
     )
 
 
+
+    # agent-fabric-dogfood-evidence
+    dogfood_evidence_parser = sub.add_parser(
+        "agent-fabric-dogfood-evidence",
+        help="Export source-only Agent Fabric dogfood evidence",
+    )
+    dogfood_evidence_parser.add_argument(
+        "--capture-manifest", help="Agent Fabric capture manifest JSON path"
+    )
+    dogfood_evidence_parser.add_argument(
+        "--out",
+        default="dogfood-evidence.json",
+        help="Output path for dogfood evidence report JSON",
+    )
+    dogfood_evidence_parser.add_argument(
+        "--self-test", action="store_true", help="Run self-test and exit"
+    )
+
     # agent-fabric-paired-evidence
     paired_evidence_parser = sub.add_parser(
         "agent-fabric-paired-evidence",
@@ -293,6 +312,8 @@ def main() -> None:
         agent_fabric_harness_snapshot.run(args)
     elif args.command == "agent-fabric-adapter-smoke":
         agent_fabric_adapter_smoke.run(args)
+    elif args.command == "agent-fabric-dogfood-evidence":
+        agent_fabric_dogfood_evidence.run(args)
     elif args.command == "agent-fabric-paired-evidence":
         agent_fabric_paired_evidence.run(args)
     elif args.command == "agent-fabric-claim-gate":

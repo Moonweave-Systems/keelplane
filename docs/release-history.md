@@ -231,6 +231,9 @@ promotion requires real release history.
 - V121: `docs/v121-agent-fabric-paired-evidence-cli-spec.md` added the
   `depone agent-fabric-paired-evidence` report producer for hash-bound paired
   dogfood evidence.
+- V122: `docs/v122-agent-fabric-dogfood-evidence-cli-spec.md` added the
+  `depone agent-fabric-dogfood-evidence` producer from validated A1 local
+  observed capture manifests.
 
 ## Current Public Boundaries
 
@@ -301,3 +304,5 @@ promotion requires real release history.
   live proof.
 - V121 paired evidence CLI reports produce the V120 input only; they do not
   execute dogfood runs, approve public claims, or upgrade source-only evidence.
+- V122 dogfood evidence CLI reports read existing observed capture manifests
+  only; they do not run dogfood tasks or convert self-report into proof.
