@@ -228,6 +228,9 @@ promotion requires real release history.
 - V120: `docs/v120-agent-fabric-paired-evidence-gate-spec.md` extended the
   claim gate with optional source-only paired evidence that can reach human
   review readiness without approving public claims.
+- V121: `docs/v121-agent-fabric-paired-evidence-cli-spec.md` added the
+  `depone agent-fabric-paired-evidence` report producer for hash-bound paired
+  dogfood evidence.
 
 ## Current Public Boundaries
 
@@ -296,3 +299,5 @@ promotion requires real release history.
 - V120 paired evidence gate inputs can move claims to human review readiness;
   they still do not approve public claims or convert source-only evidence into
   live proof.
+- V121 paired evidence CLI reports produce the V120 input only; they do not
+  execute dogfood runs, approve public claims, or upgrade source-only evidence.

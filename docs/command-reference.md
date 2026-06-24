@@ -14,6 +14,7 @@ python3 -m depone validate-contracts --all
 python3 -m depone agent-fabric-smoke --profile profile.json --roles role.json --plan plan.json --out agent-fabric-smoke.json --operator-view-out operator-view.md
 python3 -m depone agent-fabric-harness-snapshot --harness shell --harness codex --out agent-fabric-harness-snapshot.json
 python3 -m depone agent-fabric-adapter-smoke --adapter-fixture depone/fixtures/agent_fabric/reference_adapter_shell.json --out agent-fabric-adapter-smoke.json
+python3 -m depone agent-fabric-paired-evidence --adapter-smoke agent-fabric-adapter-smoke.json --dogfood-evidence dogfood-evidence.json --out paired-evidence.json
 python3 -m depone agent-fabric-claim-gate --adapter-smoke agent-fabric-adapter-smoke.json --paired-evidence paired-evidence.json --out agent-fabric-claim-gate.json
 python3 -m depone demo --out out/depone-quickstart
 

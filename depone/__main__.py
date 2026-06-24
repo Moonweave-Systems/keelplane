@@ -9,6 +9,7 @@ from depone.cli import (
     agent_fabric_adapter_smoke,
     agent_fabric_claim_gate,
     agent_fabric_harness_snapshot,
+    agent_fabric_paired_evidence,
     agent_fabric_smoke,
     demo,
     design,
@@ -210,6 +211,32 @@ def main() -> None:
         "--self-test", action="store_true", help="Run self-test and exit"
     )
 
+
+    # agent-fabric-paired-evidence
+    paired_evidence_parser = sub.add_parser(
+        "agent-fabric-paired-evidence",
+        help="Export source-only paired Agent Fabric dogfood evidence",
+    )
+    paired_evidence_parser.add_argument(
+        "--adapter-smoke", help="Adapter smoke report JSON path"
+    )
+    paired_evidence_parser.add_argument(
+        "--dogfood-evidence", help="Dogfood evidence JSON path"
+    )
+    paired_evidence_parser.add_argument(
+        "--claim-scope",
+        default="public-benefit",
+        help="Claim scope being paired",
+    )
+    paired_evidence_parser.add_argument(
+        "--out",
+        default="agent-fabric-paired-evidence.json",
+        help="Output path for paired evidence report JSON",
+    )
+    paired_evidence_parser.add_argument(
+        "--self-test", action="store_true", help="Run self-test and exit"
+    )
+
     # agent-fabric-claim-gate
     claim_gate_parser = sub.add_parser(
         "agent-fabric-claim-gate",
@@ -266,6 +293,8 @@ def main() -> None:
         agent_fabric_harness_snapshot.run(args)
     elif args.command == "agent-fabric-adapter-smoke":
         agent_fabric_adapter_smoke.run(args)
+    elif args.command == "agent-fabric-paired-evidence":
+        agent_fabric_paired_evidence.run(args)
     elif args.command == "agent-fabric-claim-gate":
         agent_fabric_claim_gate.run(args)
     elif args.command == "demo":
