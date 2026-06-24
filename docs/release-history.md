@@ -210,6 +210,9 @@ promotion requires real release history.
 - V111: `docs/v111-agent-fabric-operator-view-spec.md` documents the
   presentation-only operator-view/exporter for V110 report fields, including
   the `depone verify --operator-view-out` Markdown export path.
+- V112: `docs/v112-agent-fabric-lifecycle-smoke-spec.md` documents the
+  source-only Agent Fabric lifecycle smoke from V107 compile output through
+  V111 operator view, without command execution or trust upgrades.
 
 ## Current Public Boundaries
 
@@ -261,3 +264,6 @@ promotion requires real release history.
   the final verdict.
 - V111 operator views may summarize report fields, but they do not create new
   evidence, upgrade assurance, or hide invalid captures and integration risks.
+- V112 lifecycle smoke summaries compose existing Agent Fabric artifacts for
+  regression coverage only; blocked compiles remain blocked even when the
+  downstream report view can render a passing evidence contract.
