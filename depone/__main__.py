@@ -1,11 +1,17 @@
-"""Depone CLI entrypoint: depone {design,compile,verify,validate,demo}."""
+"""Depone CLI entrypoint for core commands and Agent Fabric smoke."""
 
 from __future__ import annotations
 
 import argparse
 import sys
 
-from depone.cli import design, validate, demo, validate_contracts
+from depone.cli import (
+    agent_fabric_smoke,
+    demo,
+    design,
+    validate,
+    validate_contracts,
+)
 from depone import compile as compile_mod
 from depone import verify as verify_mod
 
@@ -115,6 +121,47 @@ def main() -> None:
         "--self-test", action="store_true", help="Run self-test and exit"
     )
 
+    # agent-fabric-smoke
+    smoke_parser = sub.add_parser(
+        "agent-fabric-smoke",
+        help="Export the source-only Agent Fabric compile-to-report smoke summary",
+    )
+    smoke_parser.add_argument("--profile", help="Agent Fabric profile JSON path")
+    smoke_parser.add_argument(
+        "--roles",
+        action="append",
+        default=[],
+        help="Role contract JSON path; may be repeated or point at a role-set JSON",
+    )
+    smoke_parser.add_argument(
+        "--plan", help="Depone plan JSON path for report verification"
+    )
+    smoke_parser.add_argument("--harness", default="shell", help="Target harness name")
+    smoke_parser.add_argument(
+        "--out",
+        default="agent-fabric-smoke.json",
+        help="Output path for smoke summary JSON",
+    )
+    smoke_parser.add_argument(
+        "--operator-view-out",
+        default=None,
+        help="Optional output path for the embedded operator Markdown view",
+    )
+    smoke_parser.add_argument(
+        "--observer-capture",
+        default=None,
+        help="Optional Depone observer capture JSON for A1-local-observed smoke",
+    )
+    smoke_parser.add_argument(
+        "--allow-touched-file",
+        action="append",
+        default=[],
+        help="Allowed touched file for observer capture validation; may be repeated",
+    )
+    smoke_parser.add_argument(
+        "--self-test", action="store_true", help="Run self-test and exit"
+    )
+
     # demo
     demo_parser = sub.add_parser(
         "demo", help="Run a complete design→compile→verify cycle"
@@ -138,6 +185,8 @@ def main() -> None:
         verify_mod.run(args)
     elif args.command == "validate-contracts":
         validate_contracts.run(args)
+    elif args.command == "agent-fabric-smoke":
+        agent_fabric_smoke.run(args)
     elif args.command == "demo":
         demo.run(args)
     else:

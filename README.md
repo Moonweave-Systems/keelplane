@@ -60,6 +60,7 @@ evidence gates.
 | `depone compile` | Translate a plan into a target framework format (Conductor YAML) |
 | `depone verify` | Verify execution evidence against a plan (4-check engine) |
 | `depone validate-contracts` | Validate Agent Fabric contracts and fixtures |
+| `depone agent-fabric-smoke` | Export the source-only Agent Fabric lifecycle smoke summary |
 | `depone demo` | Run a complete design → compile → verify cycle |
 
 ### Verify: 4-Check Engine
@@ -150,13 +151,13 @@ python scripts/check_readme_quality.py README.md
 ## Quality
 
 All CLI commands include built-in `--self-test`:
-
 ```bash
 python3 -m depone design --self-test              # 4/4 passed
 python3 -m depone compile --self-test             # conductor 4/4, agent_fabric 6/6 passed
 python3 -m depone validate --self-test            # 4/4 passed
 python3 -m depone verify --self-test              # 7/7 passed
 python3 -m depone validate-contracts --self-test  # 22/22 passed
+python3 -m depone agent-fabric-smoke --self-test # source-only smoke export passed
 python3 -m depone demo --self-test                # full cycle passed
 ```
 

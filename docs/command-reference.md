@@ -11,6 +11,7 @@ python3 -m depone validate plan.json
 python3 -m depone compile plan.json --target conductor --out workflow.yaml
 python3 -m depone verify plan.json --evidence ./evidence --out report.json --operator-view-out operator-view.md
 python3 -m depone validate-contracts --all
+python3 -m depone agent-fabric-smoke --profile profile.json --roles role.json --plan plan.json --out agent-fabric-smoke.json --operator-view-out operator-view.md
 python3 -m depone demo --out out/depone-quickstart
 
 python scripts/dwm.py plan "<objective>" --out out/v21/<run_id>

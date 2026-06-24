@@ -213,6 +213,9 @@ promotion requires real release history.
 - V112: `docs/v112-agent-fabric-lifecycle-smoke-spec.md` documents the
   source-only Agent Fabric lifecycle smoke from V107 compile output through
   V111 operator view, without command execution or trust upgrades.
+- V116: `docs/v116-agent-fabric-smoke-cli-spec.md` added the
+  `depone agent-fabric-smoke` export command for the V112 smoke summary and
+  optional Markdown operator view.
 
 ## Current Public Boundaries
 
@@ -267,3 +270,6 @@ promotion requires real release history.
 - V112 lifecycle smoke summaries compose existing Agent Fabric artifacts for
   regression coverage only; blocked compiles remain blocked even when the
   downstream report view can render a passing evidence contract.
+- V116 smoke CLI exports that summary for operators, but it still does not
+  execute commands, call live models, or upgrade Agent Fabric self-reports into
+  authoritative Depone evidence.

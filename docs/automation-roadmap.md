@@ -1,6 +1,6 @@
 # Depone Automation Roadmap
 
-Status: V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented; V10 product CLI implemented; V11 operator guidance implemented; V12-V20 product roadmap implemented; V52-V87 product evidence, graph timing, activation, and brand boundary gates implemented; V88 roadmap reconciliation audit implemented; V89 command safety gate implemented; V90 activation v2 implemented; V91 contract tiering implemented; V92 evidence oracle implemented; V93 workflow narrative implemented; V94 control deck score implemented; V95 score history implemented; V96 metric ladder implemented; V97 benchmark readiness implemented; V98 wave operator implemented; V99 wave receipt implemented; V100 promotion evidence implemented; V101 promotion route implemented; V102 deterministic live-proof recorder implemented; V103 live-proof comparison schema implemented; V104 product direction implemented; V105 verify wedge implemented; V106 multi-wave validation implemented; V107 Agent Fabric contracts and compiler implemented; V108 Agent Fabric reference adapter fixture implemented; V109 Agent Fabric capture bridge implemented; V110 Agent Fabric report assurance implemented; V111 Agent Fabric operator view implemented; V112 Agent Fabric lifecycle smoke implemented; V94-V101 meta layer frozen; live proof n=1 completed
+Status: V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented; V10 product CLI implemented; V11 operator guidance implemented; V12-V20 product roadmap implemented; V52-V87 product evidence, graph timing, activation, and brand boundary gates implemented; V88 roadmap reconciliation audit implemented; V89 command safety gate implemented; V90 activation v2 implemented; V91 contract tiering implemented; V92 evidence oracle implemented; V93 workflow narrative implemented; V94 control deck score implemented; V95 score history implemented; V96 metric ladder implemented; V97 benchmark readiness implemented; V98 wave operator implemented; V99 wave receipt implemented; V100 promotion evidence implemented; V101 promotion route implemented; V102 deterministic live-proof recorder implemented; V103 live-proof comparison schema implemented; V104 product direction implemented; V105 verify wedge implemented; V106 multi-wave validation implemented; V107 Agent Fabric contracts and compiler implemented; V108 Agent Fabric reference adapter fixture implemented; V109 Agent Fabric capture bridge implemented; V110 Agent Fabric report assurance implemented; V111 Agent Fabric operator view implemented; V112 Agent Fabric lifecycle smoke implemented; V116 Agent Fabric smoke CLI implemented; V94-V101 meta layer frozen; live proof n=1 completed
 Date: 2026-06-24
 
 ## Purpose
@@ -58,6 +58,7 @@ legacy/internal and intentionally deferred.
 | Agent Fabric report assurance | verification report decision/assurance fields sourced from capture manifests | planned V110, report surface implemented |
 | Agent Fabric operator view | Markdown export for operator-readable report decision, assurance, and capture status | planned V111, operator view implemented |
 | Agent Fabric lifecycle smoke | source-only compile-to-report smoke summary for V107-V111 regression coverage | planned V112, lifecycle smoke implemented |
+| Agent Fabric smoke CLI | operator-facing export of the source-only lifecycle smoke summary and optional Markdown view | planned V116, smoke CLI implemented |
 | Harness benchmark | corpus and scoring gate for direct harness comparisons | planned V23, first benchmark gate implemented |
 | README public page | source-bound benchmark graph on the GitHub landing page | planned V37, first publish slice implemented |
 | Benchmark history | hash-bound report history ledger and trend graph artifacts | planned V38, first ledger slice implemented |
@@ -856,9 +857,9 @@ First canonical demo done means:
 - unsafe and non-owned output paths are blocked;
 - `fixtures/v51/manifest.json` passes with `decision: "keep"`.
 
-### V52-V112: Product Evidence, Control Deck, And Agent Fabric Guardrails
+### V52-V116: Product Evidence, Control Deck, And Agent Fabric Guardrails
 
-Status: implemented through V112 Agent Fabric lifecycle smoke; the V103 live
+Status: implemented through V116 Agent Fabric smoke CLI; the V103 live
 two-arm comparison remains behind explicit approval; V94-V101 meta layer is
 frozen.
 
@@ -950,6 +951,9 @@ Implemented continuation:
   V107 compile output through V108 fixture shape, V109 capture manifest, V110
   verification report fields, and V111 operator view without executing commands
   or upgrading trust.
+- V116 promoted that helper into `depone agent-fabric-smoke`, an operator-facing
+  export command for the JSON summary and optional Markdown view while
+  preserving the same no-execution/no-trust-upgrade boundary.
 
 Next roadmap direction:
 
@@ -961,9 +965,8 @@ Next roadmap direction:
    migration gate proves compatibility.
 4. Expand read-only or pre-isolated live execution only where V84/V85 and queue
    preflight evidence permit it.
-5. Promote the V112 lifecycle smoke into a CLI/export surface only if operators
-   need it outside tests; otherwise keep it as regression coverage for the
-   compile-to-report path.
+5. Add explicit harness capability snapshot/export coverage before any live
+   Agent Fabric adapter or public benefit claim.
 
 ## Strategic Decisions
 
