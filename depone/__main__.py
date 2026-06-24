@@ -297,6 +297,11 @@ def main() -> None:
         help="Optional paired evidence report JSON path",
     )
     claim_gate_parser.add_argument(
+        "--controlled-capture-corpus",
+        default=None,
+        help="Optional controlled capture corpus report JSON path",
+    )
+    claim_gate_parser.add_argument(
         "--claim-scope",
         default="public-benefit",
         help="Claim scope being gated",

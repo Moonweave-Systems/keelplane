@@ -34,7 +34,8 @@ def run(args: argparse.Namespace) -> None:
         print(
             "Usage: depone agent-fabric-claim-gate "
             "--adapter-smoke <adapter-smoke.json> "
-            "[--paired-evidence paired-evidence.json]",
+            "[--paired-evidence paired-evidence.json] "
+            "[--controlled-capture-corpus controlled-capture-corpus.json]",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -43,10 +44,16 @@ def run(args: argparse.Namespace) -> None:
     paired_evidence = None
     if getattr(args, "paired_evidence", None):
         paired_evidence = _read_object(Path(args.paired_evidence), "paired evidence")
+    controlled_capture_corpus = None
+    if getattr(args, "controlled_capture_corpus", None):
+        controlled_capture_corpus = _read_object(
+            Path(args.controlled_capture_corpus), "controlled capture corpus"
+        )
     report = build_claim_gate_report(
         adapter_smoke,
         claim_scope=getattr(args, "claim_scope", "public-benefit"),
         paired_evidence=paired_evidence,
+        controlled_capture_corpus=controlled_capture_corpus,
     )
     out_path = Path(getattr(args, "out", "agent-fabric-claim-gate.json"))
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -72,6 +79,7 @@ def _self_test() -> None:
             self_test=False,
             adapter_smoke=str(smoke_path),
             paired_evidence=None,
+            controlled_capture_corpus=None,
             claim_scope="public-benefit",
             out=str(out_path),
         )

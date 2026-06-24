@@ -236,6 +236,8 @@ promotion requires real release history.
   observed capture manifests.
 - V123: `docs/v123-agent-fabric-controlled-capture-corpus-spec.md` added a
   source-only controlled capture corpus over distinct observed manifests.
+- V124: `docs/v124-agent-fabric-controlled-capture-claim-gate-spec.md` connected
+  that corpus to the public-claim gate as review readiness, not approval.
 
 ## Current Public Boundaries
 
@@ -311,3 +313,5 @@ promotion requires real release history.
 - V123 controlled capture corpus reports summarize multiple distinct observed
   manifests only; they do not execute commands, call live models, approve public
   claims, or upgrade trust.
+- V124 controlled capture claim gate inputs can move claims to human review
+  readiness only; they do not approve public claims or upgrade trust.

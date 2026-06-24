@@ -21,8 +21,9 @@ def build_claim_gate_report(
     adapter_smoke_report: dict[str, Any],
     claim_scope: str = DEFAULT_CLAIM_SCOPE,
     paired_evidence: dict[str, Any] | None = None,
+    controlled_capture_corpus: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Gate public claims on paired evidence, without executing anything."""
+    """Gate public claims on paired or corpus evidence, without executing anything."""
     smoke_decision = adapter_smoke_report.get("decision")
     smoke_blockers = adapter_smoke_report.get("blockers")
     if not isinstance(smoke_blockers, list):
@@ -42,6 +43,11 @@ def build_claim_gate_report(
         decision = _paired_evidence_decision(
             adapter_smoke_report,
             paired_evidence,
+            blockers,
+        )
+    elif controlled_capture_corpus is not None:
+        decision = _controlled_capture_corpus_decision(
+            controlled_capture_corpus,
             blockers,
         )
     else:
@@ -70,6 +76,11 @@ def build_claim_gate_report(
             if isinstance(paired_evidence, dict)
             else None
         ),
+        "controlled_capture_corpus_decision": (
+            controlled_capture_corpus.get("decision")
+            if isinstance(controlled_capture_corpus, dict)
+            else None
+        ),
         "requires_human_review": decision == "ready-for-public-claim-review",
         "blockers": blockers,
         "source_hashes": {
@@ -77,6 +88,15 @@ def build_claim_gate_report(
             **(
                 {"paired_evidence_report": canonical_hash(paired_evidence)}
                 if paired_evidence is not None
+                else {}
+            ),
+            **(
+                {
+                    "controlled_capture_corpus_report": canonical_hash(
+                        controlled_capture_corpus
+                    )
+                }
+                if controlled_capture_corpus is not None
                 else {}
             ),
         },
@@ -135,6 +155,62 @@ def _paired_evidence_decision(
     return "ready-for-public-claim-review"
 
 
+def _controlled_capture_corpus_decision(
+    controlled_capture_corpus: dict[str, Any], blockers: list[dict[str, Any]]
+) -> str:
+    ready_decisions = {
+        "controlled-capture-corpus-ready",
+        "controlled-capture-corpus-ready-source-only",
+    }
+    corpus_decision = controlled_capture_corpus.get("decision")
+    if corpus_decision not in ready_decisions:
+        blockers.append(
+            {
+                "code": "ERR_CONTROLLED_CAPTURE_CORPUS_NOT_READY",
+                "message": "controlled capture corpus is not source-ready",
+                "controlled_capture_corpus_decision": corpus_decision,
+            }
+        )
+
+    boundary = (
+        controlled_capture_corpus.get("boundary")
+        if isinstance(controlled_capture_corpus.get("boundary"), dict)
+        else {}
+    )
+    if boundary.get("approves_public_claim") is not False:
+        blockers.append(
+            {
+                "code": "ERR_CONTROLLED_CAPTURE_CORPUS_PUBLIC_CLAIM_APPROVAL",
+                "message": "controlled capture corpus must not approve public claims",
+            }
+        )
+    if boundary.get("executes_commands") is not False:
+        blockers.append(
+            {
+                "code": "ERR_CONTROLLED_CAPTURE_CORPUS_EXECUTES_COMMANDS",
+                "message": "controlled capture corpus for this gate must be source-only",
+            }
+        )
+    if boundary.get("calls_live_models") is not False:
+        blockers.append(
+            {
+                "code": "ERR_CONTROLLED_CAPTURE_CORPUS_CALLS_LIVE_MODELS",
+                "message": "controlled capture corpus for this gate must not call live models",
+            }
+        )
+    if boundary.get("trust_upgrade") is not False:
+        blockers.append(
+            {
+                "code": "ERR_CONTROLLED_CAPTURE_CORPUS_TRUST_UPGRADE",
+                "message": "controlled capture corpus must not upgrade trust",
+            }
+        )
+
+    if blockers:
+        return "blocked-controlled-capture-corpus-not-ready"
+    return "ready-for-public-claim-review"
+
+
 def _self_test() -> None:
     from pathlib import Path
 
@@ -160,3 +236,15 @@ def _self_test() -> None:
     ready = build_claim_gate_report(smoke, paired_evidence=paired_evidence)
     if ready["decision"] != "ready-for-public-claim-review":
         raise AssertionError("expected paired evidence to move claim gate to review")
+    corpus = {
+        "decision": "controlled-capture-corpus-ready",
+        "boundary": {
+            "executes_commands": False,
+            "calls_live_models": False,
+            "approves_public_claim": False,
+            "trust_upgrade": False,
+        },
+    }
+    corpus_ready = build_claim_gate_report(smoke, controlled_capture_corpus=corpus)
+    if corpus_ready["decision"] != "ready-for-public-claim-review":
+        raise AssertionError("expected controlled capture corpus to move claim gate to review")

@@ -19,6 +19,7 @@ python3 -m depone agent-fabric-dogfood-evidence --capture-manifest depone/fixtur
 python3 -m depone agent-fabric-controlled-capture --capture-manifest depone/fixtures/agent_fabric/capture_manifest_shell.json --capture-manifest depone/fixtures/agent_fabric/capture_manifest_shell_docs.json --out controlled-capture-corpus.json
 python3 -m depone agent-fabric-paired-evidence --adapter-smoke agent-fabric-adapter-smoke.json --dogfood-evidence dogfood-evidence.json --out paired-evidence.json
 python3 -m depone agent-fabric-claim-gate --adapter-smoke agent-fabric-adapter-smoke.json --paired-evidence paired-evidence.json --out agent-fabric-claim-gate.json
+python3 -m depone agent-fabric-claim-gate --adapter-smoke agent-fabric-adapter-smoke.json --controlled-capture-corpus controlled-capture-corpus.json --out agent-fabric-claim-gate.json
 python3 -m depone demo --out out/depone-quickstart
 
 python scripts/dwm.py plan "<objective>" --out out/v21/<run_id>
