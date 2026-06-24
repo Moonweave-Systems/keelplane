@@ -1,12 +1,14 @@
 # V107: Depone Agent Fabric Control Plane Spec
 
-Status: proposed direction spec, no implementation
-Date: 2026-06-23
+Status: direction spec plus implemented contract/compiler slice
+Date: 2026-06-24
 
 ## Purpose
 
 V107 defines the intended end state for a world-class agent system that runs
-with Depone without collapsing Depone into an agent runtime.
+with Depone without collapsing Depone into an agent runtime. The first
+contract/compiler slice is now implemented; later adapter and paired-evaluation
+work remains deliberately gated.
 
 Depone remains the deterministic control plane:
 
@@ -62,16 +64,19 @@ The repository already contains useful ingredients:
 - `docs/adoption/v105-final-adoption-plan.md` correctly says Depone should
   become a policy and evidence control plane, not a general model runtime.
 
-The current agent-pack material is not yet the desired end state:
+The initial Agent Fabric material now includes deterministic contracts and
+compiler coverage, but it is not yet the desired end state:
 
 - `agents/openai.yaml` is interface metadata, not an agent system.
-- Current roles use coarse tools such as `read`, `search`, `edit`, and `test`
-  rather than concrete per-harness toolbelts.
-- There is no compiler from `profile + role + harness + task` to concrete
-  Codex, Claude Code, OpenCode/OMO, or shell configuration.
-- There is no hard MCP/tool allowlist enforcement.
-- There is no context-loading policy that keeps each agent's prompt and tool
-  surface small.
+- V107 compiles profile roles into validated invocation packets and compile
+  reports, but it does not launch live agents.
+- V108-V112 provide fixture, capture, report, operator-view, and lifecycle-smoke
+  coverage for the compile-to-report path.
+- Exact Codex, Claude Code, and OpenCode/OMO native adapter behavior remains
+  unproven unless a capability snapshot says otherwise.
+- Hard MCP/tool allowlist enforcement is represented in contracts, not assumed
+  for every harness.
+- Context-loading policy is still contract-level and needs later adapter proof.
 - There is no paired evaluation proving that a profile beats direct baseline
   for a specific task class.
 
@@ -1034,9 +1039,31 @@ Rules:
 
 ## Implementation Roadmap
 
+### Implementation Status As Of V112
+
+Implemented:
+
+- V107 contract validators for role, toolbelt, profile, harness capability,
+  compile report, invocation packet, and agent result self-report.
+- `compile_agent_fabric(...)`, including exact, approximated, and
+  `blocked-unsupported-critical` decisions.
+- V108 fixture-only shell reference adapter output shape.
+- V109 passive Depone capture manifest bridge with A0/A1 assurance labels.
+- V110 verification report assurance fields from capture manifests.
+- V111 deterministic operator Markdown view/export path.
+- V112 source-only lifecycle smoke across the V107-V111 path.
+
+Still deferred:
+
+- live Codex, Claude Code, and OpenCode/OMO adapter execution;
+- hard per-harness tool hiding claims without capability evidence;
+- profile routing from arbitrary goals;
+- paired direct-vs-governed dogfood evaluation;
+- public benefit, quality, speed, or superiority claims.
+
 ### Phase 0: Spec freeze
 
-This PR.
+Completed by the original V107 direction/spec slice.
 
 Exit:
 
@@ -1045,6 +1072,8 @@ Exit:
 - contract checks pass.
 
 ### Phase 1: Contract schemas
+
+Status: implemented in V107.
 
 Add schemas for:
 
@@ -1065,6 +1094,8 @@ Exit:
 
 ### Phase 2: Toolbelt compiler MVP
 
+Status: implemented in V107 for deterministic profile-role compilation.
+
 Implement deterministic compiler:
 
 ```text
@@ -1076,7 +1107,10 @@ Exit:
 - exact/approximated/unsupported-critical decisions are deterministic;
 - fixtures cover Codex, Claude Code, OpenCode/OMO, and shell capabilities.
 
-### Phase 3: Codex adapter reference
+### Phase 3: Harness adapter reference
+
+Status: partially implemented by the V108 fixture-only shell reference adapter;
+live Codex adapter behavior remains deferred.
 
 Add first reference adapter for local Codex.
 
@@ -1097,6 +1131,9 @@ Exit:
 - unsupported critical controls block.
 
 ### Phase 5: Depone capture bridge
+
+Status: implemented for passive fixture/capture/report/operator-view flow in
+V109-V112; live adapter capture remains deferred.
 
 Connect adapter outputs to Depone evidence manifests and assurance labels.
 
@@ -1214,10 +1251,11 @@ adapter slice.
 - Unknown review freshness is stale.
 - Unknown evidence origin is `A0-claims-only`.
 
-## Acceptance Criteria For This PR
+## Original Acceptance Criteria
 
 - V107 spec exists and captures the complete product direction.
-- V107 decision exists and explicitly records this as a direction-only PR.
-- No runtime behavior changes are made.
+- V107 decision exists and explicitly recorded the original direction-only PR.
+- Later V107 implementation adds contract/compiler behavior only; it still does
+  not call live models or claim agent quality.
 - No agent pack is claimed production-ready.
 - Existing contract verification still passes.

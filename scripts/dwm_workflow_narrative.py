@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""V93 workflow narrative and Keelplane Control Deck renderer."""
+"""V93 workflow narrative and Depone Control Deck renderer."""
 
 from __future__ import annotations
 
@@ -181,8 +181,8 @@ def make_narrative(
     roadmap_latest = (roadmap.get("policy") or {}).get("latest_version")
     if roadmap.get("decision") != "roadmap_reconciled":
         add_blocker(blockers, "ERR_WORKFLOW_NARRATIVE_ROADMAP_NOT_READY", "roadmap is not reconciled", surface="roadmap", actual=roadmap.get("decision"), expected="roadmap_reconciled")
-    if roadmap_latest != "V106":
-        add_blocker(blockers, "ERR_WORKFLOW_NARRATIVE_ROADMAP_STALE", "roadmap latest version is stale", surface="roadmap", actual=roadmap_latest, expected="V106")
+    if roadmap_latest != "V112":
+        add_blocker(blockers, "ERR_WORKFLOW_NARRATIVE_ROADMAP_STALE", "roadmap latest version is stale", surface="roadmap", actual=roadmap_latest, expected="V112")
     if roadmap.get("blocked_by"):
         add_blocker(blockers, "ERR_WORKFLOW_NARRATIVE_ROADMAP_BLOCKED", "roadmap contains blockers", surface="roadmap")
 
@@ -198,8 +198,8 @@ def make_narrative(
     if activation.get("blocked_by"):
         add_blocker(blockers, "ERR_WORKFLOW_NARRATIVE_ACTIVATION_BLOCKED", "workflow activation contains blockers", surface="activation")
     activation_inputs = activation.get("inputs") if isinstance(activation.get("inputs"), dict) else {}
-    if activation_inputs.get("roadmap_latest_version") != "V106":
-        add_blocker(blockers, "ERR_WORKFLOW_NARRATIVE_ACTIVATION_ROADMAP_STALE", "activation consumed a stale roadmap version", surface="activation", actual=activation_inputs.get("roadmap_latest_version"), expected="V106")
+    if activation_inputs.get("roadmap_latest_version") != "V112":
+        add_blocker(blockers, "ERR_WORKFLOW_NARRATIVE_ACTIVATION_ROADMAP_STALE", "activation consumed a stale roadmap version", surface="activation", actual=activation_inputs.get("roadmap_latest_version"), expected="V112")
     source_hashes = activation.get("source_hashes") if isinstance(activation.get("source_hashes"), dict) else {}
     if source_hashes.get("roadmap_reconciliation") != canonical_hash(roadmap):
         add_blocker(blockers, "ERR_WORKFLOW_NARRATIVE_ROADMAP_HASH_DRIFT", "activation roadmap hash does not match current roadmap artifact", surface="activation")
@@ -217,7 +217,7 @@ def make_narrative(
         stage(
             "chart",
             "Chart",
-            "clear" if roadmap.get("decision") == "roadmap_reconciled" and roadmap_latest == "V106" and not roadmap.get("blocked_by") else "blocked",
+            "clear" if roadmap.get("decision") == "roadmap_reconciled" and roadmap_latest == "V112" and not roadmap.get("blocked_by") else "blocked",
             f"Chart: roadmap reconciled at {roadmap_latest or 'unknown'}",
             {"decision": roadmap.get("decision"), "latest_version": roadmap_latest},
         ),
@@ -251,7 +251,7 @@ def make_narrative(
         "narrative_id": narrative_id,
         "decision": decision,
         "blocked_by": blockers,
-        "surface": "Keelplane Control Deck",
+        "surface": "Depone Control Deck",
         "voice_policy": {
             "uses_evocative_labels": True,
             "labels_are_status_rendering_only": True,
@@ -285,7 +285,7 @@ def make_narrative(
 
 def render_markdown(narrative: dict[str, Any]) -> str:
     lines = [
-        "# Keelplane Control Deck",
+        "# Depone Control Deck",
         "",
         f"- Decision: `{narrative['decision']}`",
         f"- Next move: `{narrative['control_deck']['next_move']}`",
@@ -396,12 +396,12 @@ def run_manifest(manifest_path: Path, out_dir: Path) -> dict[str, Any]:
 
 
 def ready_records() -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
-    roadmap = {"decision": "roadmap_reconciled", "blocked_by": [], "policy": {"latest_version": "V106"}}
+    roadmap = {"decision": "roadmap_reconciled", "blocked_by": [], "policy": {"latest_version": "V112"}}
     command_safety = {"decision": "keep", "failed": 0, "required_fixture_count": 4, "required_passed": 4}
     activation = {
         "decision": "ready_for_next_workflow_design",
         "blocked_by": [],
-        "inputs": {"roadmap_latest_version": "V106"},
+        "inputs": {"roadmap_latest_version": "V112"},
         "next_safe_action": "design_next_workflow",
         "source_hashes": {
             "roadmap_reconciliation": canonical_hash(roadmap),

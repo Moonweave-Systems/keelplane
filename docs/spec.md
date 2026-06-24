@@ -1,6 +1,6 @@
 # Depone / DWM Core Spec
 
-Status: V1 implemented, V2 release candidate, V2.5 first loop implemented, V3 entry runtime implemented, V12-V20 product slices implemented, V87 brand boundary audit implemented, V88 roadmap reconciliation, V89 command safety, V90 activation v2, V91 contract tiering, V92 evidence oracle, V93 workflow narrative, V94 control deck score, V95 score history, V96 metric ladder, V97 benchmark readiness, V98 wave operator, V99 wave receipt, V100 promotion evidence, V101 promotion route, V102 deterministic live-proof recorder, V103 live-proof comparison schema, V104 product direction, V105 verify wedge, V106 multi-wave validation, Last updated: 2026-06-20
+Status: V1 implemented, V2 release candidate, V2.5 first loop implemented, V3 entry runtime implemented, V12-V20 product slices implemented, V87 brand boundary audit implemented, V88 roadmap reconciliation, V89 command safety, V90 activation v2, V91 contract tiering, V92 evidence oracle, V93 workflow narrative, V94 control deck score, V95 score history, V96 metric ladder, V97 benchmark readiness, V98 wave operator, V99 wave receipt, V100 promotion evidence, V101 promotion route, V102 deterministic live-proof recorder, V103 live-proof comparison schema, V104 product direction, V105 verify wedge, V106 multi-wave validation, V107 Agent Fabric compiler, V108 reference adapter fixture, V109 capture bridge, V110 report assurance, V111 operator view, V112 lifecycle smoke, Last updated: 2026-06-24
 
 ## Purpose
 
@@ -261,7 +261,9 @@ V88 roadmap reconciliation keeps `docs/spec.md`, `docs/automation-roadmap.md`,
 and `docs/release-history.md` aligned with the current implementation state.
 This is still audit-only: it does not execute queued commands, run live
 adapters, publish benchmark claims, rename packages, or claim autonomous
-execution.
+execution. Later Agent Fabric documentation syncs are part of this same
+source-of-truth discipline: specs may describe implemented compiler, capture,
+and verification surfaces, but generated `out/` evidence remains derived.
 
 V89 command safety adds shared command-shape and inferred-risk checks for V75,
 V76, and V77. Candidate-declared `risk_codes` are no longer authoritative on
@@ -330,6 +332,26 @@ from V100 promotion evidence. It plans the next dogfood acquisition command
 when promotion evidence is not ready, or emits a human gate when README graph
 publication can enter review. It does not execute commands, publish assets, or
 approve public benchmark publication.
+
+### V107-V112: Agent Fabric Compiler, Capture, Report, Operator View, And Lifecycle Smoke
+
+V107-V112 add the first implemented Agent Fabric control-plane layer without
+turning Depone into an agent runtime. V107 validates role, toolbelt, profile,
+harness, compile-report, invocation, and result contracts, then compiles
+profile roles into deterministic invocation packets and compile reports. V108
+adds a fixture-only shell reference adapter shape. V109 bridges that shape into
+Depone capture manifests with `A0-claims-only` and `A1-local-observed`
+assurance labels. V110 surfaces capture checks in verification reports. V111
+renders those report fields as a deterministic operator Markdown view. V112
+threads the V107-V111 path together as a source-only lifecycle smoke helper.
+
+These slices do not call live models, execute arbitrary commands, hide harness
+permission limitations, or claim direct-agent superiority. Unsupported critical
+controls still block compilation, approximations stay visible in compile
+reports, and Depone verification remains evidence-contract based. The next
+Agent Fabric product step should become a CLI/export surface only if operators
+need the lifecycle smoke outside regression tests; otherwise it stays a
+low-friction guardrail for compiler-to-report drift.
 
 ### Harness Strategy
 
