@@ -21,7 +21,7 @@ Canonical activation v2:
 - `decision`: `ready_for_next_workflow_design`
 - `next_safe_action`: `design_next_workflow`
 - `brand_boundary_decision`: `brand_boundary_ready`
-- `roadmap_latest_version`: `V116`
+- `roadmap_latest_version`: `V117`
 - `command_safety_decision`: `keep`
 
 This does not execute commands, create worktrees, run live adapters, or bypass

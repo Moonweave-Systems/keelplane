@@ -27,7 +27,7 @@
         "blocked_by": [],
         "decision": "roadmap_reconciled",
         "policy": {
-          "latest_version": "V116"
+          "latest_version": "V117"
         }
       },
       "run_status": {
@@ -68,7 +68,7 @@
         "blocked_by": [],
         "decision": "roadmap_reconciled",
         "policy": {
-          "latest_version": "V116"
+          "latest_version": "V117"
         }
       },
       "run_status": {
@@ -142,7 +142,7 @@
         "blocked_by": [],
         "decision": "roadmap_reconciled",
         "policy": {
-          "latest_version": "V116"
+          "latest_version": "V117"
         }
       },
       "run_status": {

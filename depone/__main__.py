@@ -6,6 +6,7 @@ import argparse
 import sys
 
 from depone.cli import (
+    agent_fabric_harness_snapshot,
     agent_fabric_smoke,
     demo,
     design,
@@ -162,6 +163,29 @@ def main() -> None:
         "--self-test", action="store_true", help="Run self-test and exit"
     )
 
+    # agent-fabric-harness-snapshot
+    harness_snapshot_parser = sub.add_parser(
+        "agent-fabric-harness-snapshot",
+        help="Export source-only Agent Fabric harness capability snapshots",
+    )
+    harness_snapshot_parser.add_argument(
+        "--harness",
+        action="append",
+        default=[],
+        help=(
+            "Harness name to include; may be repeated, "
+            "defaults to all known harnesses"
+        ),
+    )
+    harness_snapshot_parser.add_argument(
+        "--out",
+        default="agent-fabric-harness-snapshot.json",
+        help="Output path for harness snapshot JSON",
+    )
+    harness_snapshot_parser.add_argument(
+        "--self-test", action="store_true", help="Run self-test and exit"
+    )
+
     # demo
     demo_parser = sub.add_parser(
         "demo", help="Run a complete design→compile→verify cycle"
@@ -187,6 +211,8 @@ def main() -> None:
         validate_contracts.run(args)
     elif args.command == "agent-fabric-smoke":
         agent_fabric_smoke.run(args)
+    elif args.command == "agent-fabric-harness-snapshot":
+        agent_fabric_harness_snapshot.run(args)
     elif args.command == "demo":
         demo.run(args)
     else:

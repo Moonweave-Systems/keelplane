@@ -43,7 +43,6 @@ they install no additional runtime dependencies.
 > Clone from GitHub and use `python -m depone` for now (V104.1 target).
 
 ## What Exists Today
-
 Depone ships the stdlib-only CLI, a strict plan validator, a Conductor YAML
 emitter, a generic evidence adapter, and the 4-check verification engine.
 
@@ -61,6 +60,7 @@ evidence gates.
 | `depone verify` | Verify execution evidence against a plan (4-check engine) |
 | `depone validate-contracts` | Validate Agent Fabric contracts and fixtures |
 | `depone agent-fabric-smoke` | Export the source-only Agent Fabric lifecycle smoke summary |
+| `depone agent-fabric-harness-snapshot` | Export source-only harness capability snapshots |
 | `depone demo` | Run a complete design → compile → verify cycle |
 
 ### Verify: 4-Check Engine
@@ -102,7 +102,6 @@ depone design "audit all API routes" --out plan.json
 Depone treats artifacts, not model claims, as the source of truth. A
 workflow is trusted only when the relevant plan, packet, prompt, evidence,
 review, approval, and status artifacts match their hash ledgers.
-
 Generated `out/` directories are verification evidence, not source of truth.
 They are never hand-edited; artifacts and source hashes are the source of truth.
 
@@ -158,6 +157,7 @@ python3 -m depone validate --self-test            # 4/4 passed
 python3 -m depone verify --self-test              # 7/7 passed
 python3 -m depone validate-contracts --self-test  # 22/22 passed
 python3 -m depone agent-fabric-smoke --self-test # source-only smoke export passed
+python3 -m depone agent-fabric-harness-snapshot --self-test # harness snapshot export passed
 python3 -m depone demo --self-test                # full cycle passed
 ```
 

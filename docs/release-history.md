@@ -216,6 +216,9 @@ promotion requires real release history.
 - V116: `docs/v116-agent-fabric-smoke-cli-spec.md` added the
   `depone agent-fabric-smoke` export command for the V112 smoke summary and
   optional Markdown operator view.
+- V117: `docs/v117-agent-fabric-harness-snapshot-spec.md` added the
+  `depone agent-fabric-harness-snapshot` export command for shipped harness
+  capability fixtures plus deterministic tool mapping coverage.
 
 ## Current Public Boundaries
 
@@ -273,3 +276,6 @@ promotion requires real release history.
 - V116 smoke CLI exports that summary for operators, but it still does not
   execute commands, call live models, or upgrade Agent Fabric self-reports into
   authoritative Depone evidence.
+- V117 harness snapshots expose shipped capability and mapping coverage only;
+  they do not probe installed harnesses, inspect MCP runtime state, or prove
+  live permission enforcement.

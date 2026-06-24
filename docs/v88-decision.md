@@ -13,7 +13,7 @@ Decision: keep.
 Canonical audit:
 
 - `decision`: `roadmap_reconciled`
-- `latest_version`: `V116`
+- `latest_version`: `V117`
 - `public_product_brand`: `Depone`
 - `internal_engine_name`: `DWM Core`
 
