@@ -1,7 +1,8 @@
-"""depone validate-contracts — validate V107 Agent Fabric contracts.
+"""depone validate-contracts — validate Agent Fabric contracts.
 
 Validates role contracts, toolbelt contracts, harness capability snapshots,
-compile reports, invocation packets, and agent result self-reports.
+compile reports, invocation packets, agent result self-reports, and V108
+reference adapter fixtures.
 """
 
 from __future__ import annotations
@@ -11,6 +12,10 @@ import json
 import sys
 from pathlib import Path
 
+from depone.agent_fabric.reference_adapter import (
+    build_reference_adapter_fixture,
+    validate_reference_adapter_fixture,
+)
 from depone.contract import (
     validate_role_set,
     validate_toolbelt_set,
@@ -33,7 +38,7 @@ def run(args: argparse.Namespace) -> None:
         paths = _all_contract_paths()
         if not paths:
             print(
-                "No contract files found under contracts/ or depone/fixtures/capabilities/",
+                "No contract files found under contracts/ or depone/fixtures/",
                 file=sys.stderr,
             )
             sys.exit(1)
@@ -73,10 +78,11 @@ def run(args: argparse.Namespace) -> None:
 
 
 def _all_contract_paths() -> list[Path]:
-    """Return repo-shipped V107 contract files for batch validation."""
+    """Return repo-shipped Agent Fabric contract files for batch validation."""
     roots = [
         Path("contracts"),
         Path("depone") / "fixtures" / "capabilities",
+        Path("depone") / "fixtures" / "agent_fabric",
     ]
     paths: list[Path] = []
     for root in roots:
@@ -116,12 +122,15 @@ def _validate_contract_dispatch(data: dict) -> list[str]:
         return validate_invocation(data)
     elif kind == "agent-result":
         return validate_result(data)
+    elif kind == "agent-fabric-reference-adapter-fixture":
+        return validate_reference_adapter_fixture(data)
     else:
         return [
             f"Unknown contract kind: {kind!r}. "
             "Use kind='role-set', 'toolbelt-set', 'harness-set', "
             "'profile-set', 'compile-report', 'invocation', "
-            "'agent-result', or 'agent-fabric-contract'"
+            "'agent-result', 'agent-fabric-reference-adapter-fixture', "
+            "or 'agent-fabric-contract'"
         ]
 
 
@@ -213,6 +222,27 @@ def _dispatch_self_test() -> list[tuple[str, bool]]:
             "approximations": [],
         }
     )
+    reference_fixture_errors = _validate_contract_dispatch(
+        build_reference_adapter_fixture(
+            {
+                "packet_version": "1.0",
+                "target_harness": "shell",
+                "profile": "self-test-profile",
+                "role": "runner",
+                "toolbelt": {
+                    "allowed_tools": ["cat", "python3"],
+                    "allowed_mcp": [],
+                    "forbidden_tools": ["write"],
+                    "context_policy": "local-code-only",
+                    "output_schema": "runner-result-v1",
+                    "evidence_obligations": ["command_receipt"],
+                },
+                "instructions": "Run local checks and report outputs.",
+                "evidence_obligations": ["command_receipt"],
+                "context_policy": "local-code-only",
+            }
+        )
+    )
 
     return [
         (
@@ -228,4 +258,5 @@ def _dispatch_self_test() -> list[tuple[str, bool]]:
             and any("profile.flow must be non-empty" in e for e in profile_errors),
         ),
         ("dispatch-single-harness", not harness_errors),
+        ("dispatch-reference-adapter-fixture", not reference_fixture_errors),
     ]

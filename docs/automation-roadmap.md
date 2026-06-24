@@ -1,6 +1,6 @@
 # Depone Automation Roadmap
 
-Status: V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented; V10 product CLI implemented; V11 operator guidance implemented; V12-V20 product roadmap implemented; V52-V87 product evidence, graph timing, activation, and brand boundary gates implemented; V88 roadmap reconciliation audit implemented; V89 command safety gate implemented; V90 activation v2 implemented; V91 contract tiering implemented; V92 evidence oracle implemented; V93 workflow narrative implemented; V94 control deck score implemented; V95 score history implemented; V96 metric ladder implemented; V97 benchmark readiness implemented; V98 wave operator implemented; V99 wave receipt implemented; V100 promotion evidence implemented; V101 promotion route implemented; V102 deterministic live-proof recorder implemented; V103 live-proof comparison schema implemented; V104 product direction implemented; V105 verify wedge implemented; V106 multi-wave validation implemented; V107 Agent Fabric contracts and compiler implemented; V94-V101 meta layer frozen; live proof n=1 completed
+Status: V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented; V10 product CLI implemented; V11 operator guidance implemented; V12-V20 product roadmap implemented; V52-V87 product evidence, graph timing, activation, and brand boundary gates implemented; V88 roadmap reconciliation audit implemented; V89 command safety gate implemented; V90 activation v2 implemented; V91 contract tiering implemented; V92 evidence oracle implemented; V93 workflow narrative implemented; V94 control deck score implemented; V95 score history implemented; V96 metric ladder implemented; V97 benchmark readiness implemented; V98 wave operator implemented; V99 wave receipt implemented; V100 promotion evidence implemented; V101 promotion route implemented; V102 deterministic live-proof recorder implemented; V103 live-proof comparison schema implemented; V104 product direction implemented; V105 verify wedge implemented; V106 multi-wave validation implemented; V107 Agent Fabric contracts and compiler implemented; V108 Agent Fabric reference adapter fixture implemented; V94-V101 meta layer frozen; live proof n=1 completed
 Date: 2026-06-20
 
 ## Purpose
@@ -53,6 +53,7 @@ legacy/internal and intentionally deferred.
 | Product shell | memorable `plan`, `run`, and `resume` commands over safe artifacts | planned V21, first shell slice implemented |
 | Role pack | role contracts for planner, explorer, worker, reviewer, verifier, and operator | planned V22, first registry implemented |
 | Agent Fabric contracts | deterministic role, toolbelt, profile, harness, compile-report, invocation, and result contracts | planned V107, contract/compiler slice implemented |
+| Agent Fabric reference adapter | fixture-only local shell adapter capture shape for self-report, diff/touched files, test output, and command receipts | planned V108, shell fixture implemented |
 | Harness benchmark | corpus and scoring gate for direct harness comparisons | planned V23, first benchmark gate implemented |
 | README public page | source-bound benchmark graph on the GitHub landing page | planned V37, first publish slice implemented |
 | Benchmark history | hash-bound report history ledger and trend graph artifacts | planned V38, first ledger slice implemented |
@@ -926,6 +927,10 @@ Implemented continuation:
 - V107 added deterministic Agent Fabric role/toolbelt/profile/harness contracts,
   compile reports, invocation/result validation, and `compile_agent_fabric(...)`
   without live agent execution or public benefit claims.
+- V108 added the first deterministic Agent Fabric reference adapter fixture for
+  the local shell harness. It records self-report, diff/touched-file summary,
+  test output, and command receipts as `A0-claims-only` material without
+  executing commands or calling live models.
 
 Next roadmap direction:
 
@@ -937,8 +942,9 @@ Next roadmap direction:
    migration gate proves compatibility.
 4. Expand read-only or pre-isolated live execution only where V84/V85 and queue
    preflight evidence permit it.
-5. Add the next Agent Fabric adapter fixture only after preserving deterministic
-   contract behavior and explicit unsupported-control reporting.
+5. Connect Agent Fabric fixture output to Depone evidence manifests only after
+   an observer, not the agent, captures local diff, touched-file, test-output,
+   and command-receipt evidence.
 
 ## Strategic Decisions
 

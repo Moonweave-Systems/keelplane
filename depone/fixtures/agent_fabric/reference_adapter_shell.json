@@ -1,0 +1,66 @@
+{
+  "adapter": {
+    "executes_commands": false,
+    "harness": "shell",
+    "mode": "fixture-only",
+    "name": "shell-reference-fixture"
+  },
+  "capture": {
+    "command_receipts": [],
+    "diff_summary": {
+      "changed_files": [],
+      "summary": "fixture-only adapter did not observe a diff"
+    },
+    "self_report": {
+      "agent_role": "runner",
+      "command_receipts": [],
+      "errors": [
+        "fixture-only adapter did not execute work"
+      ],
+      "output_files": [
+        "out/agent/result.txt"
+      ],
+      "profile": "self-test-profile",
+      "result_version": "1.0",
+      "self_reported_claims": [
+        "fixture captured a self-report shape"
+      ],
+      "status": "partial"
+    },
+    "test_output": {
+      "command": null,
+      "status": "not-run",
+      "summary": "fixture-only adapter did not run tests"
+    },
+    "touched_files": [],
+    "trust_level": "A0-claims-only"
+  },
+  "invocation": {
+    "context_policy": "local-code-only",
+    "evidence_obligations": [
+      "command_receipt"
+    ],
+    "instructions": "Run local checks and report outputs without writing observer-owned evidence.",
+    "packet_version": "1.0",
+    "profile": "self-test-profile",
+    "role": "runner",
+    "target_harness": "shell",
+    "toolbelt": {
+      "allowed_mcp": [],
+      "allowed_tools": [
+        "cat",
+        "python3"
+      ],
+      "context_policy": "local-code-only",
+      "evidence_obligations": [
+        "command_receipt"
+      ],
+      "forbidden_tools": [
+        "write"
+      ],
+      "output_schema": "runner-result-v1"
+    }
+  },
+  "kind": "agent-fabric-reference-adapter-fixture",
+  "schema_version": "1.0"
+}

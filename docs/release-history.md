@@ -196,6 +196,10 @@ promotion requires real release history.
   role/toolbelt/profile/harness/compile-report/invocation/result validators,
   `compile_agent_fabric(...)`, and self-tests for exact, approximated, and
   unsupported-critical tool mappings without live model execution.
+- V108: `docs/v108-agent-fabric-reference-adapter-spec.md` added the first
+  fixture-only shell reference adapter shape for self-report, diff/touched-file
+  summary, test output, and command receipts while keeping all adapter material
+  at `A0-claims-only`.
 
 ## Current Public Boundaries
 
@@ -238,3 +242,5 @@ promotion requires real release history.
   agents or relax existing human gates.
 - V107 Agent Fabric contracts compile invocation packets and reports only; they
   do not execute live agents or prove productivity, quality, or superiority.
+- V108 Agent Fabric reference adapter fixtures do not execute commands or live
+  models; their captures remain non-authoritative `A0-claims-only` material.
