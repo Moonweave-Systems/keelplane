@@ -3977,10 +3977,10 @@ def main() -> None:
     require_terms(
         "docs/v86-keelplane-brand-spec.md",
         [
-            "status: implemented first keelplane brand decision",
-            "public product brand: `keelplane`",
+            "status: implemented first depone brand decision",
+            "public product brand: `depone`",
             "internal engine name: `dwm core`",
-            "skill name: `keelplane`",
+            "skill name: `depone`",
             "`dwm_*.py` file prefix",
             "do not rename cli commands",
             "do not claim autonomous execution",
@@ -3990,9 +3990,9 @@ def main() -> None:
         "docs/v86-decision.md",
         [
             "decision: keep",
-            "`readme.md` now leads with `keelplane`",
-            "`docs/dwm-branding.md` defines `keelplane`",
-            "`assets/dwm-hero.svg` names `keelplane`",
+            "`readme.md` now leads with `depone`",
+            "`docs/dwm-branding.md` defines `depone`",
+            "`assets/dwm-hero.svg` names `depone`",
             "does not claim autonomous execution",
         ],
     )
