@@ -131,6 +131,13 @@ def build_controlled_capture_corpus_report(
                 "capture_count": capture_count,
             }
         )
+    if len(set(capture_hashes)) != len(capture_hashes):
+        blockers.append(
+            {
+                "code": "ERR_CONTROLLED_CAPTURE_CORPUS_DUPLICATE",
+                "message": "controlled capture corpus requires distinct manifests",
+            }
+        )
 
     if blockers:
         decision = "blocked-insufficient-capture-corpus"
@@ -166,6 +173,11 @@ def _self_test() -> None:
     capture = json.loads(
         Path("depone/fixtures/agent_fabric/capture_manifest_shell.json").read_text()
     )
+    docs_capture = json.loads(
+        Path(
+            "depone/fixtures/agent_fabric/capture_manifest_docs_source_only.json"
+        ).read_text()
+    )
     report = build_dogfood_evidence_report(capture)
     if report["decision"] != READY_DECISION:
         raise AssertionError("expected observed capture to produce dogfood evidence")
@@ -181,6 +193,6 @@ def _self_test() -> None:
     blocked = build_dogfood_evidence_report(a0_capture)
     if blocked["decision"] != "blocked-capture-not-observed":
         raise AssertionError("expected A0 capture to block dogfood evidence")
-    corpus = build_controlled_capture_corpus_report([capture, capture])
+    corpus = build_controlled_capture_corpus_report([capture, docs_capture])
     if corpus["decision"] != CORPUS_READY_DECISION:
         raise AssertionError("expected two valid captures to produce ready corpus")
