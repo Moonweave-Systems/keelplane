@@ -773,3 +773,26 @@ and verifies that `docs/v0.5-decision.md` matches the freshly generated summary.
   scripts, MCP runtime plans, or both.
 - Whether forward-testing should use live subagents or fixture-only review for
   the first release.
+
+## Current Direction (V125)
+
+`docs/v125-direction-check-roadmap.md` is the current product-direction source of
+truth after V124. It records an external evaluation against the mid-2026 global
+consensus on agent team systems and agent control planes, and locks the forward
+roadmap. The verdict: keep the non-executing design + verify plane (the one
+structurally defensible moat) and narrow hard.
+
+The next real milestone is a run, not another source-only contract layer:
+
+- V126 (`docs/v126-paired-dogfood-evidence-spec.md`): capture one real
+  direct-vs-governed run and feed it through capture -> verify, replacing the
+  synthetic seeds in the paired-evidence path.
+- V127 (`docs/v127-verify-claim-honesty-spec.md`): demote the Adversarial Check
+  to an advisory ground-truth presence signal, make a required-but-unevaluated
+  claim resolve to `inconclusive` rather than `pass`, stop calling SHA-256
+  content-addressing "hash-signed", and correct the stale regulatory thesis.
+- V128 (`docs/v128-evidence-substrate-spec.md`): emit evidence as in-toto/DSSE
+  statements and OpenTelemetry GenAI spans, stdlib-only.
+
+New Agent Fabric profile/role/toolbelt milestones are frozen until V126 produces
+a measured benefit for at least one task class.
