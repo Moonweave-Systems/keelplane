@@ -225,6 +225,9 @@ promotion requires real release history.
 - V119: `docs/v119-agent-fabric-claim-gate-spec.md` added the
   `depone agent-fabric-claim-gate` report that blocks public benefit claims
   until paired dogfood or explicitly approved live adapter-smoke evidence exists.
+- V120: `docs/v120-agent-fabric-paired-evidence-gate-spec.md` extended the
+  claim gate with optional source-only paired evidence that can reach human
+  review readiness without approving public claims.
 
 ## Current Public Boundaries
 
@@ -290,3 +293,6 @@ promotion requires real release history.
   enforcement.
 - V119 claim gate reports block public benefit claims from source-only evidence;
   they still do not approve live execution, superiority claims, or trust upgrades.
+- V120 paired evidence gate inputs can move claims to human review readiness;
+  they still do not approve public claims or convert source-only evidence into
+  live proof.

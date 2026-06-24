@@ -33,15 +33,20 @@ def run(args: argparse.Namespace) -> None:
     if not getattr(args, "adapter_smoke", None):
         print(
             "Usage: depone agent-fabric-claim-gate "
-            "--adapter-smoke <adapter-smoke.json>",
+            "--adapter-smoke <adapter-smoke.json> "
+            "[--paired-evidence paired-evidence.json]",
             file=sys.stderr,
         )
         sys.exit(1)
 
     adapter_smoke = _read_object(Path(args.adapter_smoke), "adapter smoke")
+    paired_evidence = None
+    if getattr(args, "paired_evidence", None):
+        paired_evidence = _read_object(Path(args.paired_evidence), "paired evidence")
     report = build_claim_gate_report(
         adapter_smoke,
         claim_scope=getattr(args, "claim_scope", "public-benefit"),
+        paired_evidence=paired_evidence,
     )
     out_path = Path(getattr(args, "out", "agent-fabric-claim-gate.json"))
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -66,6 +71,7 @@ def _self_test() -> None:
         args = argparse.Namespace(
             self_test=False,
             adapter_smoke=str(smoke_path),
+            paired_evidence=None,
             claim_scope="public-benefit",
             out=str(out_path),
         )

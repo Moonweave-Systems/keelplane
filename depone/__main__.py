@@ -219,6 +219,11 @@ def main() -> None:
         "--adapter-smoke", help="Adapter smoke report JSON path"
     )
     claim_gate_parser.add_argument(
+        "--paired-evidence",
+        default=None,
+        help="Optional paired evidence report JSON path",
+    )
+    claim_gate_parser.add_argument(
         "--claim-scope",
         default="public-benefit",
         help="Claim scope being gated",

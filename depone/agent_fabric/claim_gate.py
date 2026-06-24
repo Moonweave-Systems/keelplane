@@ -20,6 +20,7 @@ def canonical_hash(value: Any) -> str:
 def build_claim_gate_report(
     adapter_smoke_report: dict[str, Any],
     claim_scope: str = DEFAULT_CLAIM_SCOPE,
+    paired_evidence: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Gate public claims on paired evidence, without executing anything."""
     smoke_decision = adapter_smoke_report.get("decision")
@@ -36,6 +37,12 @@ def build_claim_gate_report(
                 "message": "adapter smoke report is not ready-source-only",
                 "adapter_smoke_decision": smoke_decision,
             }
+        )
+    elif paired_evidence is not None:
+        decision = _paired_evidence_decision(
+            adapter_smoke_report,
+            paired_evidence,
+            blockers,
         )
     else:
         decision = "blocked-missing-paired-evidence"
@@ -58,9 +65,20 @@ def build_claim_gate_report(
         "adapter_smoke_decision": smoke_decision,
         "adapter_smoke_harness": adapter_smoke_report.get("harness"),
         "adapter_smoke_blockers": smoke_blockers,
+        "paired_evidence_decision": (
+            paired_evidence.get("decision")
+            if isinstance(paired_evidence, dict)
+            else None
+        ),
+        "requires_human_review": decision == "ready-for-public-claim-review",
         "blockers": blockers,
         "source_hashes": {
             "adapter_smoke_report": canonical_hash(adapter_smoke_report),
+            **(
+                {"paired_evidence_report": canonical_hash(paired_evidence)}
+                if paired_evidence is not None
+                else {}
+            ),
         },
         "boundary": {
             "executes_commands": False,
@@ -71,6 +89,50 @@ def build_claim_gate_report(
             "trust_upgrade": False,
         },
     }
+
+
+def _paired_evidence_decision(
+    adapter_smoke_report: dict[str, Any],
+    paired_evidence: dict[str, Any],
+    blockers: list[dict[str, Any]],
+) -> str:
+    evidence_hashes = (
+        paired_evidence.get("source_hashes")
+        if isinstance(paired_evidence.get("source_hashes"), dict)
+        else {}
+    )
+    if paired_evidence.get("decision") != "paired-evidence-ready-source-only":
+        blockers.append(
+            {
+                "code": "ERR_PAIRED_EVIDENCE_NOT_READY",
+                "message": "paired evidence is not source-ready",
+                "paired_evidence_decision": paired_evidence.get("decision"),
+            }
+        )
+    if evidence_hashes.get("adapter_smoke_report") != canonical_hash(
+        adapter_smoke_report
+    ):
+        blockers.append(
+            {
+                "code": "ERR_PAIRED_EVIDENCE_HASH_MISMATCH",
+                "message": "paired evidence does not bind the adapter smoke report",
+            }
+        )
+    boundary = (
+        paired_evidence.get("boundary")
+        if isinstance(paired_evidence.get("boundary"), dict)
+        else {}
+    )
+    if boundary.get("approves_public_claim") is not False:
+        blockers.append(
+            {
+                "code": "ERR_PAIRED_EVIDENCE_PUBLIC_CLAIM_APPROVAL",
+                "message": "paired evidence must not approve public claims",
+            }
+        )
+    if blockers:
+        return "blocked-paired-evidence-not-ready"
+    return "ready-for-public-claim-review"
 
 
 def _self_test() -> None:
@@ -90,3 +152,11 @@ def _self_test() -> None:
     blocked = build_claim_gate_report(blocked_smoke)
     if blocked["decision"] != "blocked-adapter-smoke-not-ready":
         raise AssertionError("expected blocked adapter smoke to block claim gate")
+    paired_evidence = {
+        "decision": "paired-evidence-ready-source-only",
+        "source_hashes": {"adapter_smoke_report": canonical_hash(smoke)},
+        "boundary": {"approves_public_claim": False},
+    }
+    ready = build_claim_gate_report(smoke, paired_evidence=paired_evidence)
+    if ready["decision"] != "ready-for-public-claim-review":
+        raise AssertionError("expected paired evidence to move claim gate to review")
