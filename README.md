@@ -1,7 +1,5 @@
 # Depone
-
 > Workflow designer + cross-platform evidence verifier for multi-agent AI systems.
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-4F46E5.svg)](LICENSE)
 [![Agent skill](https://img.shields.io/badge/agent%20skill-Codex-4F46E5.svg)](SKILL.md)
 [![Release](https://img.shields.io/github/v/release/Moonweave-Systems/depone?color=4F46E5)](https://github.com/Moonweave-Systems/depone/releases)
@@ -61,6 +59,7 @@ evidence gates.
 | `depone validate-contracts` | Validate Agent Fabric contracts and fixtures |
 | `depone agent-fabric-smoke` | Export the source-only Agent Fabric lifecycle smoke summary |
 | `depone agent-fabric-harness-snapshot` | Export source-only harness capability snapshots |
+| `depone agent-fabric-adapter-smoke` | Export source-only adapter smoke reports |
 | `depone demo` | Run a complete design → compile → verify cycle |
 
 ### Verify: 4-Check Engine
@@ -158,6 +157,7 @@ python3 -m depone verify --self-test              # 7/7 passed
 python3 -m depone validate-contracts --self-test  # 22/22 passed
 python3 -m depone agent-fabric-smoke --self-test # source-only smoke export passed
 python3 -m depone agent-fabric-harness-snapshot --self-test # harness snapshot export passed
+python3 -m depone agent-fabric-adapter-smoke --self-test # adapter smoke export passed
 python3 -m depone demo --self-test                # full cycle passed
 ```
 

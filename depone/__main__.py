@@ -6,6 +6,7 @@ import argparse
 import sys
 
 from depone.cli import (
+    agent_fabric_adapter_smoke,
     agent_fabric_harness_snapshot,
     agent_fabric_smoke,
     demo,
@@ -186,6 +187,28 @@ def main() -> None:
         "--self-test", action="store_true", help="Run self-test and exit"
     )
 
+    # agent-fabric-adapter-smoke
+    adapter_smoke_parser = sub.add_parser(
+        "agent-fabric-adapter-smoke",
+        help="Export source-only Agent Fabric adapter smoke reports",
+    )
+    adapter_smoke_parser.add_argument(
+        "--adapter-fixture", help="Reference adapter fixture JSON path"
+    )
+    adapter_smoke_parser.add_argument(
+        "--harness-snapshot",
+        default=None,
+        help="Optional harness snapshot JSON path; defaults to adapter harness",
+    )
+    adapter_smoke_parser.add_argument(
+        "--out",
+        default="agent-fabric-adapter-smoke.json",
+        help="Output path for adapter smoke report JSON",
+    )
+    adapter_smoke_parser.add_argument(
+        "--self-test", action="store_true", help="Run self-test and exit"
+    )
+
     # demo
     demo_parser = sub.add_parser(
         "demo", help="Run a complete design→compile→verify cycle"
@@ -213,6 +236,8 @@ def main() -> None:
         agent_fabric_smoke.run(args)
     elif args.command == "agent-fabric-harness-snapshot":
         agent_fabric_harness_snapshot.run(args)
+    elif args.command == "agent-fabric-adapter-smoke":
+        agent_fabric_adapter_smoke.run(args)
     elif args.command == "demo":
         demo.run(args)
     else:

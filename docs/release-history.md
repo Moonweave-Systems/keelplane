@@ -219,6 +219,9 @@ promotion requires real release history.
 - V117: `docs/v117-agent-fabric-harness-snapshot-spec.md` added the
   `depone agent-fabric-harness-snapshot` export command for shipped harness
   capability fixtures plus deterministic tool mapping coverage.
+- V118: `docs/v118-agent-fabric-adapter-smoke-spec.md` added the
+  `depone agent-fabric-adapter-smoke` report that binds reference adapter
+  fixtures to harness snapshots without executing them.
 
 ## Current Public Boundaries
 
@@ -279,3 +282,6 @@ promotion requires real release history.
 - V117 harness snapshots expose shipped capability and mapping coverage only;
   they do not probe installed harnesses, inspect MCP runtime state, or prove
   live permission enforcement.
+- V118 adapter smoke reports bind fixtures to snapshots and validation errors;
+  they still do not execute commands, call models, or prove live adapter
+  enforcement.
