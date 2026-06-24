@@ -1,4 +1,4 @@
-# Keelplane Command Reference
+# Depone Command Reference
 
 This file keeps the full CLI and artifact reference out of the README. The
 README should explain the product; this page preserves operator detail.
@@ -6,6 +6,20 @@ README should explain the product; this page preserves operator detail.
 ## Product Shell
 
 ```bash
+python3 -m depone design "<objective>" --surface . --out plan.json
+python3 -m depone validate plan.json
+python3 -m depone compile plan.json --target conductor --out workflow.yaml
+python3 -m depone verify plan.json --evidence ./evidence --out report.json --operator-view-out operator-view.md
+python3 -m depone validate-contracts --all
+python3 -m depone agent-fabric-smoke --profile profile.json --roles role.json --plan plan.json --out agent-fabric-smoke.json --operator-view-out operator-view.md
+python3 -m depone agent-fabric-harness-snapshot --harness shell --harness codex --out agent-fabric-harness-snapshot.json
+python3 -m depone agent-fabric-adapter-smoke --adapter-fixture depone/fixtures/agent_fabric/reference_adapter_shell.json --out agent-fabric-adapter-smoke.json
+python3 -m depone agent-fabric-dogfood-evidence --capture-manifest depone/fixtures/agent_fabric/capture_manifest_shell.json --out dogfood-evidence.json
+python3 -m depone agent-fabric-dogfood-evidence --capture-manifest depone/fixtures/agent_fabric/capture_manifest_shell.json --capture-manifest depone/fixtures/agent_fabric/capture_manifest_docs_source_only.json --out controlled-capture-corpus.json
+python3 -m depone agent-fabric-paired-evidence --adapter-smoke agent-fabric-adapter-smoke.json --dogfood-evidence dogfood-evidence.json --out paired-evidence.json
+python3 -m depone agent-fabric-claim-gate --adapter-smoke agent-fabric-adapter-smoke.json --paired-evidence paired-evidence.json --out agent-fabric-claim-gate.json
+python3 -m depone demo --out out/depone-quickstart
+
 python scripts/dwm.py plan "<objective>" --out out/v21/<run_id>
 python scripts/dwm.py run "<objective>" --out out/v21/<run_id>
 python scripts/dwm.py resume --run out/v21/<run_id>
@@ -226,10 +240,10 @@ Release artifacts include `operator-loop.json`, `today.md`,
 | `scripts/dwm_runner_receipt_dry_run.py` | Fixture-only runner receipt dry-run gate with `executed: false`. |
 | `scripts/dwm_installed_surface_audit.py` | Active local skill path and copied install drift audit. |
 | `scripts/dwm_workflow_activation.py` | Next workflow activation gate from install, receipt, and completed-run evidence. |
-| `scripts/dwm_brand_boundary_audit.py` | Public Keelplane, DWM Core, and skill-name boundary audit. |
+| `scripts/dwm_brand_boundary_audit.py` | Public Depone, DWM Core, and skill-name boundary audit. |
 | `scripts/dwm_roadmap_reconciliation.py` | Spec, roadmap, and release history alignment audit. |
 | `scripts/dwm_evidence_oracle.py` | Read-only artifact assertion oracle for claim-level evidence. |
-| `scripts/dwm_workflow_narrative.py` | Artifact-backed Keelplane Control Deck and workflow narrative renderer. |
+| `scripts/dwm_workflow_narrative.py` | Artifact-backed Depone Control Deck and workflow narrative renderer. |
 | `scripts/dwm_control_deck_score.py` | Operator-readiness scoring for Control Deck completeness. |
 | `scripts/dwm_control_deck_score_history.py` | Internal operator-readiness history and SVG rendering for Control Deck scores. |
 | `scripts/dwm_metric_ladder.py` | Graph claim-level gate for process, operator-readiness, and public benchmark metrics. |

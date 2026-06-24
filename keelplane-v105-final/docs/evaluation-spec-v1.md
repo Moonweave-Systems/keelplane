@@ -1,6 +1,6 @@
 # Keelplane Agent Profile Evaluation Specification v1
 
-Status: Proposed  
+Status: Proposed
 Date: 2026-06-23
 
 ## 1. Objective

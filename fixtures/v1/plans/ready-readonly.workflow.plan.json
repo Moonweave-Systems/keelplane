@@ -21,7 +21,7 @@
     "max_rounds": 2,
     "time_box": "one planning session"
   },
-  "created_by": "keelplane",
+  "created_by": "depone",
   "execution_path": {
     "consumer": "codex-agent",
     "first_slice": {

@@ -1,6 +1,6 @@
 # V105 Proposal: Trust-Bounded Native Execution
 
-Status: Proposed final draft  
+Status: Proposed final draft
 Date: 2026-06-23
 
 ## 1. Decision

@@ -1,14 +1,14 @@
 {
   "fixture_id": "neg-review-small-diff",
   "packet_sha256": {
-    "workflow.plan.json": "69229e4b6f4ddf34f299b72108f586006f5975854c3952b3b8b3c84a5888cce6",
-    "blueprint.md": "77cdee48375b3491daf01302a94eabba554e1695919f991a9d048ca5f7251766",
-    "original prompt": "d1189e985fe1ce7caa2c8f129563dc60e63173d064922860f812eb9a424a1e66"
+    "blueprint.md": "424e658f8e4eccdd71fe513a4546370f5df4373da45430a75e3a10bd6dd24823",
+    "original prompt": "d1189e985fe1ce7caa2c8f129563dc60e63173d064922860f812eb9a424a1e66",
+    "workflow.plan.json": "7756c46d8ed2a47511f3f64a3e0fde43746aa7b09296b79e20e63d73e13b603d"
   },
-  "producer": "keelplane",
+  "producer": "depone",
   "raw_kind": "workflow-output",
-  "rendered_blueprint": "# neg-review-small-diff\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (A small review needs findings-first direct review, not workflow design.)\nPatterns: none\n\n## First Slice\n\nUse direct-codex instead of keelplane for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- external review publication: stop before external review publication and ask for approval\n",
-  "skill_sha256": "27261b50e6811ad03073544983f5e4b4905a9c9035f2d1b8f044a4ee24b49798",
+  "rendered_blueprint": "# neg-review-small-diff\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (A small review needs findings-first direct review, not workflow design.)\nPatterns: none\n\n## First Slice\n\nUse direct-codex instead of depone for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- external review publication: stop before external review publication and ask for approval\n",
+  "skill_sha256": "2781790c2ab14efcbf86b1bc142be17067aa088fa71c19728ce7db964bfdc097",
   "source_prompt": "Review this 40-line diff.",
   "workflow_plan": {
     "activation": {
@@ -30,7 +30,7 @@
       "max_rounds": 1,
       "time_box": "one direct response or routed workflow"
     },
-    "created_by": "keelplane",
+    "created_by": "depone",
     "execution_path": {
       "consumer": "human",
       "first_slice": {
@@ -44,7 +44,7 @@
         "inputs": [
           "original prompt"
         ],
-        "instruction": "Use direct-codex instead of keelplane for this request."
+        "instruction": "Use direct-codex instead of depone for this request."
       },
       "mode": "direct-codex"
     },

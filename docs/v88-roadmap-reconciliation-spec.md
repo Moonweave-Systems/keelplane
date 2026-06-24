@@ -6,18 +6,18 @@ Status: implemented roadmap reconciliation audit in
 ## Objective
 
 Keep the product spec, automation roadmap, and release history aligned with the
-current Keelplane state. V88 prevents the project from looking half-planned and
+current Depone state. V88 prevents the project from looking half-planned and
 half-implemented after V52-V87 added product evidence, dogfood measurement,
 graph timing, activation, and brand boundary gates. The audit now reconciles
 through V99 wave receipt, V100 promotion evidence, V101 promotion route,
 V102 deterministic live-proof recorder, V103 live-proof comparison schema,
-V104 product direction, V105 verify wedge, and V106 multi-wave validation.
+V104 product direction, V105 verify wedge, V106 multi-wave validation, and V107-V122 Agent Fabric guardrails.
 
 ## Product Boundary
 
-- Public product brand: `Keelplane`.
+- Public product brand: `Depone`.
 - Internal engine name: `DWM Core`.
-- Latest reconciled version: `V106`.
+- Latest reconciled version: `V122`.
 - `docs/release-history.md` remains the implementation-history source.
 - `docs/automation-roadmap.md` remains the operator-facing roadmap.
 - `docs/spec.md` remains the product contract and safety boundary.
@@ -29,7 +29,7 @@ The audit reads the three roadmap surfaces and emits
 
 It blocks when:
 
-- `docs/spec.md` does not use the current Keelplane / DWM Core boundary.
+- `docs/spec.md` does not use the current Depone / DWM Core boundary.
 - `docs/spec.md` lacks the V87 brand boundary audit, V88 roadmap
   reconciliation status, V89 command safety status, V90 activation v2
   status, V91 contract tiering status, V92 evidence oracle status, or V93
@@ -37,7 +37,7 @@ It blocks when:
   status, or V96 metric ladder, V97 benchmark readiness status.
 - `docs/automation-roadmap.md` still says V12-V20 are planned but not
   implemented.
-- `docs/automation-roadmap.md` lacks the V52-V106 continuation summary.
+- `docs/automation-roadmap.md` lacks the V52-V122 continuation summary.
 - `docs/release-history.md` lacks the V88, V89, V90, or V91 entry.
 
 ## Execution Policy

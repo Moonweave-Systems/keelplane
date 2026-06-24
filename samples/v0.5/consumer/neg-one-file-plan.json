@@ -8,7 +8,7 @@
   "completion_check": "no dynamic workflow artifact is needed",
   "consumer_verdict": "pass",
   "expected_output": "bounded response or routed workflow decision",
-  "first_slice": "Use simple-plan instead of keelplane for this request.",
+  "first_slice": "Use simple-plan instead of depone for this request.",
   "fixture_id": "neg-one-file-plan",
   "forbidden_actions_identified": [
     "spawning agents",
@@ -23,16 +23,16 @@
       "completion_check": "completion_check: no dynamic workflow artifact is needed",
       "downgrade_target": "downgrade_target: simple-plan",
       "expected_output": "expected_output: bounded response or routed workflow decision",
-      "first_slice": "first_slice: Use simple-plan instead of keelplane for this request.",
+      "first_slice": "first_slice: Use simple-plan instead of depone for this request.",
       "forbidden_actions": "forbidden_actions: spawning agents; editing files; external messages",
       "inputs_needed": "inputs_needed: original prompt",
       "risk_gates": "risk_gates: multi-agent execution",
       "safe_defaults": "safe_defaults: multi-agent execution -> stop before multi-agent execution and ask for approval"
     },
     "packet_sha256": {
-      "workflow.plan.json": "8ea68c00d8b9371643b59964468ee8b07ef75e643732f2e5dcdcbe8e96bf86e7",
-      "blueprint.md": "f47b65aeddb68b1dd4ab2e99dbf825d87198bc719d44d801359d3c18e427dcb5",
-      "original prompt": "d4316427d9b4696746e18d71d0cf75a4dd2541d40e2b2e9677646756a197ff88"
+      "blueprint.md": "2ebbb1417015777cb53797144853dbfc5929ea806b840467f147557db8d21902",
+      "original prompt": "d4316427d9b4696746e18d71d0cf75a4dd2541d40e2b2e9677646756a197ff88",
+      "workflow.plan.json": "2603ac200be6542011426f87831c9f82231ea2f98260d593fbe848678d660809"
     },
     "reviewer_note": "Blinded sample reviewer identified the first slice, required inputs, forbidden actions, gates, and safe defaults from the supplied packet only.",
     "run_kind": "blinded-sample-review",
@@ -41,7 +41,7 @@
       "blueprint.md",
       "original prompt"
     ],
-    "transcript_excerpt": "Consumer selected first slice: Use simple-plan instead of keelplane for this request."
+    "transcript_excerpt": "Consumer selected first slice: Use simple-plan instead of depone for this request."
   },
   "received_spec_or_expected_answer": false,
   "risk_gates_identified": [

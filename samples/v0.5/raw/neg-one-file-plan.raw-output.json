@@ -1,14 +1,14 @@
 {
   "fixture_id": "neg-one-file-plan",
   "packet_sha256": {
-    "workflow.plan.json": "8ea68c00d8b9371643b59964468ee8b07ef75e643732f2e5dcdcbe8e96bf86e7",
-    "blueprint.md": "f47b65aeddb68b1dd4ab2e99dbf825d87198bc719d44d801359d3c18e427dcb5",
-    "original prompt": "d4316427d9b4696746e18d71d0cf75a4dd2541d40e2b2e9677646756a197ff88"
+    "blueprint.md": "2ebbb1417015777cb53797144853dbfc5929ea806b840467f147557db8d21902",
+    "original prompt": "d4316427d9b4696746e18d71d0cf75a4dd2541d40e2b2e9677646756a197ff88",
+    "workflow.plan.json": "2603ac200be6542011426f87831c9f82231ea2f98260d593fbe848678d660809"
   },
-  "producer": "keelplane",
+  "producer": "depone",
   "raw_kind": "workflow-output",
-  "rendered_blueprint": "# neg-one-file-plan\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (One-file planning does not need handoffs, fan-out, or resume boundaries.)\nPatterns: none\n\n## First Slice\n\nUse simple-plan instead of keelplane for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- multi-agent execution: stop before multi-agent execution and ask for approval\n",
-  "skill_sha256": "27261b50e6811ad03073544983f5e4b4905a9c9035f2d1b8f044a4ee24b49798",
+  "rendered_blueprint": "# neg-one-file-plan\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (One-file planning does not need handoffs, fan-out, or resume boundaries.)\nPatterns: none\n\n## First Slice\n\nUse simple-plan instead of depone for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- multi-agent execution: stop before multi-agent execution and ask for approval\n",
+  "skill_sha256": "2781790c2ab14efcbf86b1bc142be17067aa088fa71c19728ce7db964bfdc097",
   "source_prompt": "Draft a simple implementation plan for one file.",
   "workflow_plan": {
     "activation": {
@@ -30,7 +30,7 @@
       "max_rounds": 1,
       "time_box": "one direct response or routed workflow"
     },
-    "created_by": "keelplane",
+    "created_by": "depone",
     "execution_path": {
       "consumer": "human",
       "first_slice": {
@@ -44,7 +44,7 @@
         "inputs": [
           "original prompt"
         ],
-        "instruction": "Use simple-plan instead of keelplane for this request."
+        "instruction": "Use simple-plan instead of depone for this request."
       },
       "mode": "direct-codex"
     },

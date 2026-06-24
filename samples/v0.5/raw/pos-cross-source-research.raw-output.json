@@ -1,14 +1,14 @@
 {
   "fixture_id": "pos-cross-source-research",
   "packet_sha256": {
-    "workflow.plan.json": "143101fba70ead2832a7ae9d1a445899fbb2a559cfa2ca5dde3b302fa80e416f",
     "blueprint.md": "d55f579008415741a3ea8720af127eeb7171b710cf99a05a3c643ff94e3cb6c1",
-    "original prompt": "96f4924745a39764d8a4cfa287ffd3c99ebe15be94d968bef4fb28d5ceca5d39"
+    "original prompt": "96f4924745a39764d8a4cfa287ffd3c99ebe15be94d968bef4fb28d5ceca5d39",
+    "workflow.plan.json": "51e9fcbb08c4b5705c87fd13d7b64cc8a0b7f58f739e1d243dcf35b051b6821e"
   },
-  "producer": "keelplane",
+  "producer": "depone",
   "raw_kind": "workflow-output",
   "rendered_blueprint": "# pos-cross-source-research\n\nObjective: Coordinate cross-source research and filter claims through independent source verification.\nActivation: activate (The prompt needs a reusable artifact with downstream handoffs, verification, and gated execution.)\nPatterns: Parallel Fan-Out / Fan-In, Adversarial Verify, Judge Panel, Resume And Cache\n\n## First Slice\n\nDefine the source classes, claim schema, and freshness constraints before collecting evidence.\n\nCompletion check: inventory validates and every gap is either resolved or recorded\n\n## Risk Gates\n\n- write action: stop before writing and ask for approval\n- shell action: stop before shell use and ask for approval\n- network action: stop before network use and ask for approval\n- external message action: stop before sending external messages and ask for approval\n- paid external API use: stop before paid external API use and ask for approval\n",
-  "skill_sha256": "27261b50e6811ad03073544983f5e4b4905a9c9035f2d1b8f044a4ee24b49798",
+  "skill_sha256": "2781790c2ab14efcbf86b1bc142be17067aa088fa71c19728ce7db964bfdc097",
   "source_prompt": "Research the current state of on-device LLM inference across papers, repos, and product docs with claim verification.",
   "workflow_plan": {
     "activation": {
@@ -39,7 +39,7 @@
       "max_rounds": 3,
       "time_box": "one bounded planning session before execution"
     },
-    "created_by": "keelplane",
+    "created_by": "depone",
     "execution_path": {
       "consumer": "codex-agent",
       "first_slice": {

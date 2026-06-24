@@ -1,6 +1,6 @@
 # Keelplane Evidence Protocol v1
 
-Status: Proposed final draft  
+Status: Proposed final draft
 Date: 2026-06-23
 
 ## 1. Purpose

@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 
-SKIP_DIRS = {".git", "__pycache__", "out"}
+SKIP_DIRS = {".git", ".omx", "__pycache__", "out"}
 TEXT_SUFFIXES = {
     ".json",
     ".md",

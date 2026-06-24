@@ -1,0 +1,120 @@
+{
+  "allowed_touched_files": [
+    "docs/v123-agent-fabric-controlled-capture-corpus-spec.md"
+  ],
+  "assurance": "A1-local-observed",
+  "decision": "observed-local-capture",
+  "fixture": {
+    "adapter": {
+      "executes_commands": false,
+      "harness": "shell",
+      "mode": "fixture-only",
+      "name": "shell-reference-fixture"
+    },
+    "capture": {
+      "command_receipts": [],
+      "diff_summary": {
+        "changed_files": [
+          "docs/v123-agent-fabric-controlled-capture-corpus-spec.md"
+        ],
+        "summary": "source-only documentation capture fixture"
+      },
+      "self_report": {
+        "agent_role": "reviewer",
+        "command_receipts": [],
+        "output_files": [
+          "docs/v123-agent-fabric-controlled-capture-corpus-spec.md"
+        ],
+        "profile": "docs-controlled-capture",
+        "result_version": "1.0",
+        "self_reported_claims": [
+          "controlled capture corpus documentation reviewed"
+        ],
+        "status": "success"
+      },
+      "test_output": {
+        "command": null,
+        "status": "not-run",
+        "summary": "fixture-only adapter did not run tests"
+      },
+      "touched_files": [
+        "docs/v123-agent-fabric-controlled-capture-corpus-spec.md"
+      ],
+      "trust_level": "A0-claims-only"
+    },
+    "invocation": {
+      "context_policy": "local-code-only",
+      "evidence_obligations": [
+        "command_receipt",
+        "diff_summary"
+      ],
+      "instructions": "Review source-only Agent Fabric documentation updates without executing live model calls.",
+      "packet_version": "1.0",
+      "profile": "docs-controlled-capture",
+      "role": "reviewer",
+      "target_harness": "shell",
+      "toolbelt": {
+        "allowed_mcp": [],
+        "allowed_tools": [
+          "python3"
+        ],
+        "context_policy": "local-code-only",
+        "evidence_obligations": [
+          "command_receipt",
+          "diff_summary"
+        ],
+        "forbidden_tools": [
+          "write",
+          "network",
+          "live-model"
+        ],
+        "output_schema": "reviewer-result-v1"
+      }
+    },
+    "kind": "agent-fabric-reference-adapter-fixture",
+    "schema_version": "1.0"
+  },
+  "kind": "agent-fabric-capture-manifest",
+  "observer_capture": {
+    "command_receipts": [
+      {
+        "command": [
+          "python3",
+          "tests/test_agent_fabric_dogfood_evidence.py"
+        ],
+        "exit_code": 0,
+        "log_path": "out/agent-fabric/controlled-capture-docs-test.txt"
+      }
+    ],
+    "diff_summary": {
+      "changed_files": [
+        "docs/v123-agent-fabric-controlled-capture-corpus-spec.md"
+      ],
+      "summary": "operator-observed source-only docs capture fixture"
+    },
+    "observed_by": "depone-observer",
+    "source_fixture_hash": "9c07d01c12b38c67d94f024a3262a1b55110b3f06949e4bc9ed6e525d278c175",
+    "test_output": {
+      "command": [
+        "python3",
+        "tests/test_agent_fabric_dogfood_evidence.py"
+      ],
+      "status": "passed",
+      "summary": "source fixture records a passing controlled capture check; this file does not execute it"
+    },
+    "touched_files": [
+      "docs/v123-agent-fabric-controlled-capture-corpus-spec.md"
+    ]
+  },
+  "observer_capture_hash": "afd8ac12a9df50f384d16c00ac6f793a3946ecc88b19f64d72d47cdfae981a22",
+  "required_observer_fields": [
+    "command_receipts",
+    "diff_summary",
+    "observed_by",
+    "source_fixture_hash",
+    "test_output",
+    "touched_files"
+  ],
+  "schema_version": "1.0",
+  "source_fixture_hash": "9c07d01c12b38c67d94f024a3262a1b55110b3f06949e4bc9ed6e525d278c175"
+}

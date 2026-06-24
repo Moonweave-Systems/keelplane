@@ -1,0 +1,111 @@
+{
+  "allowed_touched_files": [
+    "depone/example.py"
+  ],
+  "assurance": "A1-local-observed",
+  "decision": "observed-local-capture",
+  "fixture": {
+    "adapter": {
+      "executes_commands": false,
+      "harness": "shell",
+      "mode": "fixture-only",
+      "name": "shell-reference-fixture"
+    },
+    "capture": {
+      "command_receipts": [],
+      "diff_summary": {
+        "added_files": [],
+        "changed_files": [],
+        "deleted_files": [],
+        "modified_files": [],
+        "summary": "fixture-only adapter did not observe a diff"
+      },
+      "self_report": {
+        "agent_role": "runner",
+        "command_receipts": [],
+        "output_files": [
+          "out/agent/result.txt"
+        ],
+        "profile": "self-test-profile",
+        "result_version": "1.0",
+        "self_reported_claims": [
+          "checks completed"
+        ],
+        "status": "success"
+      },
+      "test_output": {
+        "command": null,
+        "status": "not-run",
+        "summary": "fixture-only adapter did not run tests"
+      },
+      "touched_files": [],
+      "trust_level": "A0-claims-only"
+    },
+    "invocation": {
+      "context_policy": "local-code-only",
+      "evidence_obligations": [
+        "command_receipt"
+      ],
+      "instructions": "Run local checks and report outputs without writing observer-owned evidence.",
+      "packet_version": "1.0",
+      "profile": "self-test-profile",
+      "role": "runner",
+      "target_harness": "shell",
+      "toolbelt": {
+        "allowed_mcp": [],
+        "allowed_tools": [
+          "cat",
+          "python3"
+        ],
+        "context_policy": "local-code-only",
+        "evidence_obligations": [
+          "command_receipt"
+        ],
+        "forbidden_tools": [
+          "write"
+        ],
+        "output_schema": "runner-result-v1"
+      }
+    },
+    "kind": "agent-fabric-reference-adapter-fixture",
+    "schema_version": "1.0"
+  },
+  "kind": "agent-fabric-capture-manifest",
+  "observer_capture": {
+    "command_receipts": [
+      {
+        "command": [
+          "python3",
+          "tests/test_example.py"
+        ],
+        "exit_code": 0,
+        "log_path": "logs/test-example.txt"
+      }
+    ],
+    "diff_summary": {
+      "changed_files": [
+        "depone/example.py"
+      ]
+    },
+    "observed_by": "depone-observer",
+    "source_fixture_hash": "7bea0ef21c5035e05170cfe285f67d04457372e3b0f6631776f5602a44bc70ba",
+    "test_output": {
+      "status": "passed",
+      "summary": "1 passed"
+    },
+    "touched_files": [
+      "depone/example.py"
+    ]
+  },
+  "observer_capture_hash": "13fa8de14351e56048cb1fcfc23f57768834fc98a2cbcea7706d8307b6f64c00",
+  "required_observer_fields": [
+    "command_receipts",
+    "diff_summary",
+    "observed_by",
+    "source_fixture_hash",
+    "test_output",
+    "touched_files"
+  ],
+  "schema_version": "1.0",
+  "source_fixture_hash": "7bea0ef21c5035e05170cfe285f67d04457372e3b0f6631776f5602a44bc70ba"
+}

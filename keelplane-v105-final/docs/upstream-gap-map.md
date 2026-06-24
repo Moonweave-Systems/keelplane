@@ -1,6 +1,6 @@
 # Keelplane Upstream Gap Map
 
-Status: Proposed implementation guide  
+Status: Proposed implementation guide
 Based on the public repository state inspected on 2026-06-23.
 
 ## 1. `keelplane/verify/engine.py` — critical

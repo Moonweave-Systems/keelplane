@@ -1,46 +1,15 @@
 {
-  "schema_version": "0.5",
-  "plan_id": "v73-large-workflow-control",
-  "created_by": "keelplane",
-  "source_prompt": "Write the large spec for direction fidelity, large-work decomposition, execution quality, efficiency, recovery ability, and evidence quality, then carry the workflow through unless a real human gate is reached.",
   "activation": {
     "decision": "activate",
+    "downgrade_target": null,
     "matched_thresholds": [
       "downstream-consumer",
       "resumable-handoffs",
       "adversarial-verification",
       "human-gates"
     ],
-    "downgrade_target": null,
     "reason": "The request defines DWM's large-work control contract and must produce executable artifacts, fixtures, contract checks, and resumable evidence."
   },
-  "objective": "Define and implement the six-axis control-plane gate that keeps large DWM workflows aligned with user intent, quality, efficiency, recovery, and evidence.",
-  "surfaces": [
-    {
-      "id": "control_script",
-      "kind": "repo",
-      "locator": "scripts/dwm_large_workflow_control.py",
-      "access_mode": "write-approved"
-    },
-    {
-      "id": "fixtures",
-      "kind": "data-source",
-      "locator": "fixtures/v73/manifest.json",
-      "access_mode": "write-approved"
-    },
-    {
-      "id": "spec",
-      "kind": "document",
-      "locator": "docs/v73-large-workflow-control-spec.md",
-      "access_mode": "write-approved"
-    },
-    {
-      "id": "release_contract",
-      "kind": "repo",
-      "locator": "scripts/check_contract.py",
-      "access_mode": "write-approved"
-    }
-  ],
   "assumptions": [
     {
       "claim": "The user's six concerns can be represented as measurable workflow control signals.",
@@ -51,272 +20,39 @@
       "verification": "Risk gates forbid production, networked adapter execution, dependency install, secret access, history rewrite, and external benchmark claims."
     }
   ],
-  "patterns": [
-    "Sequential",
-    "Pipeline",
-    "Adversarial Verify",
-    "Resume And Cache",
-    "Human Gate"
-  ],
-  "phases": [
-    {
-      "id": "axis_contract",
-      "name": "Axis Contract",
-      "entry_criteria": [
-        "User's six evaluation concerns are available."
-      ],
-      "exit_criteria": [
-        "Each axis has direction-neutral required signals and blocker behavior."
-      ],
-      "depends_on": [],
-      "worker_ids": [
-        "control_designer"
-      ],
-      "outputs": [
-        "control-contract.md"
-      ]
-    },
-    {
-      "id": "evaluator",
-      "name": "Evaluator Implementation",
-      "entry_criteria": [
-        "Axis contract exists."
-      ],
-      "exit_criteria": [
-        "CLI writes JSON, markdown, status, and manifest summary artifacts."
-      ],
-      "depends_on": [
-        "axis_contract"
-      ],
-      "worker_ids": [
-        "evaluator_builder"
-      ],
-      "outputs": [
-        "control-artifacts.json"
-      ]
-    },
-    {
-      "id": "fixture_gate",
-      "name": "Fixture Gate",
-      "entry_criteria": [
-        "Evaluator accepts workflow objects."
-      ],
-      "exit_criteria": [
-        "Ready, missing-direction, and overclaim fixtures behave deterministically."
-      ],
-      "depends_on": [
-        "evaluator"
-      ],
-      "worker_ids": [
-        "fixture_verifier"
-      ],
-      "outputs": [
-        "fixture-summary.json"
-      ]
-    },
-    {
-      "id": "contract_release",
-      "name": "Contract And Release Integration",
-      "entry_criteria": [
-        "Fixture gate passes."
-      ],
-      "exit_criteria": [
-        "Release commands, command reference, decision docs, and contract checks include V73."
-      ],
-      "depends_on": [
-        "fixture_gate"
-      ],
-      "worker_ids": [
-        "contract_reviewer"
-      ],
-      "outputs": [
-        "verification-log.md"
-      ]
-    }
-  ],
-  "workers": [
-    {
-      "id": "control_designer",
-      "role": "planner",
-      "tool_permissions": {
-        "read": true,
-        "write": true,
-        "shell": false,
-        "network": false,
-        "mcp_connectors": [],
-        "requires_escalation_for": [
-          "network",
-          "external-message"
-        ]
-      },
+  "budget": {
+    "file_touch_limit": "12 files",
+    "max_agents": 1,
+    "max_retries": 1,
+    "max_rounds": 1,
+    "time_box": "one large-workflow control slice"
+  },
+  "created_by": "depone",
+  "execution_path": {
+    "consumer": "codex-agent",
+    "first_slice": {
+      "completion_check": "python scripts/dwm_large_workflow_control.py --self-test && python scripts/dwm_large_workflow_control.py --manifest fixtures/v73/manifest.json --out out/large-workflow-control/v73-final && python scripts/evaluate_plan.py --plan docs/v73-large-workflow-control.workflow.plan.json && python scripts/check_contract.py --self-test",
+      "expected_output": "V73 control evaluator, fixtures, spec, blueprint, workflow plan JSON, decision doc, and passing verification",
       "forbidden_actions": [
-        "claim external benchmark superiority",
-        "collapse quality into polish"
-      ],
-      "context_budget": {
-        "max_files": 8,
-        "max_tokens": 10000,
-        "must_include": [
-          "user objective",
-          "V70-V72 timing context",
-          "workflow plan schema"
-        ],
-        "must_exclude": [
-          "unrelated README rewrite"
-        ]
-      },
-      "prompt_contract": {
-        "inputs": [
-          "six evaluation concerns"
-        ],
-        "required_output_schema": "axis list with required signals and blocker semantics",
-        "stop_conditions": [
-          "axis cannot be measured",
-          "axis rewards narrative polish instead of workflow control"
-        ]
-      },
-      "ownership": [
-        "six-axis control semantics"
-      ]
-    },
-    {
-      "id": "evaluator_builder",
-      "role": "implementer",
-      "tool_permissions": {
-        "read": true,
-        "write": true,
-        "shell": true,
-        "network": false,
-        "mcp_connectors": [],
-        "requires_escalation_for": [
-          "network",
-          "shell"
-        ]
-      },
-      "forbidden_actions": [
+        "edit docs/spec.md without reconciling existing user changes",
+        "publish public benchmark claims",
         "install dependencies",
-        "execute external adapters"
+        "access secrets",
+        "rewrite git history"
       ],
-      "context_budget": {
-        "max_files": 10,
-        "max_tokens": 14000,
-        "must_include": [
-          "scripts/dwm_large_workflow_control.py",
-          "compile_workflow helpers"
-        ],
-        "must_exclude": [
-          "secret files"
-        ]
-      },
-      "prompt_contract": {
-        "inputs": [
-          "axis contract"
-        ],
-        "required_output_schema": "CLI script with self-test, manifest mode, assess mode, and stable artifacts",
-        "stop_conditions": [
-          "artifact schema cannot be made deterministic",
-          "unsafe path detected"
-        ]
-      },
-      "ownership": [
-        "control evaluator implementation"
-      ]
+      "inputs": [
+        "repository path",
+        "user six-axis objective",
+        "references/workflow-plan-schema.md",
+        "scripts/dwm.py",
+        "scripts/check_contract.py"
+      ],
+      "instruction": "Implement the V73 six-axis large-workflow control evaluator, fixture suite, spec, blueprint, workflow plan, and release contract integration without touching unrelated dirty files."
     },
-    {
-      "id": "fixture_verifier",
-      "role": "verifier",
-      "tool_permissions": {
-        "read": true,
-        "write": true,
-        "shell": true,
-        "network": false,
-        "mcp_connectors": [],
-        "requires_escalation_for": [
-          "network"
-        ]
-      },
-      "forbidden_actions": [
-        "approve overclaim fixture",
-        "hide blocked workflow evidence"
-      ],
-      "context_budget": {
-        "max_files": 8,
-        "max_tokens": 10000,
-        "must_include": [
-          "fixtures/v73/manifest.json",
-          "self-test output"
-        ],
-        "must_exclude": [
-          "generated out directories except targeted evidence"
-        ]
-      },
-      "prompt_contract": {
-        "inputs": [
-          "control evaluator",
-          "fixture manifest"
-        ],
-        "required_output_schema": "fixture summary with pass and blocked cases",
-        "stop_conditions": [
-          "missing negative fixture",
-          "ready fixture scores below maximum"
-        ]
-      },
-      "ownership": [
-        "fixture quality"
-      ]
-    },
-    {
-      "id": "contract_reviewer",
-      "role": "reviewer",
-      "tool_permissions": {
-        "read": true,
-        "write": true,
-        "shell": true,
-        "network": false,
-        "mcp_connectors": [],
-        "requires_escalation_for": [
-          "network",
-          "write"
-        ]
-      },
-      "forbidden_actions": [
-        "force push",
-        "publish benchmark graph",
-        "edit docs/spec.md without reconciling user changes"
-      ],
-      "context_budget": {
-        "max_files": 12,
-        "max_tokens": 12000,
-        "must_include": [
-          "scripts/check_contract.py",
-          "scripts/dwm.py",
-          "docs/v73-large-workflow-control-spec.md"
-        ],
-        "must_exclude": [
-          "unrelated dirty files"
-        ]
-      },
-      "prompt_contract": {
-        "inputs": [
-          "changed files",
-          "verification commands"
-        ],
-        "required_output_schema": "verification log with pass/blocker status",
-        "stop_conditions": [
-          "contract failure",
-          "unexpected dirty tracked file",
-          "release command drift"
-        ]
-      },
-      "ownership": [
-        "release integration"
-      ]
-    }
-  ],
+    "mode": "direct-codex"
+  },
   "handoffs": [
     {
-      "from_phase": "axis_contract",
-      "to_phase": "evaluator",
       "artifact": "control-contract.md",
       "artifact_schema": {
         "format": "markdown",
@@ -326,11 +62,11 @@
           "blocker behavior"
         ],
         "validation_command": "python scripts/check_release_text.py ."
-      }
+      },
+      "from_phase": "axis_contract",
+      "to_phase": "evaluator"
     },
     {
-      "from_phase": "evaluator",
-      "to_phase": "fixture_gate",
       "artifact": "control-artifacts.json",
       "artifact_schema": {
         "format": "json",
@@ -340,11 +76,11 @@
           "summary.json"
         ],
         "validation_command": "python scripts/dwm_large_workflow_control.py --self-test"
-      }
+      },
+      "from_phase": "evaluator",
+      "to_phase": "fixture_gate"
     },
     {
-      "from_phase": "fixture_gate",
-      "to_phase": "contract_release",
       "artifact": "fixture-summary.json",
       "artifact_schema": {
         "format": "json",
@@ -354,95 +90,104 @@
           "decision"
         ],
         "validation_command": "python scripts/dwm_large_workflow_control.py --manifest fixtures/v73/manifest.json --out out/large-workflow-control/v73-final"
-      }
+      },
+      "from_phase": "fixture_gate",
+      "to_phase": "contract_release"
     }
   ],
+  "objective": "Define and implement the six-axis control-plane gate that keeps large DWM workflows aligned with user intent, quality, efficiency, recovery, and evidence.",
   "parallelism": {
-    "shape": "pipeline",
-    "concurrency_cap": 2,
-    "fan_in_rule": "Contract integration starts only after evaluator and fixture outputs exist.",
     "barriers": [
       "Do not publish public benchmark claims from V73 control scores."
-    ]
+    ],
+    "concurrency_cap": 2,
+    "fan_in_rule": "Contract integration starts only after evaluator and fixture outputs exist.",
+    "shape": "pipeline"
   },
-  "verification": [
+  "patterns": [
+    "Sequential",
+    "Pipeline",
+    "Adversarial Verify",
+    "Resume And Cache",
+    "Human Gate"
+  ],
+  "phases": [
     {
-      "claim_or_output": "The six-axis evaluator blocks missing direction fidelity.",
-      "falsifier": "The missing-direction fixture returns large-workflow-controlled.",
-      "evidence_required": [
-        "fixtures/v73/manifest.json",
-        "out/large-workflow-control/v73-final/summary.json"
+      "depends_on": [],
+      "entry_criteria": [
+        "User's six evaluation concerns are available."
+      ],
+      "exit_criteria": [
+        "Each axis has direction-neutral required signals and blocker behavior."
+      ],
+      "id": "axis_contract",
+      "name": "Axis Contract",
+      "outputs": [
+        "control-contract.md"
+      ],
+      "worker_ids": [
+        "control_designer"
       ]
     },
     {
-      "claim_or_output": "The evaluator blocks overclaiming workflow text.",
-      "falsifier": "The overclaim fixture returns large-workflow-controlled.",
-      "evidence_required": [
-        "large-workflow-control.json blocked_by"
+      "depends_on": [
+        "axis_contract"
+      ],
+      "entry_criteria": [
+        "Axis contract exists."
+      ],
+      "exit_criteria": [
+        "CLI writes JSON, markdown, status, and manifest summary artifacts."
+      ],
+      "id": "evaluator",
+      "name": "Evaluator Implementation",
+      "outputs": [
+        "control-artifacts.json"
+      ],
+      "worker_ids": [
+        "evaluator_builder"
       ]
     },
     {
-      "claim_or_output": "The workflow plan is schema-valid.",
-      "falsifier": "evaluate_plan rejects docs/v73-large-workflow-control.workflow.plan.json.",
-      "evidence_required": [
-        "python scripts/evaluate_plan.py --plan docs/v73-large-workflow-control.workflow.plan.json"
+      "depends_on": [
+        "evaluator"
+      ],
+      "entry_criteria": [
+        "Evaluator accepts workflow objects."
+      ],
+      "exit_criteria": [
+        "Ready, missing-direction, and overclaim fixtures behave deterministically."
+      ],
+      "id": "fixture_gate",
+      "name": "Fixture Gate",
+      "outputs": [
+        "fixture-summary.json"
+      ],
+      "worker_ids": [
+        "fixture_verifier"
+      ]
+    },
+    {
+      "depends_on": [
+        "fixture_gate"
+      ],
+      "entry_criteria": [
+        "Fixture gate passes."
+      ],
+      "exit_criteria": [
+        "Release commands, command reference, decision docs, and contract checks include V73."
+      ],
+      "id": "contract_release",
+      "name": "Contract And Release Integration",
+      "outputs": [
+        "verification-log.md"
+      ],
+      "worker_ids": [
+        "contract_reviewer"
       ]
     }
   ],
-  "risk_gates": [
-    {
-      "trigger": "write tracked files",
-      "safe_default": "stop before write tracked files and ask for approval",
-      "requires_user_approval": true
-    },
-    {
-      "trigger": "shell command execution",
-      "safe_default": "stop before shell command execution and ask for approval",
-      "requires_user_approval": true
-    },
-    {
-      "trigger": "network action",
-      "safe_default": "stop before network action and ask for approval",
-      "requires_user_approval": true
-    },
-    {
-      "trigger": "production deploy",
-      "safe_default": "stop before production deploy and ask for approval",
-      "requires_user_approval": true
-    },
-    {
-      "trigger": "external publication",
-      "safe_default": "stop before external publication and ask for approval",
-      "requires_user_approval": true
-    },
-    {
-      "trigger": "external message",
-      "safe_default": "stop before external message and ask for approval",
-      "requires_user_approval": true
-    },
-    {
-      "trigger": "dependency installation",
-      "safe_default": "do not dependency install without approval",
-      "requires_user_approval": true
-    },
-    {
-      "trigger": "secret access",
-      "safe_default": "do not access secrets without approval",
-      "requires_user_approval": true
-    },
-    {
-      "trigger": "history rewrite",
-      "safe_default": "do not rewrite history without approval",
-      "requires_user_approval": true
-    }
-  ],
-  "budget": {
-    "max_agents": 1,
-    "max_rounds": 1,
-    "max_retries": 1,
-    "time_box": "one large-workflow control slice",
-    "file_touch_limit": "12 files"
-  },
+  "plan_id": "v73-large-workflow-control",
   "resume": {
     "cacheable_outputs": [
       "control-contract.md",
@@ -462,27 +207,282 @@
       "contract_release"
     ]
   },
-  "execution_path": {
-    "mode": "direct-codex",
-    "consumer": "codex-agent",
-    "first_slice": {
-      "instruction": "Implement the V73 six-axis large-workflow control evaluator, fixture suite, spec, blueprint, workflow plan, and release contract integration without touching unrelated dirty files.",
-      "inputs": [
-        "repository path",
-        "user six-axis objective",
-        "references/workflow-plan-schema.md",
-        "scripts/dwm.py",
-        "scripts/check_contract.py"
-      ],
-      "expected_output": "V73 control evaluator, fixtures, spec, blueprint, workflow plan JSON, decision doc, and passing verification",
-      "completion_check": "python scripts/dwm_large_workflow_control.py --self-test && python scripts/dwm_large_workflow_control.py --manifest fixtures/v73/manifest.json --out out/large-workflow-control/v73-final && python scripts/evaluate_plan.py --plan docs/v73-large-workflow-control.workflow.plan.json && python scripts/check_contract.py --self-test",
-      "forbidden_actions": [
-        "edit docs/spec.md without reconciling existing user changes",
-        "publish public benchmark claims",
-        "install dependencies",
-        "access secrets",
-        "rewrite git history"
-      ]
+  "risk_gates": [
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before write tracked files and ask for approval",
+      "trigger": "write tracked files"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before shell command execution and ask for approval",
+      "trigger": "shell command execution"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before network action and ask for approval",
+      "trigger": "network action"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before production deploy and ask for approval",
+      "trigger": "production deploy"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before external publication and ask for approval",
+      "trigger": "external publication"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "stop before external message and ask for approval",
+      "trigger": "external message"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "do not dependency install without approval",
+      "trigger": "dependency installation"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "do not access secrets without approval",
+      "trigger": "secret access"
+    },
+    {
+      "requires_user_approval": true,
+      "safe_default": "do not rewrite history without approval",
+      "trigger": "history rewrite"
     }
-  }
+  ],
+  "schema_version": "0.5",
+  "source_prompt": "Write the large spec for direction fidelity, large-work decomposition, execution quality, efficiency, recovery ability, and evidence quality, then carry the workflow through unless a real human gate is reached.",
+  "surfaces": [
+    {
+      "access_mode": "write-approved",
+      "id": "control_script",
+      "kind": "repo",
+      "locator": "scripts/dwm_large_workflow_control.py"
+    },
+    {
+      "access_mode": "write-approved",
+      "id": "fixtures",
+      "kind": "data-source",
+      "locator": "fixtures/v73/manifest.json"
+    },
+    {
+      "access_mode": "write-approved",
+      "id": "spec",
+      "kind": "document",
+      "locator": "docs/v73-large-workflow-control-spec.md"
+    },
+    {
+      "access_mode": "write-approved",
+      "id": "release_contract",
+      "kind": "repo",
+      "locator": "scripts/check_contract.py"
+    }
+  ],
+  "verification": [
+    {
+      "claim_or_output": "The six-axis evaluator blocks missing direction fidelity.",
+      "evidence_required": [
+        "fixtures/v73/manifest.json",
+        "out/large-workflow-control/v73-final/summary.json"
+      ],
+      "falsifier": "The missing-direction fixture returns large-workflow-controlled."
+    },
+    {
+      "claim_or_output": "The evaluator blocks overclaiming workflow text.",
+      "evidence_required": [
+        "large-workflow-control.json blocked_by"
+      ],
+      "falsifier": "The overclaim fixture returns large-workflow-controlled."
+    },
+    {
+      "claim_or_output": "The workflow plan is schema-valid.",
+      "evidence_required": [
+        "python scripts/evaluate_plan.py --plan docs/v73-large-workflow-control.workflow.plan.json"
+      ],
+      "falsifier": "evaluate_plan rejects docs/v73-large-workflow-control.workflow.plan.json."
+    }
+  ],
+  "workers": [
+    {
+      "context_budget": {
+        "max_files": 8,
+        "max_tokens": 10000,
+        "must_exclude": [
+          "unrelated README rewrite"
+        ],
+        "must_include": [
+          "user objective",
+          "V70-V72 timing context",
+          "workflow plan schema"
+        ]
+      },
+      "forbidden_actions": [
+        "claim external benchmark superiority",
+        "collapse quality into polish"
+      ],
+      "id": "control_designer",
+      "ownership": [
+        "six-axis control semantics"
+      ],
+      "prompt_contract": {
+        "inputs": [
+          "six evaluation concerns"
+        ],
+        "required_output_schema": "axis list with required signals and blocker semantics",
+        "stop_conditions": [
+          "axis cannot be measured",
+          "axis rewards narrative polish instead of workflow control"
+        ]
+      },
+      "role": "planner",
+      "tool_permissions": {
+        "mcp_connectors": [],
+        "network": false,
+        "read": true,
+        "requires_escalation_for": [
+          "network",
+          "external-message"
+        ],
+        "shell": false,
+        "write": true
+      }
+    },
+    {
+      "context_budget": {
+        "max_files": 10,
+        "max_tokens": 14000,
+        "must_exclude": [
+          "secret files"
+        ],
+        "must_include": [
+          "scripts/dwm_large_workflow_control.py",
+          "compile_workflow helpers"
+        ]
+      },
+      "forbidden_actions": [
+        "install dependencies",
+        "execute external adapters"
+      ],
+      "id": "evaluator_builder",
+      "ownership": [
+        "control evaluator implementation"
+      ],
+      "prompt_contract": {
+        "inputs": [
+          "axis contract"
+        ],
+        "required_output_schema": "CLI script with self-test, manifest mode, assess mode, and stable artifacts",
+        "stop_conditions": [
+          "artifact schema cannot be made deterministic",
+          "unsafe path detected"
+        ]
+      },
+      "role": "implementer",
+      "tool_permissions": {
+        "mcp_connectors": [],
+        "network": false,
+        "read": true,
+        "requires_escalation_for": [
+          "network",
+          "shell"
+        ],
+        "shell": true,
+        "write": true
+      }
+    },
+    {
+      "context_budget": {
+        "max_files": 8,
+        "max_tokens": 10000,
+        "must_exclude": [
+          "generated out directories except targeted evidence"
+        ],
+        "must_include": [
+          "fixtures/v73/manifest.json",
+          "self-test output"
+        ]
+      },
+      "forbidden_actions": [
+        "approve overclaim fixture",
+        "hide blocked workflow evidence"
+      ],
+      "id": "fixture_verifier",
+      "ownership": [
+        "fixture quality"
+      ],
+      "prompt_contract": {
+        "inputs": [
+          "control evaluator",
+          "fixture manifest"
+        ],
+        "required_output_schema": "fixture summary with pass and blocked cases",
+        "stop_conditions": [
+          "missing negative fixture",
+          "ready fixture scores below maximum"
+        ]
+      },
+      "role": "verifier",
+      "tool_permissions": {
+        "mcp_connectors": [],
+        "network": false,
+        "read": true,
+        "requires_escalation_for": [
+          "network"
+        ],
+        "shell": true,
+        "write": true
+      }
+    },
+    {
+      "context_budget": {
+        "max_files": 12,
+        "max_tokens": 12000,
+        "must_exclude": [
+          "unrelated dirty files"
+        ],
+        "must_include": [
+          "scripts/check_contract.py",
+          "scripts/dwm.py",
+          "docs/v73-large-workflow-control-spec.md"
+        ]
+      },
+      "forbidden_actions": [
+        "force push",
+        "publish benchmark graph",
+        "edit docs/spec.md without reconciling user changes"
+      ],
+      "id": "contract_reviewer",
+      "ownership": [
+        "release integration"
+      ],
+      "prompt_contract": {
+        "inputs": [
+          "changed files",
+          "verification commands"
+        ],
+        "required_output_schema": "verification log with pass/blocker status",
+        "stop_conditions": [
+          "contract failure",
+          "unexpected dirty tracked file",
+          "release command drift"
+        ]
+      },
+      "role": "reviewer",
+      "tool_permissions": {
+        "mcp_connectors": [],
+        "network": false,
+        "read": true,
+        "requires_escalation_for": [
+          "network",
+          "write"
+        ],
+        "shell": true,
+        "write": true
+      }
+    }
+  ]
 }

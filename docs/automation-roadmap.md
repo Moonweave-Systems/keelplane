@@ -1,11 +1,11 @@
-# Keelplane Automation Roadmap
+# Depone Automation Roadmap
 
-Status: V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented; V10 product CLI implemented; V11 operator guidance implemented; V12-V20 product roadmap implemented; V52-V87 product evidence, graph timing, activation, and brand boundary gates implemented; V88 roadmap reconciliation audit implemented; V89 command safety gate implemented; V90 activation v2 implemented; V91 contract tiering implemented; V92 evidence oracle implemented; V93 workflow narrative implemented; V94 control deck score implemented; V95 score history implemented; V96 metric ladder implemented; V97 benchmark readiness implemented; V98 wave operator implemented; V99 wave receipt implemented; V100 promotion evidence implemented; V101 promotion route implemented; V102 deterministic live-proof recorder implemented; V103 live-proof comparison schema implemented; V104 product direction implemented; V105 verify wedge implemented; V106 multi-wave validation implemented; V94-V101 meta layer frozen; live proof n=1 completed
-Date: 2026-06-20
+Status: V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented; V10 product CLI implemented; V11 operator guidance implemented; V12-V20 product roadmap implemented; V52-V87 product evidence, graph timing, activation, and brand boundary gates implemented; V88 roadmap reconciliation audit implemented; V89 command safety gate implemented; V90 activation v2 implemented; V91 contract tiering implemented; V92 evidence oracle implemented; V93 workflow narrative implemented; V94 control deck score implemented; V95 score history implemented; V96 metric ladder implemented; V97 benchmark readiness implemented; V98 wave operator implemented; V99 wave receipt implemented; V100 promotion evidence implemented; V101 promotion route implemented; V102 deterministic live-proof recorder implemented; V103 live-proof comparison schema implemented; V104 product direction implemented; V105 verify wedge implemented; V106 multi-wave validation implemented; V107 Agent Fabric contracts and compiler implemented; V108 Agent Fabric reference adapter fixture implemented; V109 Agent Fabric capture bridge implemented; V110 Agent Fabric report assurance implemented; V111 Agent Fabric operator view implemented; V112 Agent Fabric lifecycle smoke implemented; V116 Agent Fabric smoke CLI implemented; V117 Agent Fabric harness snapshot implemented; V118 Agent Fabric adapter smoke implemented; V119 Agent Fabric claim gate implemented; V120 paired evidence gate implemented; V121 paired evidence CLI implemented; V122 dogfood evidence CLI implemented; V123 controlled capture corpus implemented; V94-V101 meta layer frozen; live proof n=1 completed
+Date: 2026-06-24
 
 ## Purpose
 
-Keelplane is the public product brand for the DWM Core large-task automation
+Depone is the public product brand for the DWM Core large-task automation
 control-plane: a system that can take a broad objective, decompose it into
 inspectable work, execute bounded waves, verify results, resume after
 interruption, and stop at human gates for risky actions.
@@ -16,9 +16,9 @@ packets are explicit, hashed, reviewable, resumable, and falsifiable.
 
 ## Product Position
 
-Keelplane should become the control-plane for large Codex workflows. DWM Core
+Depone should become the control-plane for large Codex workflows. DWM Core
 remains the internal deterministic engine, and the skill name is now
-`keelplane`. The `dwm_*.py` file prefix and GitHub repository slug remain
+`depone`. The `dwm_*.py` file prefix and GitHub repository slug remain
 legacy/internal and intentionally deferred.
 
 | Layer | Responsibility | Repo stance |
@@ -52,6 +52,20 @@ legacy/internal and intentionally deferred.
 | Dogfood replay | deterministic replay evidence for canonical dogfood chain | planned V20.6, replay gate implemented |
 | Product shell | memorable `plan`, `run`, and `resume` commands over safe artifacts | planned V21, first shell slice implemented |
 | Role pack | role contracts for planner, explorer, worker, reviewer, verifier, and operator | planned V22, first registry implemented |
+| Agent Fabric contracts | deterministic role, toolbelt, profile, harness, compile-report, invocation, and result contracts | planned V107, contract/compiler slice implemented |
+| Agent Fabric reference adapter | fixture-only local shell adapter capture shape for self-report, diff/touched files, test output, and command receipts | planned V108, shell fixture implemented |
+| Agent Fabric capture bridge | Depone-facing manifest with A0/A1 assurance labels and hash-bound observer capture | planned V109, passive bridge implemented |
+| Agent Fabric report assurance | verification report decision/assurance fields sourced from capture manifests | planned V110, report surface implemented |
+| Agent Fabric operator view | Markdown export for operator-readable report decision, assurance, and capture status | planned V111, operator view implemented |
+| Agent Fabric lifecycle smoke | source-only compile-to-report smoke summary for V107-V111 regression coverage | planned V112, lifecycle smoke implemented |
+| Agent Fabric smoke CLI | operator-facing export of the source-only lifecycle smoke summary and optional Markdown view | planned V116, smoke CLI implemented |
+| Agent Fabric harness snapshot | source-only export of shipped harness capability fixtures plus tool mapping coverage | planned V117, harness snapshot implemented |
+| Agent Fabric adapter smoke | source-only binding of reference adapter fixtures to harness snapshots | planned V118, adapter smoke implemented |
+| Agent Fabric claim gate | source-only blocking gate for public benefit claims until paired evidence exists | planned V119, claim gate implemented |
+| Agent Fabric paired evidence gate | source-only paired evidence input that moves claim gate to human review, not approval | planned V120, paired evidence gate implemented |
+| Agent Fabric paired evidence CLI | source-only producer for hash-bound paired dogfood evidence consumed by the claim gate | planned V121, paired evidence CLI implemented |
+| Agent Fabric dogfood evidence CLI | source-only producer for dogfood evidence from validated A1 local observed capture manifests | planned V122, dogfood evidence CLI implemented |
+| Agent Fabric controlled capture corpus | repeatable source-only corpus over distinct observed capture manifests | planned V123, controlled capture corpus implemented |
 | Harness benchmark | corpus and scoring gate for direct harness comparisons | planned V23, first benchmark gate implemented |
 | README public page | source-bound benchmark graph on the GitHub landing page | planned V37, first publish slice implemented |
 | Benchmark history | hash-bound report history ledger and trend graph artifacts | planned V38, first ledger slice implemented |
@@ -689,7 +703,7 @@ The planned roadmap splits the remaining product into versioned specs:
 - V48 daily operator loop:
   `docs/v48-daily-operator-loop-spec.md`.
 
-These specs define the implemented path to an independent Keelplane product
+These specs define the implemented path to an independent Depone product
 that can use Codex CLI directly through DWM Runner while keeping optional
 adapter targets outside DWM Core.
 
@@ -850,10 +864,11 @@ First canonical demo done means:
 - unsafe and non-owned output paths are blocked;
 - `fixtures/v51/manifest.json` passes with `decision: "keep"`.
 
-### V52-V106: Product Evidence And Control Deck
+### V52-V122: Product Evidence, Control Deck, And Agent Fabric Guardrails
 
-Status: implemented through V106 multi-wave validation; the V103 live two-arm
-comparison remains behind explicit approval; V94-V101 meta layer is frozen.
+Status: implemented through V122 Agent Fabric dogfood evidence CLI; the V103 live
+two-arm comparison remains behind explicit approval; V94-V101 meta layer is
+frozen.
 
 Purpose: move from a runnable demo into a product that can explain its current
 state, measure real dogfood evidence, gate graph claims, continue safely across
@@ -874,7 +889,7 @@ Implemented continuation:
   and live adapter execution must stop.
 - V84-V85 verified the installed skill surface and activated the next workflow
   design path without executing queued commands.
-- V86-V87 set Keelplane as the public brand and added the brand boundary audit.
+- V86-V87 set Depone as the public brand and added the brand boundary audit.
 - V88 roadmap reconciliation audit keeps this spec, roadmap, and release
   history aligned with implementation truth.
 - V89 command safety gate adds shared command-shape and inferred-risk checks
@@ -885,7 +900,7 @@ Implemented continuation:
   layers so iterative work is faster without weakening release approval.
 - V92 evidence oracle verifies artifact existence, JSON field claims, text
   evidence, and source-hash links without executing commands.
-- V93 workflow narrative renders a Keelplane Control Deck from artifact-backed
+- V93 workflow narrative renders a Depone Control Deck from artifact-backed
   chart, gate, activation, oracle, and next-move signals.
 - V94 control deck score derives an operator-readiness score from the Control
   Deck and source hashes without creating a public benchmark or upward trend
@@ -914,12 +929,60 @@ Implemented continuation:
 - V103 live proof comparison adds a deterministic two-arm schema for direct-codex
   versus dwm-controlled evidence richness. It records no pass-rate, speed, cost,
   or direct-agent superiority claim; the live two-arm run remains opt-in.
-- V104 repositioned Keelplane as a workflow designer plus cross-platform evidence
+- V104 repositioned Depone as a workflow designer plus cross-platform evidence
   verifier above existing agent execution engines.
 - V105 added root-controlled evidence-contract wedge fixtures for missing logs,
   forbidden touches, test weakening, missing contracts, and control-file shadows.
 - V106 added optional multi-wave execution-path validation while preserving
   first-slice compatibility and existing human gates.
+- V107 added deterministic Agent Fabric role/toolbelt/profile/harness contracts,
+  compile reports, invocation/result validation, and `compile_agent_fabric(...)`
+  without live agent execution or public benefit claims.
+- V108 added the first deterministic Agent Fabric reference adapter fixture for
+  the local shell harness. It records self-report, diff/touched-file summary,
+  test output, and command receipts as `A0-claims-only` material without
+  executing commands or calling live models.
+- V109 added a passive Agent Fabric capture bridge that emits a Depone-facing
+  manifest. Self-report-only manifests remain `A0-claims-only`; hash-bound
+  observer captures can reach `A1-local-observed` while tamper, stale-source,
+  and unexpected-file cases fail closed.
+- V110 surfaced Agent Fabric capture checks in verification reports. Reports
+  now separate existing `verdict`, operator-facing `decision`, and capture
+  `assurance`, and invalid capture manifests refute the report without hiding
+  validation errors.
+- V111 added the Agent Fabric operator-view/exporter. The view is
+  presentation-only over V110 report fields, keeps invalid captures visible,
+  preserves Depone branding, and writes deterministic Markdown through
+  `depone verify --operator-view-out`.
+- V112 added a source-only Agent Fabric lifecycle smoke helper that threads
+  V107 compile output through V108 fixture shape, V109 capture manifest, V110
+  verification report fields, and V111 operator view without executing commands
+  or upgrading trust.
+- V116 promoted that helper into `depone agent-fabric-smoke`, an operator-facing
+  export command for the JSON summary and optional Markdown view while
+  preserving the same no-execution/no-trust-upgrade boundary.
+- V117 added `depone agent-fabric-harness-snapshot`, a source-only export of
+  shipped harness capability fixtures plus deterministic tool mapping coverage.
+  It reports exact, approximated, and unsupported-critical harness states
+  without probing installed tools or upgrading trust.
+- V118 added `depone agent-fabric-adapter-smoke`, a source-only report that
+  binds the shell reference adapter fixture to a harness snapshot with source
+  hashes, validation errors, and explicit no-execution boundaries.
+- V119 added `depone agent-fabric-claim-gate`, a source-only public-claim
+  blocker that requires paired dogfood or explicitly approved live adapter-smoke
+  evidence before any public benefit claim.
+- V120 extended that gate with optional paired evidence input, allowing
+  `ready-for-public-claim-review` only when source hashes bind the paired
+  evidence to the adapter smoke report; public approval remains false.
+- V121 added `depone agent-fabric-paired-evidence`, a source-only CLI that
+  produces that hash-bound paired evidence report from adapter smoke and
+  dogfood evidence inputs without executing commands or approving claims.
+- V122 added `depone agent-fabric-dogfood-evidence`, a source-only CLI that
+  produces dogfood evidence from validated A1 local observed capture manifests
+  without executing dogfood runs or approving public claims.
+- V123 extended that command with repeated `--capture-manifest` corpus mode over
+  distinct source-only observed captures while preserving no-execution, no-live-model,
+  no-public-claim-approval, and no-trust-upgrade boundaries.
 
 Next roadmap direction:
 
@@ -931,6 +994,9 @@ Next roadmap direction:
    migration gate proves compatibility.
 4. Expand read-only or pre-isolated live execution only where V84/V85 and queue
    preflight evidence permit it.
+5. Continue controlled-run Agent Fabric capture coverage beyond the initial corpus
+   fixture, then use claim gate reports as the stoplight for human public-claim
+   review.
 
 ## Strategic Decisions
 

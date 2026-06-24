@@ -1,38 +1,68 @@
 {
-  "schema_version": "0.5",
-  "plan_id": "v105-verify-wedge",
-  "created_by": "keelplane",
-  "source_prompt": "V105 deterministic verify wedge proof",
   "activation": {
     "decision": "activate",
-    "matched_thresholds": ["downstream-consumer"],
     "downgrade_target": null,
+    "matched_thresholds": [
+      "downstream-consumer"
+    ],
     "reason": "fixture proof"
   },
-  "objective": "refute false success using harness-captured evidence",
-  "surfaces": ["keelplane verify"],
-  "assumptions": ["evidence bundles are deterministic"],
-  "patterns": ["Sequential"],
-  "phases": [
-    {"id": "phase-1", "name": "Verify", "entry_criteria": [], "exit_criteria": []},
-    {"id": "phase-2", "name": "Review", "entry_criteria": [], "exit_criteria": []}
+  "assumptions": [
+    "evidence bundles are deterministic"
   ],
-  "workers": [],
-  "handoffs": [],
-  "parallelism": {"shape": "none", "cap": 1, "barriers": [], "fan_in_rule": null},
-  "verification": [],
-  "risk_gates": [],
-  "budget": {"max_agents": 5, "max_rounds": 10, "max_retries": 2},
-  "resume": {"cached_outputs": [], "invalidation_rules": []},
+  "budget": {
+    "max_agents": 5,
+    "max_retries": 2,
+    "max_rounds": 10
+  },
+  "created_by": "depone",
   "execution_path": {
-    "mode": "plugin",
+    "consumer": "codex-agent",
     "first_slice": {
-      "instruction": "",
-      "inputs": [],
-      "expected_output": "",
       "completion_check": "",
-      "forbidden_actions": []
+      "expected_output": "",
+      "forbidden_actions": [],
+      "inputs": [],
+      "instruction": ""
     },
-    "consumer": "codex-agent"
-  }
+    "mode": "plugin"
+  },
+  "handoffs": [],
+  "objective": "refute false success using harness-captured evidence",
+  "parallelism": {
+    "barriers": [],
+    "cap": 1,
+    "fan_in_rule": null,
+    "shape": "none"
+  },
+  "patterns": [
+    "Sequential"
+  ],
+  "phases": [
+    {
+      "entry_criteria": [],
+      "exit_criteria": [],
+      "id": "phase-1",
+      "name": "Verify"
+    },
+    {
+      "entry_criteria": [],
+      "exit_criteria": [],
+      "id": "phase-2",
+      "name": "Review"
+    }
+  ],
+  "plan_id": "v105-verify-wedge",
+  "resume": {
+    "cached_outputs": [],
+    "invalidation_rules": []
+  },
+  "risk_gates": [],
+  "schema_version": "0.5",
+  "source_prompt": "V105 deterministic verify wedge proof",
+  "surfaces": [
+    "keelplane verify"
+  ],
+  "verification": [],
+  "workers": []
 }

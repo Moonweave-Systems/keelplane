@@ -1,14 +1,14 @@
 {
   "fixture_id": "border-one-service-auth-audit",
   "packet_sha256": {
-    "workflow.plan.json": "284a40cfdccd1b18f5f6bdea2dd408959e81827ccd04336f04e0945b35b88828",
-    "blueprint.md": "bd2b29e5d48f0f529c4aa2c24d42352d9a858192c39b964f0c8debd19b81dc58",
-    "original prompt": "6caf25d0e0bed6460ffd292f9e5d14b782f465a506e1a4269271ae799796c424"
+    "blueprint.md": "65d785f465975ec07369fcd9c95d950ee5c4c847f3168cf2d5c5d00d0051c2cf",
+    "original prompt": "6caf25d0e0bed6460ffd292f9e5d14b782f465a506e1a4269271ae799796c424",
+    "workflow.plan.json": "8cf3b19a81b567814536db26187a83ddd22135e2047069df9b029014ddd9617d"
   },
-  "producer": "keelplane",
+  "producer": "depone",
   "raw_kind": "workflow-output",
-  "rendered_blueprint": "# border-one-service-auth-audit\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (The work is broad but bounded to one service and one agent; route through the smaller workflow.)\nPatterns: none\n\n## First Slice\n\nUse workflow-router instead of keelplane for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- multi-agent expansion: stop before multi-agent expansion and ask for approval\n",
-  "skill_sha256": "27261b50e6811ad03073544983f5e4b4905a9c9035f2d1b8f044a4ee24b49798",
+  "rendered_blueprint": "# border-one-service-auth-audit\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (The work is broad but bounded to one service and one agent; route through the smaller workflow.)\nPatterns: none\n\n## First Slice\n\nUse workflow-router instead of depone for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- multi-agent expansion: stop before multi-agent expansion and ask for approval\n",
+  "skill_sha256": "2781790c2ab14efcbf86b1bc142be17067aa088fa71c19728ce7db964bfdc097",
   "source_prompt": "Plan an auth audit for one service where one agent can inspect all routes.",
   "workflow_plan": {
     "activation": {
@@ -30,7 +30,7 @@
       "max_rounds": 1,
       "time_box": "one direct response or routed workflow"
     },
-    "created_by": "keelplane",
+    "created_by": "depone",
     "execution_path": {
       "consumer": "human",
       "first_slice": {
@@ -44,7 +44,7 @@
         "inputs": [
           "original prompt"
         ],
-        "instruction": "Use workflow-router instead of keelplane for this request."
+        "instruction": "Use workflow-router instead of depone for this request."
       },
       "mode": "direct-codex"
     },

@@ -33,10 +33,10 @@
       "safe_defaults": "safe_defaults: write action -> stop before writing and ask for approval; shell action -> stop before shell use and ask for approval; network action -> stop before network use and ask for approval; external message action -> stop before sending external messages and ask for approval; secret access -> stop before secret access and ask for approval"
     },
     "packet_sha256": {
-      "workflow.plan.json": "80dc1a1bc641e4668e410069b2611e23128465406dce234f6d8f9c7b7579aab8",
       "blueprint.md": "f3ec3151f13ae82eca835068f2db5aae5ff307ebe17afa048961162bd552f2ac",
       "original prompt": "919be14bebe46b05d65d2ad0c1fc6908171ed74296e417abde92c0791c0808b1",
-      "repository surfaces": "6e9be9b5d04686423e0e19f7939000b63b6308d72c2ea20f064cb90dfbf58cfa"
+      "repository surfaces": "6e9be9b5d04686423e0e19f7939000b63b6308d72c2ea20f064cb90dfbf58cfa",
+      "workflow.plan.json": "b94d4138441f1fc4c4202c9a451d988cd5a6e2ef931543e02df90f22b4a51ee2"
     },
     "reviewer_note": "Blinded sample reviewer identified the first slice, required inputs, forbidden actions, gates, and safe defaults from the supplied packet only.",
     "run_kind": "blinded-sample-review",

@@ -1,4 +1,4 @@
-# Keelplane Release History
+# Depone Release History
 
 This is an implementation history, not the README product pitch.
 
@@ -133,12 +133,12 @@ promotion requires real release history.
 - V85: `docs/v85-workflow-activation-spec.md` added
   `workflow-activation.json` and `workflow-activation.md` to decide whether the
   next safe action is workflow design.
-- V86: `docs/v86-keelplane-brand-spec.md` set **Keelplane** as the public
-  product brand while preserving DWM Core and preparing the later `keelplane`
+- V86: `docs/v86-keelplane-brand-spec.md` set **Depone** as the public
+  product brand while preserving DWM Core and preparing the later `depone`
   skill-name migration.
 - V87: `docs/v87-brand-boundary-audit-spec.md` added
   `brand-boundary-audit.json` and `brand-boundary-audit.md` to keep public
-  Keelplane naming, DWM Core internals, and the skill-name boundary from
+  Depone naming, DWM Core internals, and the skill-name boundary from
   drifting.
 - V88: `docs/v88-roadmap-reconciliation-spec.md` added
   `roadmap-reconciliation.json` and `roadmap-reconciliation.md` to keep
@@ -153,7 +153,7 @@ promotion requires real release history.
   boundary.
 - V92: `docs/v92-evidence-oracle-spec.md` added read-only artifact assertions
   for JSON fields, text evidence, missing artifacts, and source-hash drift.
-- V93: `docs/v93-workflow-narrative-spec.md` added the Keelplane Control Deck
+- V93: `docs/v93-workflow-narrative-spec.md` added the Depone Control Deck
   renderer for artifact-backed chart, gate, activation, oracle, and next-move
   status.
 - V94: `docs/v94-control-deck-score-spec.md` added operator-readiness scoring
@@ -183,7 +183,7 @@ promotion requires real release history.
   comparison schema for direct-codex versus dwm-controlled evidence richness.
   The live comparison remains opt-in and makes no pass-rate, speed, cost, or
   direct-agent superiority claim.
-- V104: `docs/v104-product-direction-spec.md` repositioned Keelplane as a
+- V104: `docs/v104-product-direction-spec.md` repositioned Depone as a
   workflow designer plus cross-platform evidence verifier above existing agent
   execution engines.
 - V105: `docs/v105-verify-wedge-spec.md` added deterministic evidence-contract
@@ -191,6 +191,51 @@ promotion requires real release history.
   root contracts, nested control-file shadows, and a clean verified case.
 - V106: `docs/v106-multi-wave-spec.md` added optional `first_wave` and `waves`
   validation while preserving legacy `first_slice` compatibility.
+- V107: `docs/v107-agent-fabric-control-plane-spec.md` added the Agent Fabric
+  contract direction and the deterministic contract/compiler slice:
+  role/toolbelt/profile/harness/compile-report/invocation/result validators,
+  `compile_agent_fabric(...)`, and self-tests for exact, approximated, and
+  unsupported-critical tool mappings without live model execution.
+- V108: `docs/v108-agent-fabric-reference-adapter-spec.md` added the first
+  fixture-only shell reference adapter shape for self-report, diff/touched-file
+  summary, test output, and command receipts while keeping all adapter material
+  at `A0-claims-only`.
+- V109: `docs/v109-agent-fabric-capture-bridge-spec.md` added a passive capture
+  manifest bridge with explicit `A0-claims-only` and `A1-local-observed`
+  assurance labels plus fail-closed tamper, stale-source, and unexpected-file
+  checks.
+- V110: `docs/v110-agent-fabric-report-assurance-spec.md` surfaced capture
+  manifest checks in verification reports with separate `verdict`, `decision`,
+  and `assurance` fields.
+- V111: `docs/v111-agent-fabric-operator-view-spec.md` documents the
+  presentation-only operator-view/exporter for V110 report fields, including
+  the `depone verify --operator-view-out` Markdown export path.
+- V112: `docs/v112-agent-fabric-lifecycle-smoke-spec.md` documents the
+  source-only Agent Fabric lifecycle smoke from V107 compile output through
+  V111 operator view, without command execution or trust upgrades.
+- V116: `docs/v116-agent-fabric-smoke-cli-spec.md` added the
+  `depone agent-fabric-smoke` export command for the V112 smoke summary and
+  optional Markdown operator view.
+- V117: `docs/v117-agent-fabric-harness-snapshot-spec.md` added the
+  `depone agent-fabric-harness-snapshot` export command for shipped harness
+  capability fixtures plus deterministic tool mapping coverage.
+- V118: `docs/v118-agent-fabric-adapter-smoke-spec.md` added the
+  `depone agent-fabric-adapter-smoke` report that binds reference adapter
+  fixtures to harness snapshots without executing them.
+- V119: `docs/v119-agent-fabric-claim-gate-spec.md` added the
+  `depone agent-fabric-claim-gate` report that blocks public benefit claims
+  until paired dogfood or explicitly approved live adapter-smoke evidence exists.
+- V120: `docs/v120-agent-fabric-paired-evidence-gate-spec.md` extended the
+  claim gate with optional source-only paired evidence that can reach human
+  review readiness without approving public claims.
+- V121: `docs/v121-agent-fabric-paired-evidence-cli-spec.md` added the
+  `depone agent-fabric-paired-evidence` report producer for hash-bound paired
+  dogfood evidence.
+- V122: `docs/v122-agent-fabric-dogfood-evidence-cli-spec.md` added the
+  `depone agent-fabric-dogfood-evidence` producer from validated A1 local
+  observed capture manifests.
+- V123: `docs/v123-agent-fabric-controlled-capture-corpus-spec.md` added a
+  source-only controlled capture corpus over distinct observed manifests.
 
 ## Current Public Boundaries
 
@@ -216,7 +261,7 @@ promotion requires real release history.
   work before actual queued command execution.
 - Receipt work is allowed through dry-run evidence only; actual execution stays
   behind the V84 human gate.
-- Brand boundary audits preserve Keelplane as the public brand without claiming
+- Brand boundary audits preserve Depone as the public brand without claiming
   autonomous execution or renaming compatibility surfaces.
 - Roadmap reconciliation audits keep spec, roadmap, and release history aligned
   before the next product wave is selected.
@@ -231,3 +276,38 @@ promotion requires real release history.
 - V105 evidence contracts are root-controlled harness evidence, not model claims.
 - V106 multi-wave execution paths remain plan contracts only; they do not execute
   agents or relax existing human gates.
+- V107 Agent Fabric contracts compile invocation packets and reports only; they
+  do not execute live agents or prove productivity, quality, or superiority.
+- V108 Agent Fabric reference adapter fixtures do not execute commands or live
+  models; their captures remain non-authoritative `A0-claims-only` material.
+- V109 Agent Fabric capture manifests can reach `A1-local-observed` only from
+  hash-bound Depone observer capture; self-report-only manifests remain A0.
+- V110 verification reports may display Agent Fabric assurance, but invalid
+  capture manifests fail closed and evidence-contract failures still dominate
+  the final verdict.
+- V111 operator views may summarize report fields, but they do not create new
+  evidence, upgrade assurance, or hide invalid captures and integration risks.
+- V112 lifecycle smoke summaries compose existing Agent Fabric artifacts for
+  regression coverage only; blocked compiles remain blocked even when the
+  downstream report view can render a passing evidence contract.
+- V116 smoke CLI exports that summary for operators, but it still does not
+  execute commands, call live models, or upgrade Agent Fabric self-reports into
+  authoritative Depone evidence.
+- V117 harness snapshots expose shipped capability and mapping coverage only;
+  they do not probe installed harnesses, inspect MCP runtime state, or prove
+  live permission enforcement.
+- V118 adapter smoke reports bind fixtures to snapshots and validation errors;
+  they still do not execute commands, call models, or prove live adapter
+  enforcement.
+- V119 claim gate reports block public benefit claims from source-only evidence;
+  they still do not approve live execution, superiority claims, or trust upgrades.
+- V120 paired evidence gate inputs can move claims to human review readiness;
+  they still do not approve public claims or convert source-only evidence into
+  live proof.
+- V121 paired evidence CLI reports produce the V120 input only; they do not
+  execute dogfood runs, approve public claims, or upgrade source-only evidence.
+- V122 dogfood evidence CLI reports read existing observed capture manifests
+  only; they do not run dogfood tasks or convert self-report into proof.
+- V123 controlled capture corpus reports summarize multiple distinct observed
+  manifests only; they do not execute commands, call live models, approve public
+  claims, or upgrade trust.

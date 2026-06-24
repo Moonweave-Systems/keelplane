@@ -12,9 +12,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from keelplane.core.plan_schema import load_plan  # noqa: E402
-from keelplane.verify.adapters import generic  # noqa: E402
-from keelplane.verify.engine import run_verification  # noqa: E402
+from depone.core.plan_schema import load_plan  # noqa: E402
+from depone.verify.adapters import generic  # noqa: E402
+from depone.verify.engine import run_verification  # noqa: E402
 
 
 FIXTURE_ROOT = ROOT / "fixtures" / "v105-verify-wedge"
@@ -47,11 +47,17 @@ def self_test() -> None:
         actual_codes = [entry["code"] for entry in contract_entries]
 
         if report_dict["verdict"] != expected_verdict:
-            raise AssertionError(f"{case_name}: expected {expected_verdict}, got {report_dict['verdict']}")
+            raise AssertionError(
+                f"{case_name}: expected {expected_verdict}, got {report_dict['verdict']}"
+            )
         if sorted(actual_codes) != sorted(expected_codes):
-            raise AssertionError(f"{case_name}: expected only codes {expected_codes}, got {actual_codes}")
+            raise AssertionError(
+                f"{case_name}: expected only codes {expected_codes}, got {actual_codes}"
+            )
         if expected_verdict == "verified" and contract_entries:
-            raise AssertionError(f"{case_name}: verified case must not emit contract errors")
+            raise AssertionError(
+                f"{case_name}: verified case must not emit contract errors"
+            )
         passed += 1
 
     if tests != expected_tests:
@@ -62,7 +68,9 @@ def self_test() -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--self-test", action="store_true", help="run the V105 verify wedge self-test")
+    parser.add_argument(
+        "--self-test", action="store_true", help="run the V105 verify wedge self-test"
+    )
     return parser.parse_args()
 
 

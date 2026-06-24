@@ -1,13 +1,33 @@
-# Keelplane — Agent Context
+# Depone — Agent Context
 
-Keelplane (engine: **DWM Core**, the Deterministic Workflow Machine) is a
+Depone (engine: **DWM Core**, the Deterministic Workflow Machine) is a
 control-plane for large AI-native work: workflow design, packet compilation,
 bounded runner gates, review/repair evidence, and scoring artifacts. The tooling
 is pure-stdlib Python under `scripts/` plus one `.cjs` reference implementation.
-The installed skill is `keelplane`; the entry doc is `SKILL.md`.
+The installed skill is `depone`; the entry doc is `SKILL.md`.
 
 This file exists so a cloud agent that clones the repo with no other context
 knows how to work here. Keep it short and current.
+
+## Current direction (read first)
+
+`docs/v125-direction-check-roadmap.md` is the current product-direction source of
+truth (post-V124). Bottom line: keep the non-executing design+verify plane (the
+one defensible moat) and narrow hard. The next real milestone is a run, not
+another source-only contract layer:
+
+- V126 (`docs/v126-paired-dogfood-evidence-spec.md`): capture one real
+  direct-vs-governed run; stop pointing the paired-evidence path at synthetic
+  seeds.
+- V127 (`docs/v127-verify-claim-honesty-spec.md`): demote the Adversarial Check
+  to advisory; a required-but-unevaluated claim must be `inconclusive`, never
+  `pass`; correct "hash-signed" wording and the stale regulatory thesis.
+- V128 (`docs/v128-evidence-substrate-spec.md`): emit evidence as in-toto/DSSE
+  plus OTel GenAI shapes, stdlib-only.
+
+Do not add another `vNNN` source-only meta layer instead of executing V126. New
+Agent Fabric profile/role/toolbelt milestones are frozen until V126 shows a
+measured benefit for at least one task class.
 
 ## Verify after any change
 

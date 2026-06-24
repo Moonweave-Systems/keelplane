@@ -27,8 +27,8 @@ AUDIT_ROOT = ROOT / "out" / "installed-surface-audits"
 SENTINEL = ".dwm_installed_surface_audit-owned.json"
 DEFAULT_ACTIVE_SKILL = ROOT / "SKILL.md"
 DEFAULT_INSTALL_CANDIDATES = [
-    Path.home() / ".codex" / "skills" / "keelplane" / "SKILL.md",
-    Path.home() / ".agents" / "skills" / "keelplane" / "SKILL.md",
+    Path.home() / ".codex" / "skills" / "depone" / "SKILL.md",
+    Path.home() / ".agents" / "skills" / "depone" / "SKILL.md",
 ]
 
 
@@ -52,9 +52,9 @@ class InstalledSurfaceAuditError(ValueError):
 
 
 def now_utc() -> str:
-    from datetime import UTC, datetime
+    from datetime import datetime, timezone
 
-    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def rel(path: Path) -> str:
@@ -360,14 +360,14 @@ def self_test() -> None:
     synced = make_audit(
         "self-test-synced",
         {"label": "active", "path": "SKILL.md", "exists": True, "content_hash": repo_hash, "is_repo_skill": True},
-        [{"label": "installed-copy", "path": "~/.codex/skills/keelplane/SKILL.md", "exists": True, "content_hash": repo_hash, "is_repo_skill": False}],
+        [{"label": "installed-copy", "path": "~/.codex/skills/depone/SKILL.md", "exists": True, "content_hash": repo_hash, "is_repo_skill": False}],
     )
     if synced["decision"] != "installed_copy_synced":
         raise InstalledSurfaceAuditError("ERR_INSTALLED_SURFACE_AUDIT_SELF_TEST_FAILED", "matching installed copy should be synced")
     stale = make_audit(
         "self-test-stale",
         {"label": "active", "path": "SKILL.md", "exists": True, "content_hash": repo_hash, "is_repo_skill": True},
-        [{"label": "installed-copy", "path": "~/.codex/skills/keelplane/SKILL.md", "exists": True, "content_hash": "stale", "is_repo_skill": False}],
+        [{"label": "installed-copy", "path": "~/.codex/skills/depone/SKILL.md", "exists": True, "content_hash": "stale", "is_repo_skill": False}],
     )
     if stale["decision"] != "blocked":
         raise InstalledSurfaceAuditError("ERR_INSTALLED_SURFACE_AUDIT_SELF_TEST_FAILED", "stale installed copy should block")

@@ -8,7 +8,7 @@
   "completion_check": "no dynamic workflow artifact is needed",
   "consumer_verdict": "pass",
   "expected_output": "bounded response or routed workflow decision",
-  "first_slice": "Use direct-codex instead of keelplane for this request.",
+  "first_slice": "Use direct-codex instead of depone for this request.",
   "fixture_id": "neg-fix-unit-test",
   "forbidden_actions_identified": [
     "spawning agents",
@@ -23,16 +23,16 @@
       "completion_check": "completion_check: no dynamic workflow artifact is needed",
       "downgrade_target": "downgrade_target: direct-codex",
       "expected_output": "expected_output: bounded response or routed workflow decision",
-      "first_slice": "first_slice: Use direct-codex instead of keelplane for this request.",
+      "first_slice": "first_slice: Use direct-codex instead of depone for this request.",
       "forbidden_actions": "forbidden_actions: spawning agents; editing files; external messages",
       "inputs_needed": "inputs_needed: original prompt",
       "risk_gates": "risk_gates: source edit action",
       "safe_defaults": "safe_defaults: source edit action -> stop before source edits and ask for approval"
     },
     "packet_sha256": {
-      "workflow.plan.json": "a6dbe7f9e51db414522a3ee21ac595250a86f7e8cd2f4c879eb394f9ab6f4ec8",
-      "blueprint.md": "6286350e820cbcda65d96e4242517277306fc30b73a4de1030a424c7a23cab59",
-      "original prompt": "f8e61ddc5660e707003459711cdbd66f3cd203b102be88886d13841cbd4c3065"
+      "blueprint.md": "d28795805e57a7b4082c98a490ad0aef77d727286b49db0627c6f04216024a7a",
+      "original prompt": "f8e61ddc5660e707003459711cdbd66f3cd203b102be88886d13841cbd4c3065",
+      "workflow.plan.json": "ce6332034248f4d343ebd82b7ddc52d3037f8857d7442bb3a696897c69bc6064"
     },
     "reviewer_note": "Blinded sample reviewer identified the first slice, required inputs, forbidden actions, gates, and safe defaults from the supplied packet only.",
     "run_kind": "blinded-sample-review",
@@ -41,7 +41,7 @@
       "blueprint.md",
       "original prompt"
     ],
-    "transcript_excerpt": "Consumer selected first slice: Use direct-codex instead of keelplane for this request."
+    "transcript_excerpt": "Consumer selected first slice: Use direct-codex instead of depone for this request."
   },
   "received_spec_or_expected_answer": false,
   "risk_gates_identified": [

@@ -3,12 +3,14 @@
 
 from pathlib import Path
 import argparse
+import _thread
 import json
 import re
 import shutil
 import signal
 import subprocess
 import sys
+import threading
 
 import evaluate_plan
 
@@ -60,7 +62,7 @@ V05_REQUIRED_TERMS = [
 
 
 def require_terms(path: str, terms: list[str]) -> None:
-    text = (ROOT / path).read_text().lower()
+    text = (ROOT / path).read_text(encoding="utf-8").lower()
     missing = [term for term in terms if term not in text]
     if missing:
         raise SystemExit(f"{path} missing required terms: {missing}")
@@ -117,6 +119,17 @@ def run_contract_step(label: str, callback, *, timeout_seconds: int = DEFAULT_ST
     def timeout_handler(_signum, _frame) -> None:
         raise SystemExit(f"contract step timed out after {timeout_seconds}s: {label}")
 
+    if not hasattr(signal, "SIGALRM") or not hasattr(signal, "setitimer"):
+        timer = threading.Timer(timeout_seconds, _thread.interrupt_main)
+        timer.start()
+        try:
+            callback()
+        except KeyboardInterrupt as exc:
+            raise SystemExit(f"contract step timed out after {timeout_seconds}s: {label}") from exc
+        finally:
+            timer.cancel()
+        return
+
     previous_handler = signal.getsignal(signal.SIGALRM)
     signal.signal(signal.SIGALRM, timeout_handler)
     signal.setitimer(signal.ITIMER_REAL, timeout_seconds)
@@ -144,7 +157,7 @@ def require_decision_summary_consistency() -> None:
     out_root = ROOT / "out" / "v0.5-contract-check"
     try:
         summary = evaluate_plan.evaluate_manifest(ROOT / "fixtures" / "v0.5" / "manifest.json", out_root)
-        require_decision_summary_text(summary, (ROOT / "docs" / "v0.5-decision.md").read_text())
+        require_decision_summary_text(summary, (ROOT / "docs" / "v0.5-decision.md").read_text(encoding="utf-8"))
     finally:
         shutil.rmtree(out_root, ignore_errors=True)
 
@@ -182,7 +195,7 @@ def require_v1_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v1_decision_summary_text(summary, (ROOT / "docs" / "v1-decision.md").read_text())
+        require_v1_decision_summary_text(summary, (ROOT / "docs" / "v1-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V1 decision consistency failed: {exc}") from exc
 
@@ -220,7 +233,7 @@ def require_v2_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        full_summary = json.loads((ROOT / "out" / "v2" / "final" / "summary.json").read_text())
+        full_summary = json.loads((ROOT / "out" / "v2" / "final" / "summary.json").read_text(encoding="utf-8"))
         records = {
             item.get("id"): item
             for item in full_summary.get("fixtures", [])
@@ -236,7 +249,7 @@ def require_v2_decision_summary_consistency() -> None:
             raise SystemExit("V2 optional fixture failed for an unexpected reason")
         if full_summary.get("decision") != "keep" or full_summary.get("failed", 0) < 1:
             raise SystemExit("V2 manifest optional failure did not preserve keep decision with a recorded failure")
-        require_v2_decision_summary_text(summary, (ROOT / "docs" / "v2-decision.md").read_text())
+        require_v2_decision_summary_text(summary, (ROOT / "docs" / "v2-decision.md").read_text(encoding="utf-8"))
         shutil.rmtree(ROOT / "out" / "v2" / "contract-v2-ready-smoke", ignore_errors=True)
         shutil.rmtree(ROOT / "out" / "v2" / "contract-v2-blocked-smoke", ignore_errors=True)
         ready_completed = run_contract_command(
@@ -313,7 +326,7 @@ def require_v25_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        full_summary = json.loads((ROOT / "out" / "v2.5" / "final" / "summary.json").read_text())
+        full_summary = json.loads((ROOT / "out" / "v2.5" / "final" / "summary.json").read_text(encoding="utf-8"))
         records = {
             item.get("id"): item
             for item in full_summary.get("fixtures", [])
@@ -330,7 +343,7 @@ def require_v25_decision_summary_consistency() -> None:
             raise SystemExit("V2.5 manifest did not prove stale repair invalidation")
         if full_summary.get("decision") != "keep" or full_summary.get("failed") != 0:
             raise SystemExit("V2.5 manifest did not preserve a clean keep decision")
-        require_v25_decision_summary_text(summary, (ROOT / "docs" / "v2.5-decision.md").read_text())
+        require_v25_decision_summary_text(summary, (ROOT / "docs" / "v2.5-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V2.5 decision consistency failed: {exc}") from exc
 
@@ -368,7 +381,7 @@ def require_v3_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        full_summary = json.loads((ROOT / "out" / "v3" / "final" / "summary.json").read_text())
+        full_summary = json.loads((ROOT / "out" / "v3" / "final" / "summary.json").read_text(encoding="utf-8"))
         records = {
             item.get("id"): item
             for item in full_summary.get("fixtures", [])
@@ -400,15 +413,15 @@ def require_v3_decision_summary_consistency() -> None:
             record = records.get(fixture_id)
             if not record or record.get("actual_phase_id") != "verify":
                 raise SystemExit(f"V3 manifest did not prove post-first-slice phase advancement for {fixture_id}")
-        approved_status = json.loads((ROOT / "out" / "v3" / "final" / "needs-human-approved" / "status.json").read_text())
+        approved_status = json.loads((ROOT / "out" / "v3" / "final" / "needs-human-approved" / "status.json").read_text(encoding="utf-8"))
         if approved_status.get("human_approved") is not True or approved_status.get("accepted_v25_state") != "needs-human":
             raise SystemExit("V3 manifest did not exercise needs-human-approved with human_approved=true over needs-human state")
-        manual_status = json.loads((ROOT / "out" / "v3" / "final" / "reject-review-approved-manual" / "status.json").read_text())
+        manual_status = json.loads((ROOT / "out" / "v3" / "final" / "reject-review-approved-manual" / "status.json").read_text(encoding="utf-8"))
         if manual_status.get("accepted_v25_state") != "review-approved":
             raise SystemExit("V3 manifest did not exercise manual-only review-approved rejection")
         if full_summary.get("decision") != "keep" or full_summary.get("failed") != 0:
             raise SystemExit("V3 manifest did not preserve a clean keep decision")
-        require_v3_decision_summary_text(summary, (ROOT / "docs" / "v3-decision.md").read_text())
+        require_v3_decision_summary_text(summary, (ROOT / "docs" / "v3-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V3 decision consistency failed: {exc}") from exc
 
@@ -445,7 +458,7 @@ def require_v75_decision_summary_consistency() -> None:
     try:
         completed = run_contract_command([sys.executable, "scripts/review_frontier_result.py", "--resume", "out/v7.5/v32-semantic-dogfood"])
         status = json.loads(completed.stdout)
-        require_v75_decision_summary_text(status, (ROOT / "docs" / "v7.5-decision.md").read_text())
+        require_v75_decision_summary_text(status, (ROOT / "docs" / "v7.5-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V7.5 decision consistency failed: {exc}") from exc
 
@@ -479,7 +492,7 @@ def require_v8_decision_summary_consistency() -> None:
     try:
         completed = run_contract_command([sys.executable, "scripts/ingest_frontier_review.py", "--resume", "out/v8/v32-semantic-dogfood"])
         status = json.loads(completed.stdout)
-        require_v8_decision_summary_text(status, (ROOT / "docs" / "v8-decision.md").read_text())
+        require_v8_decision_summary_text(status, (ROOT / "docs" / "v8-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V8 decision consistency failed: {exc}") from exc
 
@@ -514,7 +527,7 @@ def require_v9_decision_summary_consistency() -> None:
     try:
         completed = run_contract_command([sys.executable, "scripts/resolve_human_gate.py", "--resume", "out/v9/v32-semantic-dogfood"])
         status = json.loads(completed.stdout)
-        require_v9_decision_summary_text(status, (ROOT / "docs" / "v9-decision.md").read_text())
+        require_v9_decision_summary_text(status, (ROOT / "docs" / "v9-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V9 decision consistency failed: {exc}") from exc
 
@@ -553,7 +566,7 @@ def require_v10_decision_summary_consistency() -> None:
     try:
         completed = run_contract_command([sys.executable, "scripts/dwm.py", "doctor", "--json"])
         doctor = json.loads(completed.stdout)
-        require_v10_decision_summary_text(doctor, (ROOT / "docs" / "v10-decision.md").read_text())
+        require_v10_decision_summary_text(doctor, (ROOT / "docs" / "v10-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V10 decision consistency failed: {exc}") from exc
 
@@ -594,7 +607,7 @@ def require_v11_decision_summary_consistency() -> None:
         commands_completed = run_contract_command([sys.executable, "scripts/dwm.py", "commands", "--kind", "product", "--json"])
         next_status = json.loads(next_completed.stdout)
         product_commands = json.loads(commands_completed.stdout)
-        require_v11_decision_summary_text(next_status, product_commands, (ROOT / "docs" / "v11-decision.md").read_text())
+        require_v11_decision_summary_text(next_status, product_commands, (ROOT / "docs" / "v11-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V11 decision consistency failed: {exc}") from exc
 
@@ -634,7 +647,7 @@ def require_v13_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v13_decision_summary_text(summary, (ROOT / "docs" / "v13-decision.md").read_text())
+        require_v13_decision_summary_text(summary, (ROOT / "docs" / "v13-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V13 decision consistency failed: {exc}") from exc
 
@@ -675,7 +688,7 @@ def require_v14_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v14_decision_summary_text(summary, (ROOT / "docs" / "v14-decision.md").read_text())
+        require_v14_decision_summary_text(summary, (ROOT / "docs" / "v14-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V14 decision consistency failed: {exc}") from exc
 
@@ -716,7 +729,7 @@ def require_v15_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v15_decision_summary_text(summary, (ROOT / "docs" / "v15-decision.md").read_text())
+        require_v15_decision_summary_text(summary, (ROOT / "docs" / "v15-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V15 decision consistency failed: {exc}") from exc
 
@@ -757,7 +770,7 @@ def require_v16_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v16_decision_summary_text(summary, (ROOT / "docs" / "v16-decision.md").read_text())
+        require_v16_decision_summary_text(summary, (ROOT / "docs" / "v16-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V16 decision consistency failed: {exc}") from exc
 
@@ -798,7 +811,7 @@ def require_v17_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v17_decision_summary_text(summary, (ROOT / "docs" / "v17-decision.md").read_text())
+        require_v17_decision_summary_text(summary, (ROOT / "docs" / "v17-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V17 decision consistency failed: {exc}") from exc
 
@@ -839,7 +852,7 @@ def require_v18_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v18_decision_summary_text(summary, (ROOT / "docs" / "v18-decision.md").read_text())
+        require_v18_decision_summary_text(summary, (ROOT / "docs" / "v18-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V18 decision consistency failed: {exc}") from exc
 
@@ -880,7 +893,7 @@ def require_v19_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v19_decision_summary_text(summary, (ROOT / "docs" / "v19-decision.md").read_text())
+        require_v19_decision_summary_text(summary, (ROOT / "docs" / "v19-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V19 decision consistency failed: {exc}") from exc
 
@@ -923,7 +936,7 @@ def require_v20_decision_summary_consistency() -> None:
             timeout_seconds=LONG_COMMAND_TIMEOUT_SECONDS,
         )
         summary = json.loads(completed.stdout)
-        require_v20_decision_summary_text(summary, (ROOT / "docs" / "v20-decision.md").read_text())
+        require_v20_decision_summary_text(summary, (ROOT / "docs" / "v20-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V20 decision consistency failed: {exc}") from exc
 
@@ -965,7 +978,7 @@ def require_v205_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v205_decision_summary_text(summary, (ROOT / "docs" / "v20.5-decision.md").read_text())
+        require_v205_decision_summary_text(summary, (ROOT / "docs" / "v20.5-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V20.5 decision consistency failed: {exc}") from exc
 
@@ -1006,7 +1019,7 @@ def require_v206_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v206_decision_summary_text(summary, (ROOT / "docs" / "v20.6-decision.md").read_text())
+        require_v206_decision_summary_text(summary, (ROOT / "docs" / "v20.6-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V20.6 decision consistency failed: {exc}") from exc
 
@@ -1050,7 +1063,7 @@ def require_v22_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v22_decision_summary_text(summary, (ROOT / "docs" / "v22-decision.md").read_text())
+        require_v22_decision_summary_text(summary, (ROOT / "docs" / "v22-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V22 decision consistency failed: {exc}") from exc
 
@@ -1094,7 +1107,7 @@ def require_v23_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v23_decision_summary_text(summary, (ROOT / "docs" / "v23-decision.md").read_text())
+        require_v23_decision_summary_text(summary, (ROOT / "docs" / "v23-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V23 decision consistency failed: {exc}") from exc
 
@@ -1138,7 +1151,7 @@ def require_v24_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v24_decision_summary_text(summary, (ROOT / "docs" / "v24-decision.md").read_text())
+        require_v24_decision_summary_text(summary, (ROOT / "docs" / "v24-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V24 decision consistency failed: {exc}") from exc
 
@@ -1181,7 +1194,7 @@ def require_v25_tasks_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v25_tasks_decision_summary_text(summary, (ROOT / "docs" / "v25-decision.md").read_text())
+        require_v25_tasks_decision_summary_text(summary, (ROOT / "docs" / "v25-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V25 decision consistency failed: {exc}") from exc
 
@@ -1226,7 +1239,7 @@ def require_v26_attempts_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v26_attempts_decision_summary_text(summary, (ROOT / "docs" / "v26-decision.md").read_text())
+        require_v26_attempts_decision_summary_text(summary, (ROOT / "docs" / "v26-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V26 decision consistency failed: {exc}") from exc
 
@@ -1269,7 +1282,7 @@ def require_v27_smoke_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v27_smoke_decision_summary_text(summary, (ROOT / "docs" / "v27-decision.md").read_text())
+        require_v27_smoke_decision_summary_text(summary, (ROOT / "docs" / "v27-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V27 decision consistency failed: {exc}") from exc
 
@@ -1313,7 +1326,7 @@ def require_v28_live_plan_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v28_live_plan_decision_summary_text(summary, (ROOT / "docs" / "v28-decision.md").read_text())
+        require_v28_live_plan_decision_summary_text(summary, (ROOT / "docs" / "v28-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V28 decision consistency failed: {exc}") from exc
 
@@ -1357,7 +1370,7 @@ def require_v29_runner_preflight_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v29_runner_preflight_decision_summary_text(summary, (ROOT / "docs" / "v29-decision.md").read_text())
+        require_v29_runner_preflight_decision_summary_text(summary, (ROOT / "docs" / "v29-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V29 decision consistency failed: {exc}") from exc
 
@@ -1401,7 +1414,7 @@ def require_v30_receipt_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v30_receipt_decision_summary_text(summary, (ROOT / "docs" / "v30-decision.md").read_text())
+        require_v30_receipt_decision_summary_text(summary, (ROOT / "docs" / "v30-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V30 decision consistency failed: {exc}") from exc
 
@@ -1444,7 +1457,7 @@ def require_v31_receipt_judge_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v31_receipt_judge_decision_summary_text(summary, (ROOT / "docs" / "v31-decision.md").read_text())
+        require_v31_receipt_judge_decision_summary_text(summary, (ROOT / "docs" / "v31-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V31 decision consistency failed: {exc}") from exc
 
@@ -1488,7 +1501,7 @@ def require_v32_live_score_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v32_live_score_decision_summary_text(summary, (ROOT / "docs" / "v32-decision.md").read_text())
+        require_v32_live_score_decision_summary_text(summary, (ROOT / "docs" / "v32-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V32 decision consistency failed: {exc}") from exc
 
@@ -1532,7 +1545,7 @@ def require_v33_live_score_aggregate_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v33_live_score_aggregate_decision_summary_text(summary, (ROOT / "docs" / "v33-decision.md").read_text())
+        require_v33_live_score_aggregate_decision_summary_text(summary, (ROOT / "docs" / "v33-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V33 decision consistency failed: {exc}") from exc
 
@@ -1575,7 +1588,7 @@ def require_v34_live_score_review_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v34_live_score_review_decision_summary_text(summary, (ROOT / "docs" / "v34-decision.md").read_text())
+        require_v34_live_score_review_decision_summary_text(summary, (ROOT / "docs" / "v34-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V34 decision consistency failed: {exc}") from exc
 
@@ -1619,7 +1632,7 @@ def require_v35_live_report_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v35_live_report_decision_summary_text(summary, (ROOT / "docs" / "v35-decision.md").read_text())
+        require_v35_live_report_decision_summary_text(summary, (ROOT / "docs" / "v35-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V35 decision consistency failed: {exc}") from exc
 
@@ -1663,7 +1676,7 @@ def require_v36_readme_graph_decision_summary_consistency() -> None:
             ],
         )
         summary = json.loads(completed.stdout)
-        require_v36_readme_graph_decision_summary_text(summary, (ROOT / "docs" / "v36-decision.md").read_text())
+        require_v36_readme_graph_decision_summary_text(summary, (ROOT / "docs" / "v36-decision.md").read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise SystemExit(f"V36 decision consistency failed: {exc}") from exc
 
@@ -2091,7 +2104,7 @@ def require_release_commands_pass() -> None:
 
 
 def canonical_patterns() -> set[str]:
-    text = (ROOT / "references" / "workflow-patterns.md").read_text()
+    text = (ROOT / "references" / "workflow-patterns.md").read_text(encoding="utf-8")
     return {
         match.group(1).strip().lower()
         for match in re.finditer(r"(?m)^## ([^\n]+)$", text)
@@ -2102,7 +2115,7 @@ def collect_fixture_blocks() -> list[tuple[str, str]]:
     smoke_dir = ROOT / "docs" / "fixture-smoke"
     blocks: list[tuple[str, str]] = []
     for path in sorted(smoke_dir.glob("*.md")):
-        text = path.read_text()
+        text = path.read_text(encoding="utf-8")
         parts = re.split(r"(?m)^## Fixture \d+\s*$", text)
         for index, part in enumerate(parts[1:], start=1):
             blocks.append((f"{path.relative_to(ROOT)} fixture {index}", part.lower()))
@@ -3739,9 +3752,9 @@ def main() -> None:
     require_terms(
         "README.md",
         [
-            "# keelplane",
+            "# depone",
             "dwm core",
-            "keelplane",
+            "depone",
             "python scripts/dwm_demo.py run --out out/demo/quickstart",
             "python scripts/dwm_demo.py inspect --demo out/demo/quickstart",
             "python scripts/dwm.py status --run out/v9/v32-semantic-dogfood",
@@ -3951,7 +3964,7 @@ def main() -> None:
             "receipt work is allowed through dry-run evidence only",
             "active local skill path",
             "next safe action is workflow design",
-            "brand boundary audits preserve keelplane as the public brand",
+            "brand boundary audits preserve depone as the public brand",
             "roadmap reconciliation audits keep spec, roadmap, and release history aligned",
             "evidence oracle checks must pass before future scoring or graph promotion",
             "workflow narrative labels are status rendering only",
@@ -3966,10 +3979,10 @@ def main() -> None:
     require_terms(
         "docs/dwm-branding.md",
         [
-            "keelplane is the public product brand",
+            "depone is the public product brand",
             "dwm core stands for",
-            "codex skill name is `keelplane`",
-            "repository slug remains `dwm`",
+            "codex skill name is `depone`",
+            "repository slug remains `keelplane`",
             "`dwm_*.py` file prefix",
             "do not claim autonomous execution",
         ],
@@ -3977,10 +3990,10 @@ def main() -> None:
     require_terms(
         "docs/v86-keelplane-brand-spec.md",
         [
-            "status: implemented first keelplane brand decision",
-            "public product brand: `keelplane`",
+            "status: implemented first depone brand decision",
+            "public product brand: `depone`",
             "internal engine name: `dwm core`",
-            "skill name: `keelplane`",
+            "skill name: `depone`",
             "`dwm_*.py` file prefix",
             "do not rename cli commands",
             "do not claim autonomous execution",
@@ -3990,9 +4003,9 @@ def main() -> None:
         "docs/v86-decision.md",
         [
             "decision: keep",
-            "`readme.md` now leads with `keelplane`",
-            "`docs/dwm-branding.md` defines `keelplane`",
-            "`assets/dwm-hero.svg` names `keelplane`",
+            "`readme.md` now leads with `depone`",
+            "`docs/dwm-branding.md` defines `depone`",
+            "`assets/dwm-hero.svg` names `depone`",
             "does not claim autonomous execution",
         ],
     )
@@ -4003,10 +4016,10 @@ def main() -> None:
             "`scripts/dwm_brand_boundary_audit.py`",
             "`brand-boundary-audit.json`",
             "`brand-boundary-audit.md`",
-            "public product brand: `keelplane`",
+            "public product brand: `depone`",
             "internal engine name: `dwm core`",
-            "skill name: `keelplane`",
-            "repository slug remains `dwm`",
+            "skill name: `depone`",
+            "repository slug remains `keelplane`",
             "does not claim autonomous execution",
         ],
     )
@@ -4020,8 +4033,8 @@ def main() -> None:
             "`required_passed`: 4",
             "`decision`: `keep`",
             "`decision`: `brand_boundary_ready`",
-            "`public_product_brand`: `keelplane`",
-            "`skill_name`: `keelplane`",
+            "`public_product_brand`: `depone`",
+            "`skill_name`: `depone`",
             "does not claim autonomous execution",
         ],
     )
@@ -4032,9 +4045,9 @@ def main() -> None:
             "`scripts/dwm_roadmap_reconciliation.py`",
             "`roadmap-reconciliation.json`",
             "`roadmap-reconciliation.md`",
-            "public product brand: `keelplane`",
+            "public product brand: `depone`",
             "internal engine name: `dwm core`",
-            "latest reconciled version: `v106`",
+            "latest reconciled version: `v122`",
             "does not claim autonomous execution",
         ],
     )
@@ -4048,7 +4061,7 @@ def main() -> None:
             "`required_passed`: 4",
             "`decision`: `keep`",
             "`decision`: `roadmap_reconciled`",
-            "`latest_version`: `v106`",
+            "`latest_version`: `v122`",
             "does not execute queued commands",
         ],
     )
@@ -4100,7 +4113,7 @@ def main() -> None:
             "`fixture_count`: 4",
             "`required_passed`: 4",
             "`decision`: `keep`",
-            "`roadmap_latest_version`: `v106`",
+            "`roadmap_latest_version`: `v122`",
             "`command_safety_decision`: `keep`",
         ],
     )

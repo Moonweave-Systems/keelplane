@@ -120,7 +120,7 @@ class ExecError(ValueError):
 
 def now_utc() -> str:
     return (
-        dt.datetime.now(dt.UTC)
+        dt.datetime.now(dt.timezone.utc)
         .replace(microsecond=0)
         .isoformat()
         .replace("+00:00", "Z")

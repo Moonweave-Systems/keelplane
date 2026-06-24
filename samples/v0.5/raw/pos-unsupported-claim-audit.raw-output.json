@@ -1,15 +1,15 @@
 {
   "fixture_id": "pos-unsupported-claim-audit",
   "packet_sha256": {
-    "workflow.plan.json": "7e36d0b9986842bdc33024b8ec1779255f0d1788c0918055226ea2b36d4a5aa9",
     "blueprint.md": "c7ce4c458d16fc193091af917de6f74cc3bf4a62951ca7767f8696c091ce0007",
     "original prompt": "50e3bb587ffe3f4fe575b3557bada28bcdd173ad00a577eadd52d439ee7d5fb8",
-    "repository surfaces": "b63b7019db4393ed1d44eb73eff269ab53d7fe0f9a9eb9ce61bc962fd954adf9"
+    "repository surfaces": "b63b7019db4393ed1d44eb73eff269ab53d7fe0f9a9eb9ce61bc962fd954adf9",
+    "workflow.plan.json": "9d33e854119c5238fdaf6239550b793dfe87404ac2fb19f819527c9d582cc5c8"
   },
-  "producer": "keelplane",
+  "producer": "depone",
   "raw_kind": "workflow-output",
   "rendered_blueprint": "# pos-unsupported-claim-audit\n\nObjective: Extract PR-description claims, verify each against repository evidence, and produce a proof ledger.\nActivation: activate (The prompt needs a reusable artifact with downstream handoffs, verification, and gated execution.)\nPatterns: Pipeline, Adversarial Verify, Resume And Cache\n\n## First Slice\n\nExtract atomic claims and map each to required repository evidence before judging support.\n\nCompletion check: inventory validates and every gap is either resolved or recorded\n\n## Risk Gates\n\n- write action: stop before writing and ask for approval\n- shell action: stop before shell use and ask for approval\n- network action: stop before network use and ask for approval\n- external message action: stop before sending external messages and ask for approval\n",
-  "skill_sha256": "27261b50e6811ad03073544983f5e4b4905a9c9035f2d1b8f044a4ee24b49798",
+  "skill_sha256": "2781790c2ab14efcbf86b1bc142be17067aa088fa71c19728ce7db964bfdc097",
   "source_prompt": "Design a workflow to find every unsupported claim in this PR description using repo evidence.",
   "workflow_plan": {
     "activation": {
@@ -40,7 +40,7 @@
       "max_rounds": 3,
       "time_box": "one bounded planning session before execution"
     },
-    "created_by": "keelplane",
+    "created_by": "depone",
     "execution_path": {
       "consumer": "codex-agent",
       "first_slice": {

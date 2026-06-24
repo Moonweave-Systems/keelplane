@@ -9,7 +9,7 @@
     },
     {
       "artifact": "roadmap",
-      "equals": "V106",
+      "equals": "V122",
       "id": "roadmap-latest-version",
       "path": "policy.latest_version",
       "type": "json_equals"
@@ -50,7 +50,7 @@
     },
     {
       "artifact": "activation",
-      "equals": "V106",
+      "equals": "V122",
       "id": "activation-roadmap-latest",
       "path": "inputs.roadmap_latest_version",
       "type": "json_equals"

@@ -31,7 +31,7 @@
     "max_rounds": 4,
     "time_box": "one release-candidate implementation sequence per version slice"
   },
-  "created_by": "keelplane",
+  "created_by": "depone",
   "execution_path": {
     "consumer": "codex-agent",
     "first_slice": {

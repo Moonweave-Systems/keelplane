@@ -1,14 +1,14 @@
 {
   "fixture_id": "neg-explain-pattern",
   "packet_sha256": {
-    "workflow.plan.json": "a9b424d6aa87a612a8eb6ed76f0cff697b4fc31a63dc4072fbf72a9011ab84a7",
-    "blueprint.md": "6683ca8ce00e014a8b33081fcdbcaaf5e1144adad8d101d21d3ce9a0672d43d0",
-    "original prompt": "32e3bb3b1b69921aa338956920b52675196c93e1bad41ce9b900bd62079ef8d8"
+    "blueprint.md": "6837ba20a4e02bef21c2e4899e67f3e58305c6a7fd42184348d79afbff59e71e",
+    "original prompt": "32e3bb3b1b69921aa338956920b52675196c93e1bad41ce9b900bd62079ef8d8",
+    "workflow.plan.json": "e1e94cd60c30f5209025dff8eb704ff908ee9a20379981d31c90af447df96ab9"
   },
-  "producer": "keelplane",
+  "producer": "depone",
   "raw_kind": "workflow-output",
-  "rendered_blueprint": "# neg-explain-pattern\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (The user asks for explanation, not a consumable workflow artifact.)\nPatterns: none\n\n## First Slice\n\nUse direct-codex instead of keelplane for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- workflow execution: stop before workflow execution and ask for approval\n",
-  "skill_sha256": "27261b50e6811ad03073544983f5e4b4905a9c9035f2d1b8f044a4ee24b49798",
+  "rendered_blueprint": "# neg-explain-pattern\n\nObjective: Route the request to the smallest sufficient workflow without emitting a large dynamic workflow.\nActivation: downgrade (The user asks for explanation, not a consumable workflow artifact.)\nPatterns: none\n\n## First Slice\n\nUse direct-codex instead of depone for this request.\n\nCompletion check: no dynamic workflow artifact is needed\n\n## Risk Gates\n\n- workflow execution: stop before workflow execution and ask for approval\n",
+  "skill_sha256": "2781790c2ab14efcbf86b1bc142be17067aa088fa71c19728ce7db964bfdc097",
   "source_prompt": "Explain which workflow pattern this resembles.",
   "workflow_plan": {
     "activation": {
@@ -30,7 +30,7 @@
       "max_rounds": 1,
       "time_box": "one direct response or routed workflow"
     },
-    "created_by": "keelplane",
+    "created_by": "depone",
     "execution_path": {
       "consumer": "human",
       "first_slice": {
@@ -44,7 +44,7 @@
         "inputs": [
           "original prompt"
         ],
-        "instruction": "Use direct-codex instead of keelplane for this request."
+        "instruction": "Use direct-codex instead of depone for this request."
       },
       "mode": "direct-codex"
     },

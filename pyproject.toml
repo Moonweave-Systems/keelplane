@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "keelplane"
+name = "depone"
 version = "104.0.0"
 description = "Workflow designer + cross-platform evidence verifier for AI agent orchestration"
 license = { text = "MIT" }
@@ -35,7 +35,7 @@ conductor = []
 all = []
 
 [project.scripts]
-keelplane = "keelplane.__main__:main"
+depone = "depone.__main__:main"
 
 [tool.setuptools.packages.find]
-include = ["keelplane*"]
+include = ["depone*"]

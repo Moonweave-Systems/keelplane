@@ -1,11 +1,11 @@
 # V93 Workflow Narrative Spec
 
-Status: implemented workflow narrative and Keelplane Control Deck rendering in
+Status: implemented workflow narrative and Depone Control Deck rendering in
 `scripts/dwm_workflow_narrative.py`.
 
 ## Research and Prior Art
 
-V88-V92 made Keelplane safer and more evidence-bound, but the operator still
+V88-V92 made Depone safer and more evidence-bound, but the operator still
 had to inspect several JSON artifacts to understand whether the workflow was
 actually ready. V93 adds a narrative rendering layer that turns existing
 artifact decisions into a compact Control Deck without inventing new authority.
