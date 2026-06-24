@@ -1,6 +1,6 @@
 # Depone Automation Roadmap
 
-Status: V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented; V10 product CLI implemented; V11 operator guidance implemented; V12-V20 product roadmap implemented; V52-V87 product evidence, graph timing, activation, and brand boundary gates implemented; V88 roadmap reconciliation audit implemented; V89 command safety gate implemented; V90 activation v2 implemented; V91 contract tiering implemented; V92 evidence oracle implemented; V93 workflow narrative implemented; V94 control deck score implemented; V95 score history implemented; V96 metric ladder implemented; V97 benchmark readiness implemented; V98 wave operator implemented; V99 wave receipt implemented; V100 promotion evidence implemented; V101 promotion route implemented; V102 deterministic live-proof recorder implemented; V103 live-proof comparison schema implemented; V104 product direction implemented; V105 verify wedge implemented; V106 multi-wave validation implemented; V107 Agent Fabric contracts and compiler implemented; V108 Agent Fabric reference adapter fixture implemented; V109 Agent Fabric capture bridge implemented; V94-V101 meta layer frozen; live proof n=1 completed
+Status: V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented; V10 product CLI implemented; V11 operator guidance implemented; V12-V20 product roadmap implemented; V52-V87 product evidence, graph timing, activation, and brand boundary gates implemented; V88 roadmap reconciliation audit implemented; V89 command safety gate implemented; V90 activation v2 implemented; V91 contract tiering implemented; V92 evidence oracle implemented; V93 workflow narrative implemented; V94 control deck score implemented; V95 score history implemented; V96 metric ladder implemented; V97 benchmark readiness implemented; V98 wave operator implemented; V99 wave receipt implemented; V100 promotion evidence implemented; V101 promotion route implemented; V102 deterministic live-proof recorder implemented; V103 live-proof comparison schema implemented; V104 product direction implemented; V105 verify wedge implemented; V106 multi-wave validation implemented; V107 Agent Fabric contracts and compiler implemented; V108 Agent Fabric reference adapter fixture implemented; V109 Agent Fabric capture bridge implemented; V110 Agent Fabric report assurance implemented; V94-V101 meta layer frozen; live proof n=1 completed
 Date: 2026-06-20
 
 ## Purpose
@@ -55,6 +55,7 @@ legacy/internal and intentionally deferred.
 | Agent Fabric contracts | deterministic role, toolbelt, profile, harness, compile-report, invocation, and result contracts | planned V107, contract/compiler slice implemented |
 | Agent Fabric reference adapter | fixture-only local shell adapter capture shape for self-report, diff/touched files, test output, and command receipts | planned V108, shell fixture implemented |
 | Agent Fabric capture bridge | Depone-facing manifest with A0/A1 assurance labels and hash-bound observer capture | planned V109, passive bridge implemented |
+| Agent Fabric report assurance | verification report decision/assurance fields sourced from capture manifests | planned V110, report surface implemented |
 | Harness benchmark | corpus and scoring gate for direct harness comparisons | planned V23, first benchmark gate implemented |
 | README public page | source-bound benchmark graph on the GitHub landing page | planned V37, first publish slice implemented |
 | Benchmark history | hash-bound report history ledger and trend graph artifacts | planned V38, first ledger slice implemented |
@@ -855,10 +856,10 @@ First canonical demo done means:
 
 ### V52-V106: Product Evidence And Control Deck
 
-Status: implemented through V106 multi-wave validation, with the V107 Agent
-Fabric contract/compiler slice recorded as the next contract layer; the V103
-live two-arm comparison remains behind explicit approval; V94-V101 meta layer
-is frozen.
+Status: implemented through V106 multi-wave validation, with V107-V110 Agent
+Fabric contract, adapter, capture, and report-assurance slices recorded as the
+next contract layer; the V103 live two-arm comparison remains behind explicit
+approval; V94-V101 meta layer is frozen.
 
 Purpose: move from a runnable demo into a product that can explain its current
 state, measure real dogfood evidence, gate graph claims, continue safely across
@@ -936,6 +937,10 @@ Implemented continuation:
   manifest. Self-report-only manifests remain `A0-claims-only`; hash-bound
   observer captures can reach `A1-local-observed` while tamper, stale-source,
   and unexpected-file cases fail closed.
+- V110 surfaced Agent Fabric capture checks in verification reports. Reports
+  now separate existing `verdict`, operator-facing `decision`, and capture
+  `assurance`, and invalid capture manifests refute the report without hiding
+  validation errors.
 
 Next roadmap direction:
 
@@ -947,9 +952,9 @@ Next roadmap direction:
    migration gate proves compatibility.
 4. Expand read-only or pre-isolated live execution only where V84/V85 and queue
    preflight evidence permit it.
-5. Connect Agent Fabric capture manifests to the verification report surface so
-   Depone can render decision and assurance separately without weakening V105
-   evidence-contract checks.
+5. Add a small fixture/report exporter or operator view over the V110 report
+   fields without adding new trust levels or bypassing evidence-contract
+   failures.
 
 ## Strategic Decisions
 

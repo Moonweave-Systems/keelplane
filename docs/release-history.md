@@ -204,6 +204,9 @@ promotion requires real release history.
   manifest bridge with explicit `A0-claims-only` and `A1-local-observed`
   assurance labels plus fail-closed tamper, stale-source, and unexpected-file
   checks.
+- V110: `docs/v110-agent-fabric-report-assurance-spec.md` surfaced capture
+  manifest checks in verification reports with separate `verdict`, `decision`,
+  and `assurance` fields.
 
 ## Current Public Boundaries
 
@@ -250,3 +253,6 @@ promotion requires real release history.
   models; their captures remain non-authoritative `A0-claims-only` material.
 - V109 Agent Fabric capture manifests can reach `A1-local-observed` only from
   hash-bound Depone observer capture; self-report-only manifests remain A0.
+- V110 verification reports may display Agent Fabric assurance, but invalid
+  capture manifests fail closed and evidence-contract failures still dominate
+  the final verdict.

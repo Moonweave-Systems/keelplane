@@ -5,6 +5,11 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
+from depone.agent_fabric.capture_bridge import (
+    ASSURANCE_A1,
+    CAPTURE_MANIFEST_KIND,
+    validate_capture_manifest,
+)
 from depone.verify.adapters.base import EvidenceContext
 from depone.verify.evidence_contract import (
     EvidenceContractEntry,
@@ -55,6 +60,15 @@ class PhaseVerdict:
 
 
 @dataclass
+class AgentFabricCaptureCheck:
+    evidence_path: str
+    assurance: str
+    decision: str
+    valid: bool
+    errors: list[str] = field(default_factory=list)
+
+
+@dataclass
 class VerificationReport:
     schema_version: str = "1.0"
     plan_hash: str = ""
@@ -62,6 +76,11 @@ class VerificationReport:
     run_id: str | None = None
     phases: list[PhaseVerdict] = field(default_factory=list)
     evidence_contract: list[EvidenceContractEntry] = field(default_factory=list)
+    decision: Literal["pass", "fail", "inconclusive"] = "pass"
+    assurance: str = "A0-claims-only"
+    agent_fabric_captures: list[AgentFabricCaptureCheck] = field(
+        default_factory=list
+    )
     verdict: Literal["verified", "refuted", "insufficient-evidence"] = "verified"
 
 
@@ -248,6 +267,52 @@ def _handoffs_for_phase(
     return [hc for hc in handoff_checks if hc.artifact in matching]
 
 
+def _read_agent_fabric_captures(
+    evidence: EvidenceContext,
+) -> list[AgentFabricCaptureCheck]:
+    captures: list[AgentFabricCaptureCheck] = []
+    for evidence_file in evidence.files:
+        try:
+            parsed = json.loads(evidence_file.content)
+        except json.JSONDecodeError:
+            continue
+
+        if not isinstance(parsed, dict):
+            continue
+        if parsed.get("kind") != CAPTURE_MANIFEST_KIND:
+            continue
+
+        errors = validate_capture_manifest(parsed)
+        captures.append(
+            AgentFabricCaptureCheck(
+                evidence_path=evidence_file.path,
+                assurance=str(parsed.get("assurance", "A0-claims-only")),
+                decision=str(parsed.get("decision", "unknown")),
+                valid=not errors,
+                errors=errors,
+            )
+        )
+    return captures
+
+
+def _assurance_for_report(captures: list[AgentFabricCaptureCheck]) -> str:
+    if any(
+        capture.valid and capture.assurance == ASSURANCE_A1 for capture in captures
+    ):
+        return ASSURANCE_A1
+    return "A0-claims-only"
+
+
+def _decision_for_verdict(
+    verdict: Literal["verified", "refuted", "insufficient-evidence"],
+) -> Literal["pass", "fail", "inconclusive"]:
+    if verdict == "verified":
+        return "pass"
+    if verdict == "refuted":
+        return "fail"
+    return "inconclusive"
+
+
 def run_verification(
     plan: dict[str, Any],
     evidence: EvidenceContext,
@@ -264,6 +329,7 @@ def run_verification(
     adv_checks = check_adversarial(plan, evidence)
     budget = check_budget_adherence(plan, evidence)
     evidence_contract = validate_evidence_contract(evidence)
+    agent_fabric_captures = _read_agent_fabric_captures(evidence)
     handoffs_spec = plan.get("handoffs", [])
 
     any_refuted = False
@@ -315,6 +381,8 @@ def run_verification(
 
     if evidence_contract:
         any_refuted = True
+    if any(not capture.valid for capture in agent_fabric_captures):
+        any_refuted = True
 
     if any_refuted:
         overall: Literal["verified", "refuted", "insufficient-evidence"] = "refuted"
@@ -329,5 +397,8 @@ def run_verification(
         run_id=evidence.run_id,
         phases=phase_verdicts,
         evidence_contract=evidence_contract,
+        decision=_decision_for_verdict(overall),
+        assurance=_assurance_for_report(agent_fabric_captures),
+        agent_fabric_captures=agent_fabric_captures,
         verdict=overall,
     )

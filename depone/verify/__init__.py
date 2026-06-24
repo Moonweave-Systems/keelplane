@@ -59,6 +59,8 @@ def run(args: argparse.Namespace) -> None:
     verdict = report_dict["verdict"]
     print(f"Verification report written to {out_path}")
     print(f"  Verdict: {verdict}")
+    print(f"  Decision: {report_dict['decision']}")
+    print(f"  Assurance: {report_dict['assurance']}")
     print(f"  Phases: {len(report_dict['phases'])}")
 
     if verdict != "verified":
