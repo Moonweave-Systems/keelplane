@@ -8,7 +8,10 @@ import sys
 import tempfile
 from pathlib import Path
 
-from depone.agent_fabric.dogfood_evidence import build_dogfood_evidence_report
+from depone.agent_fabric.dogfood_evidence import (
+    build_controlled_capture_corpus_report,
+    build_dogfood_evidence_report,
+)
 
 
 def _read_object(path: Path, label: str) -> dict:
@@ -28,7 +31,8 @@ def run(args: argparse.Namespace) -> None:
         _self_test()
         return
 
-    if not getattr(args, "capture_manifest", None):
+    capture_manifest_args = getattr(args, "capture_manifest", None)
+    if not capture_manifest_args:
         print(
             "Usage: depone agent-fabric-dogfood-evidence "
             "--capture-manifest <capture-manifest.json>",
@@ -36,14 +40,30 @@ def run(args: argparse.Namespace) -> None:
         )
         sys.exit(1)
 
-    capture = _read_object(Path(args.capture_manifest), "capture manifest")
-    report = build_dogfood_evidence_report(capture)
+    capture_paths = (
+        capture_manifest_args
+        if isinstance(capture_manifest_args, list)
+        else [capture_manifest_args]
+    )
+    captures = [
+        _read_object(Path(path), "capture manifest") for path in capture_paths
+    ]
     out_path = Path(getattr(args, "out", "dogfood-evidence.json"))
     out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if len(captures) == 1:
+        report = build_dogfood_evidence_report(captures[0])
+        out_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+        print(f"Dogfood evidence report written to {out_path}")
+        print(f"  Decision: {report['decision']}")
+        print(f"  Capture assurance: {report['capture_assurance']}")
+        return
+
+    report = build_controlled_capture_corpus_report(captures)
     out_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
-    print(f"Dogfood evidence report written to {out_path}")
+    print(f"Controlled capture corpus written to {out_path}")
     print(f"  Decision: {report['decision']}")
-    print(f"  Capture assurance: {report['capture_assurance']}")
+    print(f"  Capture count: {report['capture_count']}")
 
 
 def _self_test() -> None:

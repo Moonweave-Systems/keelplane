@@ -15,6 +15,8 @@ python3 -m depone agent-fabric-smoke --profile profile.json --roles role.json --
 python3 -m depone agent-fabric-harness-snapshot --harness shell --harness codex --out agent-fabric-harness-snapshot.json
 python3 -m depone agent-fabric-adapter-smoke --adapter-fixture depone/fixtures/agent_fabric/reference_adapter_shell.json --out agent-fabric-adapter-smoke.json
 python3 -m depone agent-fabric-dogfood-evidence --capture-manifest depone/fixtures/agent_fabric/capture_manifest_shell.json --out dogfood-evidence.json
+python3 -m depone agent-fabric-dogfood-evidence --capture-manifest depone/fixtures/agent_fabric/capture_manifest_shell.json --capture-manifest depone/fixtures/agent_fabric/capture_manifest_docs_source_only.json --out controlled-capture-corpus.json
+python3 -m depone agent-fabric-controlled-capture --capture-manifest depone/fixtures/agent_fabric/capture_manifest_shell.json --capture-manifest depone/fixtures/agent_fabric/capture_manifest_shell_docs.json --out controlled-capture-corpus.json
 python3 -m depone agent-fabric-paired-evidence --adapter-smoke agent-fabric-adapter-smoke.json --dogfood-evidence dogfood-evidence.json --out paired-evidence.json
 python3 -m depone agent-fabric-claim-gate --adapter-smoke agent-fabric-adapter-smoke.json --paired-evidence paired-evidence.json --out agent-fabric-claim-gate.json
 python3 -m depone demo --out out/depone-quickstart

@@ -234,6 +234,8 @@ promotion requires real release history.
 - V122: `docs/v122-agent-fabric-dogfood-evidence-cli-spec.md` added the
   `depone agent-fabric-dogfood-evidence` producer from validated A1 local
   observed capture manifests.
+- V123: `docs/v123-agent-fabric-controlled-capture-corpus-spec.md` added a
+  source-only controlled capture corpus over distinct observed manifests.
 
 ## Current Public Boundaries
 
@@ -306,3 +308,6 @@ promotion requires real release history.
   execute dogfood runs, approve public claims, or upgrade source-only evidence.
 - V122 dogfood evidence CLI reports read existing observed capture manifests
   only; they do not run dogfood tasks or convert self-report into proof.
+- V123 controlled capture corpus reports summarize multiple distinct observed
+  manifests only; they do not execute commands, call live models, approve public
+  claims, or upgrade trust.

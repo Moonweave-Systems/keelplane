@@ -1,6 +1,6 @@
 # Depone Automation Roadmap
 
-Status: V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented; V10 product CLI implemented; V11 operator guidance implemented; V12-V20 product roadmap implemented; V52-V87 product evidence, graph timing, activation, and brand boundary gates implemented; V88 roadmap reconciliation audit implemented; V89 command safety gate implemented; V90 activation v2 implemented; V91 contract tiering implemented; V92 evidence oracle implemented; V93 workflow narrative implemented; V94 control deck score implemented; V95 score history implemented; V96 metric ladder implemented; V97 benchmark readiness implemented; V98 wave operator implemented; V99 wave receipt implemented; V100 promotion evidence implemented; V101 promotion route implemented; V102 deterministic live-proof recorder implemented; V103 live-proof comparison schema implemented; V104 product direction implemented; V105 verify wedge implemented; V106 multi-wave validation implemented; V107 Agent Fabric contracts and compiler implemented; V108 Agent Fabric reference adapter fixture implemented; V109 Agent Fabric capture bridge implemented; V110 Agent Fabric report assurance implemented; V111 Agent Fabric operator view implemented; V112 Agent Fabric lifecycle smoke implemented; V116 Agent Fabric smoke CLI implemented; V117 Agent Fabric harness snapshot implemented; V118 Agent Fabric adapter smoke implemented; V119 Agent Fabric claim gate implemented; V120 paired evidence gate implemented; V121 paired evidence CLI implemented; V122 dogfood evidence CLI implemented; V94-V101 meta layer frozen; live proof n=1 completed
+Status: V3 entry runtime implemented; V7.5 frontier result review implemented; V8 frontier review ingestion implemented; V9 human gate resolution implemented; V10 product CLI implemented; V11 operator guidance implemented; V12-V20 product roadmap implemented; V52-V87 product evidence, graph timing, activation, and brand boundary gates implemented; V88 roadmap reconciliation audit implemented; V89 command safety gate implemented; V90 activation v2 implemented; V91 contract tiering implemented; V92 evidence oracle implemented; V93 workflow narrative implemented; V94 control deck score implemented; V95 score history implemented; V96 metric ladder implemented; V97 benchmark readiness implemented; V98 wave operator implemented; V99 wave receipt implemented; V100 promotion evidence implemented; V101 promotion route implemented; V102 deterministic live-proof recorder implemented; V103 live-proof comparison schema implemented; V104 product direction implemented; V105 verify wedge implemented; V106 multi-wave validation implemented; V107 Agent Fabric contracts and compiler implemented; V108 Agent Fabric reference adapter fixture implemented; V109 Agent Fabric capture bridge implemented; V110 Agent Fabric report assurance implemented; V111 Agent Fabric operator view implemented; V112 Agent Fabric lifecycle smoke implemented; V116 Agent Fabric smoke CLI implemented; V117 Agent Fabric harness snapshot implemented; V118 Agent Fabric adapter smoke implemented; V119 Agent Fabric claim gate implemented; V120 paired evidence gate implemented; V121 paired evidence CLI implemented; V122 dogfood evidence CLI implemented; V123 controlled capture corpus implemented; V94-V101 meta layer frozen; live proof n=1 completed
 Date: 2026-06-24
 
 ## Purpose
@@ -65,6 +65,7 @@ legacy/internal and intentionally deferred.
 | Agent Fabric paired evidence gate | source-only paired evidence input that moves claim gate to human review, not approval | planned V120, paired evidence gate implemented |
 | Agent Fabric paired evidence CLI | source-only producer for hash-bound paired dogfood evidence consumed by the claim gate | planned V121, paired evidence CLI implemented |
 | Agent Fabric dogfood evidence CLI | source-only producer for dogfood evidence from validated A1 local observed capture manifests | planned V122, dogfood evidence CLI implemented |
+| Agent Fabric controlled capture corpus | repeatable source-only corpus over distinct observed capture manifests | planned V123, controlled capture corpus implemented |
 | Harness benchmark | corpus and scoring gate for direct harness comparisons | planned V23, first benchmark gate implemented |
 | README public page | source-bound benchmark graph on the GitHub landing page | planned V37, first publish slice implemented |
 | Benchmark history | hash-bound report history ledger and trend graph artifacts | planned V38, first ledger slice implemented |
@@ -863,9 +864,9 @@ First canonical demo done means:
 - unsafe and non-owned output paths are blocked;
 - `fixtures/v51/manifest.json` passes with `decision: "keep"`.
 
-### V52-V122: Product Evidence, Control Deck, And Agent Fabric Guardrails
+### V52-V123: Product Evidence, Control Deck, And Agent Fabric Guardrails
 
-Status: implemented through V122 Agent Fabric dogfood evidence CLI; the V103 live
+Status: implemented through V123 Agent Fabric controlled capture corpus; the V103 live
 two-arm comparison remains behind explicit approval; V94-V101 meta layer is
 frozen.
 
@@ -979,6 +980,9 @@ Implemented continuation:
 - V122 added `depone agent-fabric-dogfood-evidence`, a source-only CLI that
   produces dogfood evidence from validated A1 local observed capture manifests
   without executing dogfood runs or approving public claims.
+- V123 extended that command with repeated `--capture-manifest` corpus mode over
+  distinct source-only observed captures while preserving no-execution, no-live-model,
+  no-public-claim-approval, and no-trust-upgrade boundaries.
 
 Next roadmap direction:
 
@@ -990,7 +994,7 @@ Next roadmap direction:
    migration gate proves compatibility.
 4. Expand read-only or pre-isolated live execution only where V84/V85 and queue
    preflight evidence permit it.
-5. Expand controlled-run Agent Fabric capture coverage beyond the shell
+5. Continue controlled-run Agent Fabric capture coverage beyond the initial corpus
    fixture, then use claim gate reports as the stoplight for human public-claim
    review.
 

@@ -1,0 +1,113 @@
+{
+  "allowed_touched_files": [
+    "docs/spec.md"
+  ],
+  "assurance": "A1-local-observed",
+  "decision": "observed-local-capture",
+  "fixture": {
+    "adapter": {
+      "executes_commands": false,
+      "harness": "shell",
+      "mode": "fixture-only",
+      "name": "shell-reference-fixture"
+    },
+    "capture": {
+      "command_receipts": [],
+      "diff_summary": {
+        "added_files": [],
+        "changed_files": [],
+        "deleted_files": [],
+        "modified_files": [],
+        "summary": "fixture-only adapter did not observe a diff"
+      },
+      "self_report": {
+        "agent_role": "runner",
+        "command_receipts": [],
+        "output_files": [
+          "out/agent/docs-result.txt"
+        ],
+        "profile": "docs-profile",
+        "result_version": "1.0",
+        "self_reported_claims": [
+          "docs coverage checked"
+        ],
+        "status": "success"
+      },
+      "test_output": {
+        "command": null,
+        "status": "not-run",
+        "summary": "fixture-only adapter did not run tests"
+      },
+      "touched_files": [],
+      "trust_level": "A0-claims-only"
+    },
+    "invocation": {
+      "context_policy": "local-code-only",
+      "evidence_obligations": [
+        "command_receipt"
+      ],
+      "instructions": "Inspect documentation coverage and report outputs without writing observer-owned evidence.",
+      "packet_version": "1.0",
+      "profile": "docs-profile",
+      "role": "runner",
+      "target_harness": "shell",
+      "toolbelt": {
+        "allowed_mcp": [],
+        "allowed_tools": [
+          "cat",
+          "python3"
+        ],
+        "context_policy": "local-code-only",
+        "evidence_obligations": [
+          "command_receipt"
+        ],
+        "forbidden_tools": [
+          "write"
+        ],
+        "output_schema": "runner-result-v1"
+      }
+    },
+    "kind": "agent-fabric-reference-adapter-fixture",
+    "schema_version": "1.0"
+  },
+  "kind": "agent-fabric-capture-manifest",
+  "observer_capture": {
+    "command_receipts": [
+      {
+        "command": [
+          "python3",
+          "scripts/check_contract.py",
+          "--tier",
+          "changed"
+        ],
+        "exit_code": 0,
+        "log_path": "logs/check-contract-changed.txt"
+      }
+    ],
+    "diff_summary": {
+      "changed_files": [
+        "docs/spec.md"
+      ]
+    },
+    "observed_by": "depone-observer",
+    "source_fixture_hash": "b5d8aa16887be832e22518a067cd31b2f754c54085ca95a920d1b1f3460cf080",
+    "test_output": {
+      "status": "passed",
+      "summary": "docs fixture passed"
+    },
+    "touched_files": [
+      "docs/spec.md"
+    ]
+  },
+  "observer_capture_hash": "54a0323a043d92752ad0a9cefd6968aff23a6c45c2af088c502bc254a7527793",
+  "required_observer_fields": [
+    "command_receipts",
+    "diff_summary",
+    "observed_by",
+    "source_fixture_hash",
+    "test_output",
+    "touched_files"
+  ],
+  "schema_version": "1.0",
+  "source_fixture_hash": "b5d8aa16887be832e22518a067cd31b2f754c54085ca95a920d1b1f3460cf080"
+}

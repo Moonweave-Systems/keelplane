@@ -8,6 +8,7 @@ import sys
 from depone.cli import (
     agent_fabric_adapter_smoke,
     agent_fabric_claim_gate,
+    agent_fabric_controlled_capture,
     agent_fabric_dogfood_evidence,
     agent_fabric_harness_snapshot,
     agent_fabric_paired_evidence,
@@ -214,13 +215,39 @@ def main() -> None:
 
 
 
+
+    # agent-fabric-controlled-capture
+    controlled_capture_parser = sub.add_parser(
+        "agent-fabric-controlled-capture",
+        help="Export source-only Agent Fabric controlled capture corpus reports",
+    )
+    controlled_capture_parser.add_argument(
+        "--capture-manifest",
+        action="append",
+        default=[],
+        help="Agent Fabric capture manifest JSON path; repeat for corpus coverage",
+    )
+    controlled_capture_parser.add_argument(
+        "--out",
+        default="controlled-capture-corpus.json",
+        help="Output path for controlled capture corpus JSON",
+    )
+    controlled_capture_parser.add_argument(
+        "--self-test", action="store_true", help="Run self-test and exit"
+    )
+
     # agent-fabric-dogfood-evidence
     dogfood_evidence_parser = sub.add_parser(
         "agent-fabric-dogfood-evidence",
         help="Export source-only Agent Fabric dogfood evidence",
     )
     dogfood_evidence_parser.add_argument(
-        "--capture-manifest", help="Agent Fabric capture manifest JSON path"
+        "--capture-manifest",
+        action="append",
+        help=(
+            "Agent Fabric capture manifest JSON path; repeat to export a "
+            "controlled capture corpus summary"
+        ),
     )
     dogfood_evidence_parser.add_argument(
         "--out",
@@ -312,6 +339,8 @@ def main() -> None:
         agent_fabric_harness_snapshot.run(args)
     elif args.command == "agent-fabric-adapter-smoke":
         agent_fabric_adapter_smoke.run(args)
+    elif args.command == "agent-fabric-controlled-capture":
+        agent_fabric_controlled_capture.run(args)
     elif args.command == "agent-fabric-dogfood-evidence":
         agent_fabric_dogfood_evidence.run(args)
     elif args.command == "agent-fabric-paired-evidence":

@@ -9,8 +9,10 @@ from depone.agent_fabric.capture_bridge import validate_capture_manifest
 from depone.agent_fabric.claim_gate import canonical_hash
 
 REPORT_KIND = "agent-fabric-dogfood-evidence"
+CORPUS_REPORT_KIND = "agent-fabric-controlled-capture-corpus"
 REPORT_SCHEMA_VERSION = "1.0"
 READY_DECISION = "dogfood-evidence-ready-source-only"
+CORPUS_READY_DECISION = "controlled-capture-corpus-ready"
 
 
 def build_dogfood_evidence_report(capture_manifest: dict[str, Any]) -> dict[str, Any]:
@@ -86,11 +88,95 @@ def build_dogfood_evidence_report(capture_manifest: dict[str, Any]) -> dict[str,
     }
 
 
+def build_controlled_capture_corpus_report(
+    capture_manifests: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Summarize source-only dogfood readiness across controlled captures."""
+    entries: list[dict[str, Any]] = []
+    blockers: list[dict[str, Any]] = []
+    capture_hashes: list[str] = []
+
+    for index, capture_manifest in enumerate(capture_manifests):
+        report = build_dogfood_evidence_report(capture_manifest)
+        capture_hash = canonical_hash(capture_manifest)
+        capture_hashes.append(capture_hash)
+        entry = {
+            "index": index,
+            "decision": report["decision"],
+            "capture_assurance": report["capture_assurance"],
+            "capture_decision": report["capture_decision"],
+            "test_status": report["test_status"],
+            "source_hash": capture_hash,
+            "blockers": report["blockers"],
+        }
+        entries.append(entry)
+        if report["decision"] != READY_DECISION:
+            blockers.append(
+                {
+                    "code": "ERR_CONTROLLED_CAPTURE_NOT_READY",
+                    "message": "controlled capture did not produce ready dogfood evidence",
+                    "index": index,
+                    "decision": report["decision"],
+                    "blockers": report["blockers"],
+                }
+            )
+
+    capture_count = len(capture_manifests)
+    ready_count = sum(1 for entry in entries if entry["decision"] == READY_DECISION)
+    if capture_count < 2:
+        blockers.append(
+            {
+                "code": "ERR_CONTROLLED_CAPTURE_CORPUS_TOO_SMALL",
+                "message": "controlled capture corpus requires at least two manifests",
+                "capture_count": capture_count,
+            }
+        )
+    if len(set(capture_hashes)) != len(capture_hashes):
+        blockers.append(
+            {
+                "code": "ERR_CONTROLLED_CAPTURE_CORPUS_DUPLICATE",
+                "message": "controlled capture corpus requires distinct manifests",
+            }
+        )
+
+    if blockers:
+        decision = "blocked-insufficient-capture-corpus"
+    else:
+        decision = CORPUS_READY_DECISION
+
+    return {
+        "kind": CORPUS_REPORT_KIND,
+        "schema_version": REPORT_SCHEMA_VERSION,
+        "decision": decision,
+        "capture_count": capture_count,
+        "ready_count": ready_count,
+        "blocked_count": capture_count - ready_count,
+        "entries": entries,
+        "blockers": blockers,
+        "source_hashes": {
+            "capture_manifests": capture_hashes,
+        },
+        "boundary": {
+            "executes_commands": False,
+            "calls_live_models": False,
+            "detects_installed_harness": False,
+            "inspects_mcp_runtime": False,
+            "approves_public_claim": False,
+            "trust_upgrade": False,
+        },
+    }
+
+
 def _self_test() -> None:
     from pathlib import Path
 
     capture = json.loads(
         Path("depone/fixtures/agent_fabric/capture_manifest_shell.json").read_text()
+    )
+    docs_capture = json.loads(
+        Path(
+            "depone/fixtures/agent_fabric/capture_manifest_docs_source_only.json"
+        ).read_text()
     )
     report = build_dogfood_evidence_report(capture)
     if report["decision"] != READY_DECISION:
@@ -107,3 +193,6 @@ def _self_test() -> None:
     blocked = build_dogfood_evidence_report(a0_capture)
     if blocked["decision"] != "blocked-capture-not-observed":
         raise AssertionError("expected A0 capture to block dogfood evidence")
+    corpus = build_controlled_capture_corpus_report([capture, docs_capture])
+    if corpus["decision"] != CORPUS_READY_DECISION:
+        raise AssertionError("expected two valid captures to produce ready corpus")
