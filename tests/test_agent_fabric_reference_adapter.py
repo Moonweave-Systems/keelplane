@@ -60,6 +60,15 @@ class ReferenceAdapterFixtureTests(unittest.TestCase):
         self.assertFalse(fixture["adapter"]["executes_commands"])
         self.assertEqual(validate_reference_adapter_fixture(fixture), [])
 
+
+    def test_rejects_new_capture_trust_level(self) -> None:
+        fixture = build_reference_adapter_fixture(_invocation(), self_report=_result())
+        fixture["capture"]["trust_level"] = "A1-local-observed"
+
+        errors = validate_reference_adapter_fixture(fixture)
+
+        self.assertIn("capture.trust_level must be 'A0-claims-only'", errors)
+
     def test_rejects_live_execution_claim(self) -> None:
         fixture = build_reference_adapter_fixture(_invocation(), self_report=_result())
         fixture["adapter"]["executes_commands"] = True

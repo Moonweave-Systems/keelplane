@@ -11,6 +11,7 @@ from pathlib import Path
 from depone.core.plan_schema import load_plan
 from depone.verify.adapters import generic, resolve
 from depone.verify.engine import run_verification
+from depone.verify.operator_view import write_operator_view
 
 
 def run(args: argparse.Namespace) -> None:
@@ -62,6 +63,10 @@ def run(args: argparse.Namespace) -> None:
     print(f"  Decision: {report_dict['decision']}")
     print(f"  Assurance: {report_dict['assurance']}")
     print(f"  Phases: {len(report_dict['phases'])}")
+
+    if args.operator_view_out:
+        view_path = write_operator_view(report, args.operator_view_out)
+        print(f"Operator view written to {view_path}")
 
     if verdict != "verified":
         sys.exit(1)

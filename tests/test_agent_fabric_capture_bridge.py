@@ -87,6 +87,38 @@ class CaptureBridgeTests(unittest.TestCase):
         self.assertEqual(manifest["decision"], "claims-only")
         self.assertEqual(validate_capture_manifest(manifest), [])
 
+
+    def test_rejects_new_assurance_level(self) -> None:
+        manifest = build_capture_manifest(_fixture())
+        manifest["assurance"] = "A2-live-observed"
+        manifest["decision"] = "trusted-live-capture"
+
+        errors = validate_capture_manifest(manifest)
+
+        self.assertTrue(
+            any(
+                "assurance must be 'A0-claims-only' or 'A1-local-observed'" in e
+                for e in errors
+            ),
+            errors,
+        )
+
+    def test_rejects_live_source_fixture_even_with_observer_capture(self) -> None:
+        fixture = _fixture()
+        fixture["adapter"]["executes_commands"] = True
+        manifest = build_capture_manifest(
+            fixture,
+            observer_capture=_observer_capture(),
+            allowed_touched_files=["depone/example.py"],
+        )
+
+        errors = validate_capture_manifest(manifest)
+
+        self.assertTrue(
+            any("adapter.executes_commands must be false" in e for e in errors),
+            errors,
+        )
+
     def test_tampered_observer_capture_fails_closed(self) -> None:
         manifest = build_capture_manifest(
             _fixture(),

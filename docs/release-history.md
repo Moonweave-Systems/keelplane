@@ -207,6 +207,9 @@ promotion requires real release history.
 - V110: `docs/v110-agent-fabric-report-assurance-spec.md` surfaced capture
   manifest checks in verification reports with separate `verdict`, `decision`,
   and `assurance` fields.
+- V111: `docs/v111-agent-fabric-operator-view-spec.md` documents the
+  presentation-only operator-view/exporter for V110 report fields, including
+  the `depone verify --operator-view-out` Markdown export path.
 
 ## Current Public Boundaries
 
@@ -256,3 +259,5 @@ promotion requires real release history.
 - V110 verification reports may display Agent Fabric assurance, but invalid
   capture manifests fail closed and evidence-contract failures still dominate
   the final verdict.
+- V111 operator views may summarize report fields, but they do not create new
+  evidence, upgrade assurance, or hide invalid captures and integration risks.

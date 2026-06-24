@@ -94,6 +94,11 @@ def main() -> None:
         "--out", default="verification-report.json", help="Output path for report"
     )
     verify_parser.add_argument(
+        "--operator-view-out",
+        default=None,
+        help="Output path for a V111 operator-readable report view",
+    )
+    verify_parser.add_argument(
         "--self-test", action="store_true", help="Run self-test and exit"
     )
 
