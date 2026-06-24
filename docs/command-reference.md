@@ -6,6 +6,13 @@ README should explain the product; this page preserves operator detail.
 ## Product Shell
 
 ```bash
+python3 -m depone design "<objective>" --surface . --out plan.json
+python3 -m depone validate plan.json
+python3 -m depone compile plan.json --target conductor --out workflow.yaml
+python3 -m depone verify plan.json --evidence ./evidence --out report.json --operator-view-out operator-view.md
+python3 -m depone validate-contracts --all
+python3 -m depone demo --out out/depone-quickstart
+
 python scripts/dwm.py plan "<objective>" --out out/v21/<run_id>
 python scripts/dwm.py run "<objective>" --out out/v21/<run_id>
 python scripts/dwm.py resume --run out/v21/<run_id>
