@@ -4034,7 +4034,7 @@ def main() -> None:
             "`roadmap-reconciliation.md`",
             "public product brand: `depone`",
             "internal engine name: `dwm core`",
-            "latest reconciled version: `v118`",
+            "latest reconciled version: `v119`",
             "does not claim autonomous execution",
         ],
     )
@@ -4048,7 +4048,7 @@ def main() -> None:
             "`required_passed`: 4",
             "`decision`: `keep`",
             "`decision`: `roadmap_reconciled`",
-            "`latest_version`: `v118`",
+            "`latest_version`: `v119`",
             "does not execute queued commands",
         ],
     )
@@ -4100,7 +4100,7 @@ def main() -> None:
             "`fixture_count`: 4",
             "`required_passed`: 4",
             "`decision`: `keep`",
-            "`roadmap_latest_version`: `v118`",
+            "`roadmap_latest_version`: `v119`",
             "`command_safety_decision`: `keep`",
         ],
     )

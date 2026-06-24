@@ -60,6 +60,7 @@ evidence gates.
 | `depone agent-fabric-smoke` | Export the source-only Agent Fabric lifecycle smoke summary |
 | `depone agent-fabric-harness-snapshot` | Export source-only harness capability snapshots |
 | `depone agent-fabric-adapter-smoke` | Export source-only adapter smoke reports |
+| `depone agent-fabric-claim-gate` | Gate public Agent Fabric claims on paired evidence |
 | `depone demo` | Run a complete design → compile → verify cycle |
 
 ### Verify: 4-Check Engine
@@ -158,9 +159,9 @@ python3 -m depone validate-contracts --self-test  # 22/22 passed
 python3 -m depone agent-fabric-smoke --self-test # source-only smoke export passed
 python3 -m depone agent-fabric-harness-snapshot --self-test # harness snapshot export passed
 python3 -m depone agent-fabric-adapter-smoke --self-test # adapter smoke export passed
+python3 -m depone agent-fabric-claim-gate --self-test # claim gate export passed
 python3 -m depone demo --self-test                # full cycle passed
 ```
-
 Run the release contract before publishing changes:
 
 ```bash
@@ -173,7 +174,6 @@ Depone is not a prompt-only workflow router and not a clone of any one
 runtime. It is a design + verification layer above existing execution engines.
 DWM Core keeps agentic work inspectable, reproducible, resumable, and honest
 about what has actually been executed.
-
 ## Documentation
 
 - [`docs/v107-agent-fabric-control-plane-spec.md`](docs/v107-agent-fabric-control-plane-spec.md): Agent Fabric control-plane contract/compiler spec.

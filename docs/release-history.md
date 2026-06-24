@@ -222,6 +222,9 @@ promotion requires real release history.
 - V118: `docs/v118-agent-fabric-adapter-smoke-spec.md` added the
   `depone agent-fabric-adapter-smoke` report that binds reference adapter
   fixtures to harness snapshots without executing them.
+- V119: `docs/v119-agent-fabric-claim-gate-spec.md` added the
+  `depone agent-fabric-claim-gate` report that blocks public benefit claims
+  until paired dogfood or explicitly approved live adapter-smoke evidence exists.
 
 ## Current Public Boundaries
 
@@ -285,3 +288,5 @@ promotion requires real release history.
 - V118 adapter smoke reports bind fixtures to snapshots and validation errors;
   they still do not execute commands, call models, or prove live adapter
   enforcement.
+- V119 claim gate reports block public benefit claims from source-only evidence;
+  they still do not approve live execution, superiority claims, or trust upgrades.

@@ -7,6 +7,7 @@ import sys
 
 from depone.cli import (
     agent_fabric_adapter_smoke,
+    agent_fabric_claim_gate,
     agent_fabric_harness_snapshot,
     agent_fabric_smoke,
     demo,
@@ -209,6 +210,28 @@ def main() -> None:
         "--self-test", action="store_true", help="Run self-test and exit"
     )
 
+    # agent-fabric-claim-gate
+    claim_gate_parser = sub.add_parser(
+        "agent-fabric-claim-gate",
+        help="Gate Agent Fabric public claims on source evidence",
+    )
+    claim_gate_parser.add_argument(
+        "--adapter-smoke", help="Adapter smoke report JSON path"
+    )
+    claim_gate_parser.add_argument(
+        "--claim-scope",
+        default="public-benefit",
+        help="Claim scope being gated",
+    )
+    claim_gate_parser.add_argument(
+        "--out",
+        default="agent-fabric-claim-gate.json",
+        help="Output path for claim gate report JSON",
+    )
+    claim_gate_parser.add_argument(
+        "--self-test", action="store_true", help="Run self-test and exit"
+    )
+
     # demo
     demo_parser = sub.add_parser(
         "demo", help="Run a complete design→compile→verify cycle"
@@ -238,6 +261,8 @@ def main() -> None:
         agent_fabric_harness_snapshot.run(args)
     elif args.command == "agent-fabric-adapter-smoke":
         agent_fabric_adapter_smoke.run(args)
+    elif args.command == "agent-fabric-claim-gate":
+        agent_fabric_claim_gate.run(args)
     elif args.command == "demo":
         demo.run(args)
     else:

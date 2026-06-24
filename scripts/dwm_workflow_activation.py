@@ -186,7 +186,7 @@ def collect_blockers(
         if roadmap_reconciliation.get("blocked_by"):
             blockers.append({"code": "ERR_WORKFLOW_ACTIVATION_ROADMAP_BLOCKED", "message": "roadmap reconciliation contains blockers"})
         latest_version = (roadmap_reconciliation.get("policy") or {}).get("latest_version")
-        if latest_version != "V118":
+        if latest_version != "V119":
             blockers.append({"code": "ERR_WORKFLOW_ACTIVATION_ROADMAP_VERSION_STALE", "message": "roadmap reconciliation latest version is stale", "latest_version": latest_version})
     if command_safety is not None:
         if command_safety.get("decision") != "keep":
@@ -400,7 +400,7 @@ def ready_brand_audit() -> dict[str, Any]:
 
 
 def ready_roadmap_reconciliation() -> dict[str, Any]:
-    return {"decision": "roadmap_reconciled", "blocked_by": [], "policy": {"latest_version": "V118"}}
+    return {"decision": "roadmap_reconciled", "blocked_by": [], "policy": {"latest_version": "V119"}}
 
 
 def ready_command_safety() -> dict[str, Any]:
