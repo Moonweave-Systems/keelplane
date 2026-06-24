@@ -91,24 +91,26 @@ class AgentFabricDogfoodEvidenceTests(unittest.TestCase):
         )
 
         shell_capture = observed_capture_manifest()
-        codex_capture = json.loads(json.dumps(shell_capture))
-        codex_capture["fixture"]["adapter"]["harness"] = "codex"
-        codex_capture["fixture"]["adapter"]["name"] = "codex-reference-fixture"
-        codex_capture["fixture"]["invocation"]["target_harness"] = "codex"
-        codex_capture["fixture"]["invocation"]["profile"] = "codex-source-only"
-        codex_capture["fixture"]["capture"]["self_report"]["profile"] = "codex-source-only"
-        codex_capture["source_fixture_hash"] = _sha256_json(codex_capture["fixture"])
-        codex_capture["observer_capture"]["source_fixture_hash"] = codex_capture[
-            "source_fixture_hash"
-        ]
-        codex_capture["observer_capture_hash"] = _sha256_json(
-            codex_capture["observer_capture"]
+        second_shell_capture = json.loads(json.dumps(shell_capture))
+        second_shell_capture["fixture"]["adapter"]["name"] = "shell-reference-fixture-second"
+        second_shell_capture["fixture"]["invocation"]["profile"] = "second-source-only"
+        second_shell_capture["fixture"]["capture"]["self_report"]["profile"] = (
+            "second-source-only"
+        )
+        second_shell_capture["source_fixture_hash"] = _sha256_json(
+            second_shell_capture["fixture"]
+        )
+        second_shell_capture["observer_capture"]["source_fixture_hash"] = (
+            second_shell_capture["source_fixture_hash"]
+        )
+        second_shell_capture["observer_capture_hash"] = _sha256_json(
+            second_shell_capture["observer_capture"]
         )
 
         corpus = build_dogfood_evidence_corpus_report(
             [
                 ("shell", shell_capture),
-                ("codex", codex_capture),
+                ("second-shell", second_shell_capture),
             ]
         )
 
@@ -117,7 +119,7 @@ class AgentFabricDogfoodEvidenceTests(unittest.TestCase):
         self.assertEqual(corpus["summary"]["total_manifests"], 2)
         self.assertEqual(corpus["summary"]["ready_manifests"], 2)
         self.assertEqual(corpus["summary"]["blocked_manifests"], 0)
-        self.assertEqual([entry["id"] for entry in corpus["entries"]], ["shell", "codex"])
+        self.assertEqual([entry["id"] for entry in corpus["entries"]], ["shell", "second-shell"])
         self.assertEqual(
             [entry["decision"] for entry in corpus["entries"]],
             ["dogfood-evidence-ready-source-only", "dogfood-evidence-ready-source-only"],

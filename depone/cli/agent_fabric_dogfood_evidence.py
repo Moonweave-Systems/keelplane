@@ -8,7 +8,10 @@ import sys
 import tempfile
 from pathlib import Path
 
-from depone.agent_fabric.dogfood_evidence import build_dogfood_evidence_report
+from depone.agent_fabric.dogfood_evidence import (
+    build_dogfood_evidence_corpus_report,
+    build_dogfood_evidence_report,
+)
 
 
 def _read_object(path: Path, label: str) -> dict:
@@ -36,14 +39,29 @@ def run(args: argparse.Namespace) -> None:
         )
         sys.exit(1)
 
-    capture = _read_object(Path(args.capture_manifest), "capture manifest")
-    report = build_dogfood_evidence_report(capture)
+    capture_paths = getattr(args, "capture_manifest", None)
+    if isinstance(capture_paths, str):
+        capture_paths = [capture_paths]
+
+    captures = [
+        (Path(path).stem, _read_object(Path(path), "capture manifest"))
+        for path in capture_paths
+    ]
+    if len(captures) == 1:
+        report = build_dogfood_evidence_report(captures[0][1])
+    else:
+        report = build_dogfood_evidence_corpus_report(captures)
+
     out_path = Path(getattr(args, "out", "dogfood-evidence.json"))
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
     print(f"Dogfood evidence report written to {out_path}")
     print(f"  Decision: {report['decision']}")
-    print(f"  Capture assurance: {report['capture_assurance']}")
+    if len(captures) == 1:
+        print(f"  Capture assurance: {report['capture_assurance']}")
+    else:
+        summary = report["summary"]
+        print(f"  Ready manifests: {summary['ready_manifests']}/{summary['total_manifests']}")
 
 
 def _self_test() -> None:

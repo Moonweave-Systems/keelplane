@@ -220,7 +220,9 @@ def main() -> None:
         help="Export source-only Agent Fabric dogfood evidence",
     )
     dogfood_evidence_parser.add_argument(
-        "--capture-manifest", help="Agent Fabric capture manifest JSON path"
+        "--capture-manifest",
+        action="append",
+        help="Agent Fabric capture manifest JSON path; may be repeated for a source-only corpus",
     )
     dogfood_evidence_parser.add_argument(
         "--out",
