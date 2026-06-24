@@ -200,6 +200,10 @@ promotion requires real release history.
   fixture-only shell reference adapter shape for self-report, diff/touched-file
   summary, test output, and command receipts while keeping all adapter material
   at `A0-claims-only`.
+- V109: `docs/v109-agent-fabric-capture-bridge-spec.md` added a passive capture
+  manifest bridge with explicit `A0-claims-only` and `A1-local-observed`
+  assurance labels plus fail-closed tamper, stale-source, and unexpected-file
+  checks.
 
 ## Current Public Boundaries
 
@@ -244,3 +248,5 @@ promotion requires real release history.
   do not execute live agents or prove productivity, quality, or superiority.
 - V108 Agent Fabric reference adapter fixtures do not execute commands or live
   models; their captures remain non-authoritative `A0-claims-only` material.
+- V109 Agent Fabric capture manifests can reach `A1-local-observed` only from
+  hash-bound Depone observer capture; self-report-only manifests remain A0.

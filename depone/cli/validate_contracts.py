@@ -12,6 +12,10 @@ import json
 import sys
 from pathlib import Path
 
+from depone.agent_fabric.capture_bridge import (
+    build_capture_manifest,
+    validate_capture_manifest,
+)
 from depone.agent_fabric.reference_adapter import (
     build_reference_adapter_fixture,
     validate_reference_adapter_fixture,
@@ -124,13 +128,15 @@ def _validate_contract_dispatch(data: dict) -> list[str]:
         return validate_result(data)
     elif kind == "agent-fabric-reference-adapter-fixture":
         return validate_reference_adapter_fixture(data)
+    elif kind == "agent-fabric-capture-manifest":
+        return validate_capture_manifest(data)
     else:
         return [
             f"Unknown contract kind: {kind!r}. "
             "Use kind='role-set', 'toolbelt-set', 'harness-set', "
             "'profile-set', 'compile-report', 'invocation', "
             "'agent-result', 'agent-fabric-reference-adapter-fixture', "
-            "or 'agent-fabric-contract'"
+            "'agent-fabric-capture-manifest', or 'agent-fabric-contract'"
         ]
 
 
@@ -222,25 +228,43 @@ def _dispatch_self_test() -> list[tuple[str, bool]]:
             "approximations": [],
         }
     )
-    reference_fixture_errors = _validate_contract_dispatch(
-        build_reference_adapter_fixture(
-            {
-                "packet_version": "1.0",
-                "target_harness": "shell",
-                "profile": "self-test-profile",
-                "role": "runner",
-                "toolbelt": {
-                    "allowed_tools": ["cat", "python3"],
-                    "allowed_mcp": [],
-                    "forbidden_tools": ["write"],
-                    "context_policy": "local-code-only",
-                    "output_schema": "runner-result-v1",
-                    "evidence_obligations": ["command_receipt"],
-                },
-                "instructions": "Run local checks and report outputs.",
-                "evidence_obligations": ["command_receipt"],
-                "context_policy": "local-code-only",
-            }
+    dispatch_invocation = {
+        "packet_version": "1.0",
+        "target_harness": "shell",
+        "profile": "self-test-profile",
+        "role": "runner",
+        "toolbelt": {
+            "allowed_tools": ["cat", "python3"],
+            "allowed_mcp": [],
+            "forbidden_tools": ["write"],
+            "context_policy": "local-code-only",
+            "output_schema": "runner-result-v1",
+            "evidence_obligations": ["command_receipt"],
+        },
+        "instructions": "Run local checks and report outputs.",
+        "evidence_obligations": ["command_receipt"],
+        "context_policy": "local-code-only",
+    }
+    reference_fixture = build_reference_adapter_fixture(dispatch_invocation)
+    reference_fixture_errors = _validate_contract_dispatch(reference_fixture)
+    capture_manifest_errors = _validate_contract_dispatch(
+        build_capture_manifest(
+            reference_fixture,
+            observer_capture={
+                "observed_by": "depone-observer",
+                "source_fixture_hash": "",
+                "diff_summary": {"changed_files": ["depone/example.py"]},
+                "touched_files": ["depone/example.py"],
+                "test_output": {"status": "passed", "summary": "1 passed"},
+                "command_receipts": [
+                    {
+                        "command": ["python3", "tests/test_example.py"],
+                        "exit_code": 0,
+                        "log_path": "logs/test-example.txt",
+                    }
+                ],
+            },
+            allowed_touched_files=["depone/example.py"],
         )
     )
 
@@ -259,4 +283,5 @@ def _dispatch_self_test() -> list[tuple[str, bool]]:
         ),
         ("dispatch-single-harness", not harness_errors),
         ("dispatch-reference-adapter-fixture", not reference_fixture_errors),
+        ("dispatch-agent-fabric-capture-manifest", not capture_manifest_errors),
     ]
