@@ -63,7 +63,7 @@ def revalidate() -> dict[str, Any]:
 def self_test() -> None:
     actual = revalidate()
     wrong = dict(actual)
-    wrong["decision"] = "pass"
+    wrong["decision"] = "fail"
     try:
         _assert_result(actual, wrong)
     except AssertionError:

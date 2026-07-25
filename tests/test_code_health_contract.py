@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import tempfile
 import unittest
 from dataclasses import asdict
 from pathlib import Path
 
 from depone.verify.adapters.base import EvidenceContext, EvidenceFile
+from depone.agent_fabric.evidence_substrate import wrap_statement_in_dsse
+from depone.agent_fabric.sign import _generate_ed25519_keypair, sign_dsse_envelope
 from depone.verify.adapters.generic import read_evidence
 from depone.verify.engine import (
     _health_conformance,
@@ -228,6 +231,8 @@ class CodeHealthContractTests(unittest.TestCase):
                         "tool": "black",
                         "status": "pass",
                         "enforcement": "block",
+                        "evidence_substrate": "producer-transcribed",
+                        "means": "producer-reported exit code; not bundle-bound",
                         "blocks_handoff": False,
                         "error_code": None,
                         "evidence_path": None,
@@ -237,6 +242,8 @@ class CodeHealthContractTests(unittest.TestCase):
                         "tool": "ruff-c901",
                         "status": "fail",
                         "enforcement": "advisory",
+                        "evidence_substrate": "producer-transcribed",
+                        "means": "producer-reported exit code; not bundle-bound",
                         "blocks_handoff": False,
                         "error_code": "ERR_HEALTH_GATE_VIOLATION",
                         "evidence_path": "health/complexity.exit",
@@ -246,7 +253,9 @@ class CodeHealthContractTests(unittest.TestCase):
                         "tool": "import-linter",
                         "status": "fail",
                         "enforcement": "block",
-                        "blocks_handoff": True,
+                        "evidence_substrate": "producer-transcribed",
+                        "means": "producer-reported exit code; not bundle-bound",
+                        "blocks_handoff": False,
                         "error_code": "ERR_HEALTH_GATE_VIOLATION",
                         "evidence_path": "health/architecture.exit",
                     },
@@ -268,7 +277,7 @@ class CodeHealthContractTests(unittest.TestCase):
         self.assertEqual(report.health_conformance.overall, "fail")
         self.assertFalse(report.health_conformance.axes[0].blocks_handoff)
 
-    def test_block_health_failure_refutes_decision(self) -> None:
+    def test_transcribed_block_health_failure_is_advisory(self) -> None:
         report = run_verification(
             _plan(),
             _evidence(
@@ -277,10 +286,72 @@ class CodeHealthContractTests(unittest.TestCase):
             ),
         )
 
-        self.assertEqual(report.decision, "fail")
-        self.assertEqual(report.verdict, "refuted")
+        self.assertEqual(report.decision, "pass")
+        self.assertEqual(report.verdict, "verified")
         self.assertEqual(report.health_conformance.overall, "fail")
-        self.assertTrue(report.health_conformance.axes[0].blocks_handoff)
+        self.assertFalse(report.health_conformance.axes[0].blocks_handoff)
+
+    def test_bound_block_health_failure_honors_declared_enforcement(self) -> None:
+        gate = _gate("architecture", "import-linter", "block")
+        evidence = _evidence([gate], {"architecture": 1})
+        contract = json.loads(evidence.files[0].content)
+        entries = validate_evidence_contract(evidence)
+
+        conformance = _health_conformance(
+            contract,
+            entries,
+            {"architecture": "bound"},
+        )
+
+        self.assertTrue(conformance.axes[0].blocks_handoff)
+        self.assertEqual(conformance.axes[0].evidence_substrate, "bound")
+
+    def test_bound_manifest_tampered_exit_is_refuted(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            gate = _gate("architecture", "import-linter", "block")
+            evidence = _evidence([gate], {"architecture": 0})
+            files = {entry.path: entry for entry in evidence.files}
+            manifest = {
+                "gates": [{
+                    "gate": "architecture",
+                    "exit_code_path": "health/architecture.exit",
+                    "exit_code_sha256": _sha("0\n"),
+                    "log_path": "health/architecture.log",
+                    "log_sha256": _sha("recorded gate output\n"),
+                }]
+            }
+            manifest_content = _file("health-gate-artifacts.json", manifest).content
+            statement = {
+                "subject": [{
+                    "name": "health-gate-artifacts.json",
+                    "digest": {"sha256": _sha(manifest_content)},
+                }]
+            }
+            private_key, public_key = _generate_ed25519_keypair(Path(tmp))
+            bundle = {
+                "statement": statement,
+                "dsse_envelope": sign_dsse_envelope(
+                    wrap_statement_in_dsse(statement),
+                    str(private_key),
+                    key_id="health-test-key",
+                ),
+            }
+            files["health-gate-artifacts.json"] = _file(
+                "health-gate-artifacts.json", manifest
+            )
+            files["bundle.json"] = _file("bundle.json", bundle)
+            files["health/architecture.exit"] = _file(
+                "health/architecture.exit", "1\n"
+            )
+            evidence.files = list(files.values())
+            evidence.raw["trusted_observer_public_key_file"] = str(public_key)
+
+            errors = validate_evidence_contract(evidence)
+
+            self.assertIn(
+                "ERR_HEALTH_GATE_ARTIFACT_DIGEST_MISMATCH",
+                [error.code for error in errors],
+            )
 
     def test_health_conformance_is_none_without_code_health_directive(self) -> None:
         evidence = _evidence([_gate("format", "black", "block")])
@@ -296,7 +367,7 @@ class CodeHealthContractTests(unittest.TestCase):
 
         report = run_verification(_plan(), evidence)
 
-        self.assertEqual(report.decision, "fail")
+        self.assertEqual(report.decision, "pass")
         self.assertEqual(
             [entry.code for entry in report.evidence_contract],
             ["ERR_HEALTH_GATE_VIOLATION", "ERR_HEALTH_GATE_VIOLATION"],
@@ -309,7 +380,7 @@ class CodeHealthContractTests(unittest.TestCase):
             [
                 ("format", "pass", "block", False),
                 ("complexity", "fail", "advisory", False),
-                ("architecture", "fail", "block", True),
+                ("architecture", "fail", "block", False),
             ],
         )
 
