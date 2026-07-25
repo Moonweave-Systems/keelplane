@@ -19,6 +19,7 @@ from depone.verify.adapters.base import EvidenceContext
 from depone.verify.evidence_contract import (
     EvidenceContractEntry,
     _read_evidence_contract,
+    _health_evidence_substrates,
     validate_advisory_provenance,
     validate_evidence_contract,
 )
@@ -144,6 +145,8 @@ class HealthAxisConformance:
     tool: str
     status: Literal["pass", "fail"]
     enforcement: Literal["block", "advisory"]
+    evidence_substrate: Literal["bound", "producer-transcribed"]
+    means: str
     blocks_handoff: bool
     error_code: str | None = None
     evidence_path: str | None = None
@@ -234,6 +237,7 @@ def _health_entry_matches_gate(
 def _is_advisory_health_entry(
     contract: dict[str, Any] | None,
     entry: EvidenceContractEntry,
+    health_substrates: dict[str, str] | None = None,
 ) -> bool:
     if entry.code != "ERR_HEALTH_GATE_VIOLATION" or contract is None:
         return False
@@ -243,23 +247,33 @@ def _is_advisory_health_entry(
     gates = directive.get("gates")
     if not isinstance(gates, list):
         return False
-    return any(
-        isinstance(gate, dict)
-        and gate.get("enforcement") == "advisory"
-        and _health_entry_matches_gate(entry, gate)
-        for gate in gates
+    matching_gate = next(
+        (
+            gate
+            for gate in gates
+            if isinstance(gate, dict) and _health_entry_matches_gate(entry, gate)
+        ),
+        None,
     )
+    if not matching_gate:
+        return False
+    if health_substrates is not None:
+        gate_id = entry.health_gate.get("gate") if entry.health_gate else None
+        if health_substrates.get(gate_id) == "producer-transcribed":
+            return True
+    return matching_gate.get("enforcement") == "advisory"
 
 
 def _blocking_evidence_contract_entries(
     contract: dict[str, Any] | None,
     evidence_contract: list[EvidenceContractEntry],
+    health_substrates: dict[str, str] | None = None,
 ) -> list[EvidenceContractEntry]:
     return [
         entry
         for entry in evidence_contract
         if not _is_advisory_skill_routing_entry(contract, entry)
-        and not _is_advisory_health_entry(contract, entry)
+        and not _is_advisory_health_entry(contract, entry, health_substrates)
     ]
 
 
@@ -416,6 +430,7 @@ def _policy_conformance(
 def _health_conformance(
     contract: dict[str, Any] | None,
     evidence_contract: list[EvidenceContractEntry],
+    health_substrates: dict[str, str] | None = None,
 ) -> HealthConformance | None:
     if contract is None:
         return None
@@ -450,13 +465,29 @@ def _health_conformance(
             None,
         )
         status: Literal["pass", "fail"] = "fail" if failure else "pass"
+        substrate: Literal["bound", "producer-transcribed"] = (
+            "bound"
+            if health_substrates is not None
+            and health_substrates.get(gate_id) == "bound"
+            else "producer-transcribed"
+        )
         axes.append(
             HealthAxisConformance(
                 gate=gate_id,
                 tool=tool,
                 status=status,
                 enforcement=enforcement,
-                blocks_handoff=status == "fail" and enforcement == "block",
+                evidence_substrate=substrate,
+                means=(
+                    "bundle-subject-verified gate artifacts"
+                    if substrate == "bound"
+                    else "producer-reported exit code; not bundle-bound"
+                ),
+                blocks_handoff=(
+                    status == "fail"
+                    and enforcement == "block"
+                    and substrate == "bound"
+                ),
                 error_code=failure.code if failure else None,
                 evidence_path=failure.evidence_path if failure else None,
             )
@@ -913,6 +944,11 @@ def run_verification(
         evidence,
         verified_signature_anchors=contract_signature_anchors,
     )
+    health_substrates, _health_binding_errors = (
+        _health_evidence_substrates(evidence, contract)
+        if contract is not None
+        else ({}, [])
+    )
     evidence_contract_schema_version = _validated_evidence_contract_schema_version(
         contract,
         evidence_contract,
@@ -983,7 +1019,9 @@ def run_verification(
             )
         )
 
-    if _blocking_evidence_contract_entries(contract, evidence_contract):
+    if _blocking_evidence_contract_entries(
+        contract, evidence_contract, health_substrates
+    ):
         any_refuted = True
     if any(
         entry.error_code
@@ -1052,6 +1090,8 @@ def run_verification(
         review_signals=review_signals,
         role_capability_conformance=role_capability_conformance,
         policy_conformance=_policy_conformance(role_capability_conformance, contract),
-        health_conformance=_health_conformance(contract, evidence_contract),
+        health_conformance=_health_conformance(
+            contract, evidence_contract, health_substrates
+        ),
         verdict=overall,
     )

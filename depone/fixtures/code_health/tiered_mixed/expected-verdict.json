@@ -1,5 +1,5 @@
 {
-  "decision": "fail",
+  "decision": "pass",
   "error_codes": [
     "ERR_HEALTH_GATE_VIOLATION",
     "ERR_HEALTH_GATE_VIOLATION"
@@ -12,6 +12,8 @@
         "tool": "black",
         "status": "pass",
         "enforcement": "block",
+        "evidence_substrate": "producer-transcribed",
+        "means": "producer-reported exit code; not bundle-bound",
         "blocks_handoff": false,
         "error_code": null,
         "evidence_path": null
@@ -21,6 +23,8 @@
         "tool": "ruff-c901",
         "status": "fail",
         "enforcement": "advisory",
+        "evidence_substrate": "producer-transcribed",
+        "means": "producer-reported exit code; not bundle-bound",
         "blocks_handoff": false,
         "error_code": "ERR_HEALTH_GATE_VIOLATION",
         "evidence_path": "health/complexity.exit"
@@ -30,7 +34,9 @@
         "tool": "import-linter",
         "status": "fail",
         "enforcement": "block",
-        "blocks_handoff": true,
+        "evidence_substrate": "producer-transcribed",
+        "means": "producer-reported exit code; not bundle-bound",
+        "blocks_handoff": false,
         "error_code": "ERR_HEALTH_GATE_VIOLATION",
         "evidence_path": "health/architecture.exit"
       }

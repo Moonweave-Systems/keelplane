@@ -70,6 +70,13 @@ _ERR_ROLE_CAPABILITY_SKILL_ROUTING_VIOLATION = (
     "ERR_ROLE_CAPABILITY_SKILL_ROUTING_VIOLATION"
 )
 _ERR_HEALTH_GATE_VIOLATION = "ERR_HEALTH_GATE_VIOLATION"
+_ERR_HEALTH_GATE_MANIFEST_NOT_BUNDLE_SUBJECT = (
+    "ERR_HEALTH_GATE_MANIFEST_NOT_BUNDLE_SUBJECT"
+)
+_ERR_HEALTH_GATE_ARTIFACT_MISSING = "ERR_HEALTH_GATE_ARTIFACT_MISSING"
+_ERR_HEALTH_GATE_ARTIFACT_DIGEST_MISMATCH = (
+    "ERR_HEALTH_GATE_ARTIFACT_DIGEST_MISMATCH"
+)
 _ERR_ROLE_CAPABILITY_OBSERVATION_UNBOUND = "ERR_ROLE_CAPABILITY_OBSERVATION_UNBOUND"
 _ERR_ROLE_CAPABILITY_OBSERVATION_DIGEST_MISMATCH = (
     "ERR_ROLE_CAPABILITY_OBSERVATION_DIGEST_MISMATCH"
@@ -466,6 +473,126 @@ def _raw_artifact_digest_matches(expected_digest: str, content: str) -> bool:
     return expected_digest == hashlib.sha256(content.encode("utf-8")).hexdigest()
 
 
+def _health_evidence_substrates(
+    evidence: EvidenceContext,
+    contract: dict[str, Any],
+) -> tuple[dict[str, str], list[EvidenceContractEntry]]:
+    directive = contract.get("code_health")
+    if not isinstance(directive, dict):
+        return {}, []
+    gates = directive.get("gates")
+    if not isinstance(gates, list):
+        return {}, []
+    substrates = {
+        gate["gate"]: "producer-transcribed"
+        for gate in gates
+        if isinstance(gate, dict) and isinstance(gate.get("gate"), str)
+    }
+    manifest_path = directive.get("manifest_path")
+    if not isinstance(manifest_path, str) or not manifest_path:
+        manifest_path = "health-gate-artifacts.json"
+    manifest_entry = _evidence_file_entry(evidence, manifest_path)
+    if manifest_entry is None:
+        return substrates, []
+
+    bundle_path = directive.get("bundle_path")
+    if not isinstance(bundle_path, str) or not bundle_path:
+        bundle_path = "bundle.json"
+    bundle_entry = _evidence_file_entry(evidence, bundle_path)
+    if bundle_entry is None:
+        return substrates, [
+            EvidenceContractEntry(
+                code=_ERR_HEALTH_GATE_MANIFEST_NOT_BUNDLE_SUBJECT,
+                message=f"health manifest {manifest_path} is not a subject in {bundle_path}",
+                evidence_path=bundle_path,
+            )
+        ]
+    bundle, invalid = _json_object(bundle_entry.content, bundle_path)
+    if invalid is not None or bundle is None:
+        return substrates, [
+            EvidenceContractEntry(
+                code=_ERR_HEALTH_GATE_MANIFEST_NOT_BUNDLE_SUBJECT,
+                message=f"health manifest {manifest_path} is not a subject in {bundle_path}",
+                evidence_path=bundle_path,
+            )
+        ]
+    verified_bundle, signature_error = _verified_role_capability_bundle(
+        evidence, bundle, bundle_path
+    )
+    if signature_error is not None or verified_bundle is None:
+        return substrates, [
+            signature_error
+            if signature_error is not None
+            else EvidenceContractEntry(
+                code=_ERR_HEALTH_GATE_MANIFEST_NOT_BUNDLE_SUBJECT,
+                message=f"health manifest {manifest_path} is not a verified bundle subject",
+                evidence_path=bundle_path,
+            )
+        ]
+    bundle = verified_bundle
+    expected_manifest_digest = _subject_digest(bundle, manifest_path)
+    if expected_manifest_digest is None or not _raw_artifact_digest_matches(
+        expected_manifest_digest, manifest_entry.content
+    ):
+        return substrates, [
+            EvidenceContractEntry(
+                code=_ERR_HEALTH_GATE_MANIFEST_NOT_BUNDLE_SUBJECT,
+                message=f"health manifest {manifest_path} is not a verified bundle subject",
+                evidence_path=bundle_path,
+            )
+        ]
+    manifest, invalid = _json_object(
+        manifest_entry.content,
+        manifest_path,
+        _ERR_HEALTH_GATE_MANIFEST_NOT_BUNDLE_SUBJECT,
+    )
+    if invalid is not None or manifest is None:
+        return substrates, [invalid] if invalid is not None else []
+    manifest_gates = manifest.get("gates")
+    if not isinstance(manifest_gates, list):
+        return substrates, [
+            EvidenceContractEntry(
+                code=_ERR_HEALTH_GATE_MANIFEST_NOT_BUNDLE_SUBJECT,
+                message=f"health manifest {manifest_path} must contain gates",
+                evidence_path=manifest_path,
+            )
+        ]
+    for item in manifest_gates:
+        if not isinstance(item, dict):
+            continue
+        gate_id = item.get("gate")
+        if not isinstance(gate_id, str):
+            continue
+        for path_key, digest_key in (
+            ("exit_code_path", "exit_code_sha256"),
+            ("log_path", "log_sha256"),
+        ):
+            path = item.get(path_key)
+            expected_digest = item.get(digest_key)
+            if not isinstance(path, str) or not isinstance(expected_digest, str):
+                continue
+            artifact = _evidence_file_entry(evidence, path)
+            if artifact is None:
+                return substrates, [
+                    EvidenceContractEntry(
+                        code=_ERR_HEALTH_GATE_ARTIFACT_MISSING,
+                        message=f"health gate artifact missing: {path}",
+                        evidence_path=path,
+                    )
+                ]
+            if not _raw_artifact_digest_matches(expected_digest, artifact.content):
+                return substrates, [
+                    EvidenceContractEntry(
+                        code=_ERR_HEALTH_GATE_ARTIFACT_DIGEST_MISMATCH,
+                        message=f"health gate artifact digest mismatch: {path}",
+                        evidence_path=path,
+                    )
+                ]
+        if gate_id in substrates:
+            substrates[gate_id] = "bound"
+    return substrates, []
+
+
 def _canonical_decision_hash(decision: dict[str, Any]) -> str:
     return hashlib.sha256(
         json.dumps(
@@ -799,7 +926,8 @@ def _validate_code_health(
             )
         ]
 
-    results: list[EvidenceContractEntry] = []
+    _substrates, binding_errors = _health_evidence_substrates(evidence, contract)
+    results: list[EvidenceContractEntry] = list(binding_errors)
     for index, gate in enumerate(gates):
         prefix = f"code_health.gates[{index}]"
         if not isinstance(gate, dict):
