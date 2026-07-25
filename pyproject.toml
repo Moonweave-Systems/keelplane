@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "depone"
-version = "0.2.10"
+version = "0.2.11"
 description = "Workflow designer + cross-platform evidence verifier for AI agent orchestration"
 license = { text = "MIT" }
 readme = "README.md"
